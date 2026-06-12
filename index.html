@@ -1,0 +1,1952 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2026 世界杯 Elo评分 + 蒙特卡洛夺冠概率预测器</title>
+  <style>
+    :root {
+      --bg: #f5f6f3;
+      --paper: #ffffff;
+      --ink: #17201c;
+      --muted: #637068;
+      --line: #d9ded7;
+      --green: #1f7a5c;
+      --green-2: #dcefe7;
+      --red: #b84b42;
+      --amber: #a26b16;
+      --blue: #315f8f;
+      --shadow: 0 12px 30px rgba(24, 32, 28, 0.08);
+      --radius: 8px;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      padding: 18px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      max-width: 780px;
+    }
+
+    .pillrow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 10px;
+      padding: 14px 0;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    input, select, button {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
+      padding: 8px 10px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      min-height: 16px;
+      vertical-align: middle;
+      margin-right: 7px;
+    }
+
+    button {
+      cursor: pointer;
+      border-color: #175c45;
+      background: var(--green);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: var(--paper);
+      border-color: var(--line);
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--ink);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    section.panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfa;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .panel-body { padding: 12px 14px; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 14px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: #fbfcfa;
+      min-height: 86px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kpi .value {
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .kpi .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 9px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f1f4ef;
+      color: #3c4740;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .team { font-weight: 700; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .source { color: var(--muted); font-size: 12px; }
+    .source a { color: var(--blue); text-decoration: none; }
+    .source a:hover { text-decoration: underline; }
+
+    .barcell {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #e7ebe5;
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfa;
+      padding: 8px 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      width: auto;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 6px 6px 0 0;
+      border-color: var(--line);
+      background: #f1f4ef;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--paper);
+      border-bottom-color: var(--paper);
+      color: var(--green);
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .predict-box {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: #fbfcfa;
+    }
+
+    .scoreline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 14px 0 10px;
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .scoreline span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .odds-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .odd {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px;
+      background: #fff;
+      text-align: center;
+    }
+
+    .odd .o-label { color: var(--muted); font-size: 12px; }
+    .odd .o-value { font-size: 18px; font-weight: 800; margin-top: 2px; }
+
+    .note {
+      border-left: 4px solid var(--amber);
+      background: #fff7e8;
+      padding: 10px 12px;
+      color: #63430d;
+      margin: 0 0 12px;
+    }
+
+    .log {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 0 0;
+      min-height: 24px;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 1100px) {
+      .controls { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+      .layout { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      main { padding: 12px; }
+      .topbar { grid-template-columns: 1fr; }
+      .pillrow { justify-content: flex-start; }
+      .controls { grid-template-columns: 1fr; }
+      .grid2 { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: 1fr; }
+      h1 { font-size: 20px; }
+      .scoreline { font-size: 18px; }
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #07110f;
+      --paper: rgba(13, 29, 24, 0.94);
+      --ink: #eef7f1;
+      --muted: #9db5aa;
+      --line: rgba(130, 173, 153, 0.24);
+      --green: #34d399;
+      --green-2: rgba(52, 211, 153, 0.16);
+      --red: #ff6b63;
+      --amber: #f5b84b;
+      --blue: #58c7e8;
+      --cyan: #4ee7c4;
+      --violet: #a78bfa;
+      --shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+    }
+
+    body {
+      background:
+        linear-gradient(rgba(52, 211, 153, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88, 199, 232, 0.06) 1px, transparent 1px),
+        linear-gradient(135deg, #07110f 0%, #0c1712 42%, #17150f 100%);
+      background-size: 28px 28px, 28px 28px, auto;
+    }
+
+    main { padding-top: 20px; }
+
+    .topbar {
+      position: relative;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(52, 211, 153, 0.17), rgba(88, 199, 232, 0.08) 42%, rgba(245, 184, 75, 0.10)),
+        rgba(10, 24, 20, 0.88);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green), var(--blue), var(--amber), var(--red));
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 26px;
+    }
+
+    .sub { color: #bdd0c7; }
+
+    .status-strip {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(52, 211, 153, 0.9);
+    }
+
+    .pill {
+      color: #d9eee5;
+      background: rgba(4, 12, 10, 0.42);
+      border-color: rgba(160, 217, 191, 0.28);
+    }
+
+    .controls {
+      margin: 14px 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(9, 22, 18, 0.72);
+    }
+
+    input, select, button, .toggle {
+      background: rgba(3, 11, 9, 0.7);
+      color: var(--ink);
+      border-color: rgba(145, 184, 166, 0.28);
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(52, 211, 153, 0.36);
+      border-color: var(--green);
+    }
+
+    button {
+      border: 0;
+      color: #04130f;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      box-shadow: 0 8px 20px rgba(52, 211, 153, 0.18);
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    section.panel {
+      background: var(--paper);
+      border-color: var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel-head {
+      background:
+        linear-gradient(90deg, rgba(52, 211, 153, 0.12), rgba(88, 199, 232, 0.06)),
+        rgba(8, 20, 17, 0.78);
+    }
+
+    .panel-head h2 { color: #ffffff; }
+
+    .kpi {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        rgba(5, 15, 12, 0.82);
+      border-color: var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(var(--green), var(--blue), var(--amber));
+    }
+
+    .kpi .value { color: #ffffff; }
+
+    .table-wrap {
+      border-color: var(--line);
+      background: rgba(3, 11, 9, 0.56);
+    }
+
+    table { background: transparent; }
+
+    th {
+      background: #0e211b;
+      color: #cde4da;
+    }
+
+    td {
+      border-bottom-color: rgba(130, 173, 153, 0.18);
+      color: #eef7f1;
+    }
+
+    tbody tr:hover td { background: rgba(52, 211, 153, 0.07); }
+
+    .team { color: #ffffff; }
+
+    .bar { background: rgba(255, 255, 255, 0.12); }
+
+    .bar > span {
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      box-shadow: 0 0 12px rgba(78, 231, 196, 0.5);
+    }
+
+    .tabs {
+      background: rgba(8, 20, 17, 0.78);
+      border-bottom-color: var(--line);
+    }
+
+    .tab {
+      color: #bfd4cb;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--line);
+    }
+
+    .tab.active {
+      color: #06120f;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      border-bottom-color: transparent;
+    }
+
+    .predict-box, .odd {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+        rgba(5, 15, 12, 0.82);
+      border-color: var(--line);
+    }
+
+    .scoreline strong {
+      min-width: 92px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #04130f;
+      background: linear-gradient(135deg, var(--green), var(--amber));
+      box-shadow: 0 10px 24px rgba(245, 184, 75, 0.14);
+    }
+
+    .odd .o-value { color: #ffffff; }
+
+    .note {
+      color: #ffe8b3;
+      background: rgba(245, 184, 75, 0.10);
+      border-left-color: var(--amber);
+    }
+
+    .source a { color: var(--blue); }
+
+    .share-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .share-list li {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px;
+    }
+
+    .share-list strong { color: #ffffff; }
+
+    code {
+      color: #d6fff0;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(160, 217, 191, 0.20);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+
+    .dual-match-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .match-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+        rgba(5, 15, 12, 0.82);
+      padding: 12px;
+    }
+
+    .match-card h3 {
+      margin: 0;
+      font-size: 15px;
+      color: #ffffff;
+    }
+
+    .score-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .score-option {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .score-option strong {
+      display: block;
+      margin-top: 4px;
+      color: #ffffff;
+      font-size: 24px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .event-table {
+      min-width: 0;
+      font-size: 12px;
+    }
+
+    .event-table th,
+    .event-table td {
+      white-space: normal;
+      padding: 8px;
+    }
+
+    .risk-chip {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(78, 231, 196, 0.12);
+      color: #d7fff3;
+      border: 1px solid rgba(78, 231, 196, 0.20);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .dual-match-grid { grid-template-columns: 1fr; }
+      .score-options { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>2026 世界杯 Elo评分 + 蒙特卡洛夺冠概率预测器</h1>
+        <p class="sub">用国家队 Elo 评分推导进球期望，泊松分布生成比分，蒙特卡洛重复跑完整 48 队赛程。投注倍率显示为模型公允十进制赔率，不是博彩公司盘口。</p>
+        <div class="status-strip">
+          <span class="status-dot"></span>
+          <span class="small muted">预测引擎就绪</span>
+          <span class="small muted" id="syncStatusText">正在同步线上赛果</span>
+          <span class="small muted" id="syncStatusMeta">本地兜底已启用</span>
+        </div>
+      </div>
+      <div class="pillrow">
+        <div class="pill">数据日：2026-06-12</div>
+        <div class="pill">48 队 / 12 组 / 104 场</div>
+        <div class="pill" id="resultCountPill">已赛 2 场</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div>
+        <label for="sims">模拟次数</label>
+        <input id="sims" type="number" min="1000" max="100000" step="1000" value="20000" />
+      </div>
+      <div>
+        <label for="seed">随机种子</label>
+        <input id="seed" type="number" value="20260612" />
+      </div>
+      <div>
+        <label for="goals">平均总进球</label>
+        <input id="goals" type="number" min="1.6" max="4" step="0.05" value="2.35" />
+      </div>
+      <div>
+        <label for="scale">Elo 进球缩放</label>
+        <input id="scale" type="number" min="250" max="650" step="10" value="420" />
+      </div>
+      <div>
+        <label for="hostBoost">主办国加成</label>
+        <input id="hostBoost" type="number" min="0" max="120" step="5" value="35" />
+      </div>
+      <div>
+        <label for="margin">赔率水位</label>
+        <input id="margin" type="number" min="0" max="20" step="0.5" value="5" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="runBtn">运行模拟</button>
+      </div>
+      <div class="toggle">
+        <input id="useKnown" type="checkbox" checked />
+        <span>使用已赛结果</span>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="secondary" id="exportBtn">导出表格</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>夺冠概率</h2>
+          <div class="small muted" id="runMeta">等待运行</div>
+        </div>
+        <div class="panel-body">
+          <div class="kpis" id="kpis"></div>
+          <div class="table-wrap">
+            <table id="champTable">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>球队</th>
+                  <th>组</th>
+                  <th class="num">Elo</th>
+                  <th class="num">夺冠</th>
+                  <th class="num">进决赛</th>
+                  <th class="num">四强</th>
+                  <th class="num">八强</th>
+                  <th class="num">32 强</th>
+                  <th class="num">公允赔率</th>
+                  <th class="num">含水赔率</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="log" id="logLine"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="match">对阵比分</button>
+          <button class="tab" data-tab="fixtures">赛程赔率</button>
+          <button class="tab" data-tab="groups">小组出线</button>
+          <button class="tab" data-tab="verify">验真板块</button>
+          <button class="tab" data-tab="method">模型说明</button>
+          <button class="tab" data-tab="share">分享方式</button>
+        </div>
+
+        <div class="panel-body tabpane" id="tab-match">
+        <div class="grid2">
+          <div>
+              <label for="matchOne">比赛一</label>
+              <select id="matchOne"></select>
+          </div>
+          <div>
+              <label for="matchTwo">比赛二</label>
+              <select id="matchTwo"></select>
+          </div>
+        </div>
+          <div class="dual-match-grid" id="matchPredict"></div>
+        </div>
+
+        <div class="panel-body tabpane hidden" id="tab-fixtures">
+          <div class="table-wrap">
+            <table id="fixturesTable">
+              <thead>
+                <tr>
+                  <th>组</th>
+                  <th>对阵</th>
+                  <th class="num">预测比分</th>
+                  <th class="num">主胜</th>
+                  <th class="num">平</th>
+                  <th class="num">客胜</th>
+                  <th class="num">主胜赔率</th>
+                  <th class="num">平赔</th>
+                  <th class="num">客胜赔率</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-body tabpane hidden" id="tab-groups">
+          <div class="table-wrap">
+            <table id="groupsTable">
+              <thead>
+                <tr>
+                  <th>组</th>
+                  <th>球队</th>
+                  <th class="num">小组第 1</th>
+                  <th class="num">前 2</th>
+                  <th class="num">前 3</th>
+                  <th class="num">晋级 32 强</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-body tabpane hidden" id="tab-verify">
+          <div class="note" id="verifyNote">验真只统计已经有真实赛果的比赛。线上赛果同步后，这里会自动更新样本数量。</div>
+          <div class="kpis" id="verifyKpis"></div>
+          <div class="table-wrap">
+            <table id="verifyTable">
+              <thead>
+                <tr>
+                  <th>比赛</th>
+                  <th class="num">真实比分</th>
+                  <th class="num">概率第1</th>
+                  <th class="num">概率第2</th>
+                  <th class="num">概率第3</th>
+                  <th class="num">真实比分排名</th>
+                  <th class="num">胜平负</th>
+                  <th class="num">精确命中</th>
+                  <th class="num">前2命中</th>
+                  <th class="num">前3命中</th>
+                  <th class="num">大小2.5</th>
+                  <th class="num">双方进球</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-body tabpane hidden" id="tab-method">
+          <div class="note">投注倍率只代表模型给出的公允赔率。若实际平台赔率高于模型公允赔率，才可能存在模型意义上的“价格更高”；这仍不等于投注建议。</div>
+          <p><strong>比分预测逻辑：</strong>当前比分基于三类数据：国家队 Elo 评分、2026 世界杯实际分组/赛程、已赛比分开关。先计算双方 Elo 差，并给主办国加成；再把总进球期望拆成两队各自的期望进球。</p>
+          <p><strong>具体公式：</strong>设总进球参数为 G，Elo 差为 D，缩放参数为 S，则强弱比 r = exp(D / S)。球队A期望进球 = G * r / (1 + r)，球队B期望进球 = G / (1 + r)。</p>
+          <p><strong>比分排序：</strong>对 0-0 到 10-10 的所有比分逐个计算概率：P(比分 i-j) = 泊松(i, 球队A期望进球) * 泊松(j, 球队B期望进球)，然后按命中概率从高到低排序。页面展示的比分选择就是这个排序，不额外插入某个大比分。</p>
+          <p><strong>为什么常见 1-0 / 1-1：</strong>单个精确比分的概率峰值通常落在低比分，尤其在保守总进球参数下。大比分不是没有，而是分散在很多具体比分里，所以页面保留“4球以上概率”作为尾部风险参考，而不是强推某个大比分。</p>
+          <p><strong>模拟流程：</strong>每轮模拟都会跑完 72 场小组赛、官方 32 强第三名分配、16 强到决赛。淘汰赛 90 分钟打平时，用 Elo 生成加时/点球胜者。</p>
+          <p><strong>小组排序：</strong>积分、净胜球、进球数、胜场、Elo 兜底。真实国际足联规则还会细分相互战绩、公平竞赛和抽签，本工具用于概率估算，未逐项复刻纪律分。</p>
+          <p class="source">来源：赛制与赛程参考 <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/scores-fixtures" target="_blank" rel="noreferrer">国际足联赛程页</a>、<a href="https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf" target="_blank" rel="noreferrer">国际足联赛事规程</a>；Elo 参考 <a href="https://www.international-football.net/elo-ratings-table?year=2026&month=06&day=12" target="_blank" rel="noreferrer">国家队 Elo 评分表</a>；已赛比分会优先从 <a href="https://worldcup26.ir/get/games" target="_blank" rel="noreferrer">WorldCup26 公开赛果接口</a>同步，接口不可用时使用本地内置赛果。</p>
+        </div>
+
+        <div class="panel-body tabpane hidden" id="tab-share">
+          <ul class="share-list">
+            <li><strong>离线发文件：</strong>把 <code>index.html</code> 发给朋友，朋友双击能用；但这只是固定版本，不保证同步更新。</li>
+            <li><strong>同步分享：</strong>把整个文件夹部署到 GitHub Pages、Cloudflare Pages、Netlify 或 Vercel，朋友访问同一个公开链接。页面每次打开都会自动同步线上已赛结果。</li>
+            <li><strong>自动刷新：</strong>页面打开后每 5 分钟会再同步一次赛果；接口不可用时会继续使用本地内置赛果，不影响预测器打开。</li>
+            <li><strong>本地预览：</strong><code>127.0.0.1</code> 只代表你自己的电脑，不能作为公网链接发给朋友。</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const THIRD_TABLE = "EFGHIJKL:EJIFHGLK;DFGHIJKL:HGIDJFLK;DEGHIJKL:EJIDHGLK;DEFHIJKL:EJIDHFLK;DEFGIJKL:EGIDJFLK;DEFGHJKL:EGJDHFLK;DEFGHIKL:EGIDHFLK;DEFGHIJL:EGJDHFLI;DEFGHIJK:EGJDHFIK;CFGHIJKL:HGICJFLK;CEGHIJKL:EJICHGLK;CEFHIJKL:EJICHFLK;CEFGIJKL:EGICJFLK;CEFGHJKL:EGJCHFLK;CEFGHIKL:EGICHFLK;CEFGHIJL:EGJCHFLI;CEFGHIJK:EGJCHFIK;CDGHIJKL:HGICJDLK;CDFHIJKL:CJIDHFLK;CDFGIJKL:CGIDJFLK;CDFGHJKL:CGJDHFLK;CDFGHIKL:CGIDHFLK;CDFGHIJL:CGJDHFLI;CDFGHIJK:CGJDHFIK;CDEHIJKL:EJICHDLK;CDEGIJKL:EGICJDLK;CDEGHJKL:EGJCHDLK;CDEGHIKL:EGICHDLK;CDEGHIJL:EGJCHDLI;CDEGHIJK:EGJCHDIK;CDEFIJKL:CJEDIFLK;CDEFHJKL:CJEDHFLK;CDEFHIKL:CEIDHFLK;CDEFHIJL:CJEDHFLI;CDEFHIJK:CJEDHFIK;CDEFGJKL:CGEDJFLK;CDEFGIKL:CGEDIFLK;CDEFGIJL:CGEDJFLI;CDEFGIJK:CGEDJFIK;CDEFGHKL:CGEDHFLK;CDEFGHJL:CGJDHFLE;CDEFGHJK:CGJDHFEK;CDEFGHIL:CGEDHFLI;CDEFGHIK:CGEDHFIK;CDEFGHIJ:CGJDHFEI;BFGHIJKL:HJBFIGLK;BEGHIJKL:EJIBHGLK;BEFHIJKL:EJBFIHLK;BEFGIJKL:EJBFIGLK;BEFGHJKL:EJBFHGLK;BEFGHIKL:EGBFIHLK;BEFGHIJL:EJBFHGLI;BEFGHIJK:EJBFHGIK;BDGHIJKL:HJBDIGLK;BDFHIJKL:HJBDIFLK;BDFGIJKL:IGBDJFLK;BDFGHJKL:HGBDJFLK;BDFGHIKL:HGBDIFLK;BDFGHIJL:HGBDJFLI;BDFGHIJK:HGBDJFIK;BDEHIJKL:EJBDIHLK;BDEGIJKL:EJBDIGLK;BDEGHJKL:EJBDHGLK;BDEGHIKL:EGBDIHLK;BDEGHIJL:EJBDHGLI;BDEGHIJK:EJBDHGIK;BDEFIJKL:EJBDIFLK;BDEFHJKL:EJBDHFLK;BDEFHIKL:EIBDHFLK;BDEFHIJL:EJBDHFLI;BDEFHIJK:EJBDHFIK;BDEFGJKL:EGBDJFLK;BDEFGIKL:EGBDIFLK;BDEFGIJL:EGBDJFLI;BDEFGIJK:EGBDJFIK;BDEFGHKL:EGBDHFLK;BDEFGHJL:HGBDJFLE;BDEFGHJK:HGBDJFEK;BDEFGHIL:EGBDHFLI;BDEFGHIK:EGBDHFIK;BDEFGHIJ:HGBDJFEI;BCGHIJKL:HJBCIGLK;BCFHIJKL:HJBCIFLK;BCFGIJKL:IGBCJFLK;BCFGHJKL:HGBCJFLK;BCFGHIKL:HGBCIFLK;BCFGHIJL:HGBCJFLI;BCFGHIJK:HGBCJFIK;BCEHIJKL:EJBCIHLK;BCEGIJKL:EJBCIGLK;BCEGHJKL:EJBCHGLK;BCEGHIKL:EGBCIHLK;BCEGHIJL:EJBCHGLI;BCEGHIJK:EJBCHGIK;BCEFIJKL:EJBCIFLK;BCEFHJKL:EJBCHFLK;BCEFHIKL:EIBCHFLK;BCEFHIJL:EJBCHFLI;BCEFHIJK:EJBCHFIK;BCEFGJKL:EGBCJFLK;BCEFGIKL:EGBCIFLK;BCEFGIJL:EGBCJFLI;BCEFGIJK:EGBCJFIK;BCEFGHKL:EGBCHFLK;BCEFGHJL:HGBCJFLE;BCEFGHJK:HGBCJFEK;BCEFGHIL:EGBCHFLI;BCEFGHIK:EGBCHFIK;BCEFGHIJ:HGBCJFEI;BCDHIJKL:HJBCIDLK;BCDGIJKL:IGBCJDLK;BCDGHJKL:HGBCJDLK;BCDGHIKL:HGBCIDLK;BCDGHIJL:HGBCJDLI;BCDGHIJK:HGBCJDIK;BCDFIJKL:CJBDIFLK;BCDFHJKL:CJBDHFLK;BCDFHIKL:CIBDHFLK;BCDFHIJL:CJBDHFLI;BCDFHIJK:CJBDHFIK;BCDFGJKL:CGBDJFLK;BCDFGIKL:CGBDIFLK;BCDFGIJL:CGBDJFLI;BCDFGIJK:CGBDJFIK;BCDFGHKL:CGBDHFLK;BCDFGHJL:CGBDHFLJ;BCDFGHJK:HGBCJFDK;BCDFGHIL:CGBDHFLI;BCDFGHIK:CGBDHFIK;BCDFGHIJ:HGBCJFDI;BCDEIJKL:EJBCIDLK;BCDEHJKL:EJBCHDLK;BCDEHIKL:EIBCHDLK;BCDEHIJL:EJBCHDLI;BCDEHIJK:EJBCHDIK;BCDEGJKL:EGBCJDLK;BCDEGIKL:EGBCIDLK;BCDEGIJL:EGBCJDLI;BCDEGIJK:EGBCJDIK;BCDEGHKL:EGBCHDLK;BCDEGHJL:HGBCJDLE;BCDEGHJK:HGBCJDEK;BCDEGHIL:EGBCHDLI;BCDEGHIK:EGBCHDIK;BCDEGHIJ:HGBCJDEI;BCDEFJKL:CJBDEFLK;BCDEFIKL:CEBDIFLK;BCDEFIJL:CJBDEFLI;BCDEFIJK:CJBDEFIK;BCDEFHKL:CEBDHFLK;BCDEFHJL:CJBDHFLE;BCDEFHJK:CJBDHFEK;BCDEFHIL:CEBDHFLI;BCDEFHIK:CEBDHFIK;BCDEFHIJ:CJBDHFEI;BCDEFGKL:CGBDEFLK;BCDEFGJL:CGBDJFLE;BCDEFGJK:CGBDJFEK;BCDEFGIL:CGBDEFLI;BCDEFGIK:CGBDEFIK;BCDEFGIJ:CGBDJFEI;BCDEFGHL:CGBDHFLE;BCDEFGHK:CGBDHFEK;BCDEFGHJ:HGBCJFDE;BCDEFGHI:CGBDHFEI;AFGHIJKL:HJIFAGLK;AEGHIJKL:EJIAHGLK;AEFHIJKL:EJIFAHLK;AEFGIJKL:EJIFAGLK;AEFGHJKL:EGJFAHLK;AEFGHIKL:EGIFAHLK;AEFGHIJL:EGJFAHLI;AEFGHIJK:EGJFAHIK;ADGHIJKL:HJIDAGLK;ADFHIJKL:HJIDAFLK;ADFGIJKL:IGJDAFLK;ADFGHJKL:HGJDAFLK;ADFGHIKL:HGIDAFLK;ADFGHIJL:HGJDAFLI;ADFGHIJK:HGJDAFIK;ADEHIJKL:EJIDAHLK;ADEGIJKL:EJIDAGLK;ADEGHJKL:EGJDAHLK;ADEGHIKL:EGIDAHLK;ADEGHIJL:EGJDAHLI;ADEGHIJK:EGJDAHIK;ADEFIJKL:EJIDAFLK;ADEFHJKL:HJEDAFLK;ADEFHIKL:HEIDAFLK;ADEFHIJL:HJEDAFLI;ADEFHIJK:HJEDAFIK;ADEFGJKL:EGJDAFLK;ADEFGIKL:EGIDAFLK;ADEFGIJL:EGJDAFLI;ADEFGIJK:EGJDAFIK;ADEFGHKL:HGEDAFLK;ADEFGHJL:HGJDAFLE;ADEFGHJK:HGJDAFEK;ADEFGHIL:HGEDAFLI;ADEFGHIK:HGEDAFIK;ADEFGHIJ:HGJDAFEI;ACGHIJKL:HJICAGLK;ACFHIJKL:HJICAFLK;ACFGIJKL:IGJCAFLK;ACFGHJKL:HGJCAFLK;ACFGHIKL:HGICAFLK;ACFGHIJL:HGJCAFLI;ACFGHIJK:HGJCAFIK;ACEHIJKL:EJICAHLK;ACEGIJKL:EJICAGLK;ACEGHJKL:EGJCAHLK;ACEGHIKL:EGICAHLK;ACEGHIJL:EGJCAHLI;ACEGHIJK:EGJCAHIK;ACEFIJKL:EJICAFLK;ACEFHJKL:HJECAFLK;ACEFHIKL:HEICAFLK;ACEFHIJL:HJECAFLI;ACEFHIJK:HJECAFIK;ACEFGJKL:EGJCAFLK;ACEFGIKL:EGICAFLK;ACEFGIJL:EGJCAFLI;ACEFGIJK:EGJCAFIK;ACEFGHKL:HGECAFLK;ACEFGHJL:HGJCAFLE;ACEFGHJK:HGJCAFEK;ACEFGHIL:HGECAFLI;ACEFGHIK:HGECAFIK;ACEFGHIJ:HGJCAFEI;ACDHIJKL:HJICADLK;ACDGIJKL:IGJCADLK;ACDGHJKL:HGJCADLK;ACDGHIKL:HGICADLK;ACDGHIJL:HGJCADLI;ACDGHIJK:HGJCADIK;ACDFIJKL:CJIDAFLK;ACDFHJKL:HJFCADLK;ACDFHIKL:HFICADLK;ACDFHIJL:HJFCADLI;ACDFHIJK:HJFCADIK;ACDFGJKL:CGJDAFLK;ACDFGIKL:CGIDAFLK;ACDFGIJL:CGJDAFLI;ACDFGIJK:CGJDAFIK;ACDFGHKL:HGFCADLK;ACDFGHJL:CGJDAFLH;ACDFGHJK:HGJCAFDK;ACDFGHIL:HGFCADLI;ACDFGHIK:HGFCADIK;ACDFGHIJ:HGJCAFDI;ACDEIJKL:EJICADLK;ACDEHJKL:HJECADLK;ACDEHIKL:HEICADLK;ACDEHIJL:HJECADLI;ACDEHIJK:HJECADIK;ACDEGJKL:EGJCADLK;ACDEGIKL:EGICADLK;ACDEGIJL:EGJCADLI;ACDEGIJK:EGJCADIK;ACDEGHKL:HGECADLK;ACDEGHJL:HGJCADLE;ACDEGHJK:HGJCADEK;ACDEGHIL:HGECADLI;ACDEGHIK:HGECADIK;ACDEGHIJ:HGJCADEI;ACDEFJKL:CJEDAFLK;ACDEFIKL:CEIDAFLK;ACDEFIJL:CJEDAFLI;ACDEFIJK:CJEDAFIK;ACDEFHKL:HEFCADLK;ACDEFHJL:HJFCADLE;ACDEFHJK:HJECAFDK;ACDEFHIL:HEFCADLI;ACDEFHIK:HEFCADIK;ACDEFHIJ:HJECAFDI;ACDEFGKL:CGEDAFLK;ACDEFGJL:CGJDAFLE;ACDEFGJK:CGJDAFEK;ACDEFGIL:CGEDAFLI;ACDEFGIK:CGEDAFIK;ACDEFGIJ:CGJDAFEI;ACDEFGHL:HGFCADLE;ACDEFGHK:HGECAFDK;ACDEFGHJ:HGJCAFDE;ACDEFGHI:HGECAFDI;ABGHIJKL:HJBAIGLK;ABFHIJKL:HJBAIFLK;ABFGIJKL:IJBFAGLK;ABFGHJKL:HJBFAGLK;ABFGHIKL:HGBAIFLK;ABFGHIJL:HJBFAGLI;ABFGHIJK:HJBFAGIK;ABEHIJKL:EJBAIHLK;ABEGIJKL:EJBAIGLK;ABEGHJKL:EJBAHGLK;ABEGHIKL:EGBAIHLK;ABEGHIJL:EJBAHGLI;ABEGHIJK:EJBAHGIK;ABEFIJKL:EJBAIFLK;ABEFHJKL:EJBFAHLK;ABEFHIKL:EIBFAHLK;ABEFHIJL:EJBFAHLI;ABEFHIJK:EJBFAHIK;ABEFGJKL:EJBFAGLK;ABEFGIKL:EGBAIFLK;ABEFGIJL:EJBFAGLI;ABEFGIJK:EJBFAGIK;ABEFGHKL:EGBFAHLK;ABEFGHJL:HJBFAGLE;ABEFGHJK:HJBFAGEK;ABEFGHIL:EGBFAHLI;ABEFGHIK:EGBFAHIK;ABEFGHIJ:HJBFAGEI;ABDHIJKL:IJBDAHLK;ABDGIJKL:IJBDAGLK;ABDGHJKL:HJBDAGLK;ABDGHIKL:IGBDAHLK;ABDGHIJL:HJBDAGLI;ABDGHIJK:HJBDAGIK;ABDFIJKL:IJBDAFLK;ABDFHJKL:HJBDAFLK;ABDFHIKL:HIBDAFLK;ABDFHIJL:HJBDAFLI;ABDFHIJK:HJBDAFIK;ABDFGJKL:FJBDAGLK;ABDFGIKL:IGBDAFLK;ABDFGIJL:FJBDAGLI;ABDFGIJK:FJBDAGIK;ABDFGHKL:HGBDAFLK;ABDFGHJL:HGBDAFLJ;ABDFGHJK:HGBDAFJK;ABDFGHIL:HGBDAFLI;ABDFGHIK:HGBDAFIK;ABDFGHIJ:HGBDAFIJ;ABDEIJKL:EJBAIDLK;ABDEHJKL:EJBDAHLK;ABDEHIKL:EIBDAHLK;ABDEHIJL:EJBDAHLI;ABDEHIJK:EJBDAHIK;ABDEGJKL:EJBDAGLK;ABDEGIKL:EGBAIDLK;ABDEGIJL:EJBDAGLI;ABDEGIJK:EJBDAGIK;ABDEGHKL:EGBDAHLK;ABDEGHJL:HJBDAGLE;ABDEGHJK:HJBDAGEK;ABDEGHIL:EGBDAHLI;ABDEGHIK:EGBDAHIK;ABDEGHIJ:HJBDAGEI;ABDEFJKL:EJBDAFLK;ABDEFIKL:EIBDAFLK;ABDEFIJL:EJBDAFLI;ABDEFIJK:EJBDAFIK;ABDEFHKL:HEBDAFLK;ABDEFHJL:HJBDAFLE;ABDEFHJK:HJBDAFEK;ABDEFHIL:HEBDAFLI;ABDEFHIK:HEBDAFIK;ABDEFHIJ:HJBDAFEI;ABDEFGKL:EGBDAFLK;ABDEFGJL:EGBDAFLJ;ABDEFGJK:EGBDAFJK;ABDEFGIL:EGBDAFLI;ABDEFGIK:EGBDAFIK;ABDEFGIJ:EGBDAFIJ;ABDEFGHL:HGBDAFLE;ABDEFGHK:HGBDAFEK;ABDEFGHJ:HGBDAFEJ;ABDEFGHI:HGBDAFEI;ABCHIJKL:IJBCAHLK;ABCGIJKL:IJBCAGLK;ABCGHJKL:HJBCAGLK;ABCGHIKL:IGBCAHLK;ABCGHIJL:HJBCAGLI;ABCGHIJK:HJBCAGIK;ABCFIJKL:IJBCAFLK;ABCFHJKL:HJBCAFLK;ABCFHIKL:HIBCAFLK;ABCFHIJL:HJBCAFLI;ABCFHIJK:HJBCAFIK;ABCFGJKL:CJBFAGLK;ABCFGIKL:IGBCAFLK;ABCFGIJL:CJBFAGLI;ABCFGIJK:CJBFAGIK;ABCFGHKL:HGBCAFLK;ABCFGHJL:HGBCAFLJ;ABCFGHJK:HGBCAFJK;ABCFGHIL:HGBCAFLI;ABCFGHIK:HGBCAFIK;ABCFGHIJ:HGBCAFIJ;ABCEIJKL:EJBAICLK;ABCEHJKL:EJBCAHLK;ABCEHIKL:EIBCAHLK;ABCEHIJL:EJBCAHLI;ABCEHIJK:EJBCAHIK;ABCEGJKL:EJBCAGLK;ABCEGIKL:EGBAICLK;ABCEGIJL:EJBCAGLI;ABCEGIJK:EJBCAGIK;ABCEGHKL:EGBCAHLK;ABCEGHJL:HJBCAGLE;ABCEGHJK:HJBCAGEK;ABCEGHIL:EGBCAHLI;ABCEGHIK:EGBCAHIK;ABCEGHIJ:HJBCAGEI;ABCEFJKL:EJBCAFLK;ABCEFIKL:EIBCAFLK;ABCEFIJL:EJBCAFLI;ABCEFIJK:EJBCAFIK;ABCEFHKL:HEBCAFLK;ABCEFHJL:HJBCAFLE;ABCEFHJK:HJBCAFEK;ABCEFHIL:HEBCAFLI;ABCEFHIK:HEBCAFIK;ABCEFHIJ:HJBCAFEI;ABCEFGKL:EGBCAFLK;ABCEFGJL:EGBCAFLJ;ABCEFGJK:EGBCAFJK;ABCEFGIL:EGBCAFLI;ABCEFGIK:EGBCAFIK;ABCEFGIJ:EGBCAFIJ;ABCEFGHL:HGBCAFLE;ABCEFGHK:HGBCAFEK;ABCEFGHJ:HGBCAFEJ;ABCEFGHI:HGBCAFEI;ABCDIJKL:IJBCADLK;ABCDHJKL:HJBCADLK;ABCDHIKL:HIBCADLK;ABCDHIJL:HJBCADLI;ABCDHIJK:HJBCADIK;ABCDGJKL:CJBDAGLK;ABCDGIKL:IGBCADLK;ABCDGIJL:CJBDAGLI;ABCDGIJK:CJBDAGIK;ABCDGHKL:HGBCADLK;ABCDGHJL:HGBCADLJ;ABCDGHJK:HGBCADJK;ABCDGHIL:HGBCADLI;ABCDGHIK:HGBCADIK;ABCDGHIJ:HGBCADIJ;ABCDFJKL:CJBDAFLK;ABCDFIKL:CIBDAFLK;ABCDFIJL:CJBDAFLI;ABCDFIJK:CJBDAFIK;ABCDFHKL:HFBCADLK;ABCDFHJL:CJBDAFLH;ABCDFHJK:HJBCAFDK;ABCDFHIL:HFBCADLI;ABCDFHIK:HFBCADIK;ABCDFHIJ:HJBCAFDI;ABCDFGKL:CGBDAFLK;ABCDFGJL:CGBDAFLJ;ABCDFGJK:CGBDAFJK;ABCDFGIL:CGBDAFLI;ABCDFGIK:CGBDAFIK;ABCDFGIJ:CGBDAFIJ;ABCDFGHL:CGBDAFLH;ABCDFGHK:HGBCAFDK;ABCDFGHJ:HGBCAFDJ;ABCDFGHI:HGBCAFDI;ABCDEJKL:EJBCADLK;ABCDEIKL:EIBCADLK;ABCDEIJL:EJBCADLI;ABCDEIJK:EJBCADIK;ABCDEHKL:HEBCADLK;ABCDEHJL:HJBCADLE;ABCDEHJK:HJBCADEK;ABCDEHIL:HEBCADLI;ABCDEHIK:HEBCADIK;ABCDEHIJ:HJBCADEI;ABCDEGKL:EGBCADLK;ABCDEGJL:EGBCADLJ;ABCDEGJK:EGBCADJK;ABCDEGIL:EGBCADLI;ABCDEGIK:EGBCADIK;ABCDEGIJ:EGBCADIJ;ABCDEGHL:HGBCADLE;ABCDEGHK:HGBCADEK;ABCDEGHJ:HGBCADEJ;ABCDEGHI:HGBCADEI;ABCDEFKL:CEBDAFLK;ABCDEFJL:CJBDAFLE;ABCDEFJK:CJBDAFEK;ABCDEFIL:CEBDAFLI;ABCDEFIK:CEBDAFIK;ABCDEFIJ:CJBDAFEI;ABCDEFHL:HFBCADLE;ABCDEFHK:HEBCAFDK;ABCDEFHJ:HJBCAFDE;ABCDEFHI:HEBCAFDI;ABCDEFGL:CGBDAFLE;ABCDEFGK:CGBDAFEK;ABCDEFGJ:CGBDAFEJ;ABCDEFGI:CGBDAFEI;ABCDEFGH:HGBCAFDE";
+
+    const TEAM_DATA = [
+      { name: "Mexico", group: "A", elo: 1875, host: true },
+      { name: "South Africa", group: "A", elo: 1528 },
+      { name: "South Korea", group: "A", elo: 1758 },
+      { name: "Czech Republic", group: "A", elo: 1740 },
+      { name: "Canada", group: "B", elo: 1788, host: true },
+      { name: "Bosnia and Herzegovina", group: "B", elo: 1595 },
+      { name: "Qatar", group: "B", elo: 1421 },
+      { name: "Switzerland", group: "B", elo: 1891 },
+      { name: "Brazil", group: "C", elo: 1991 },
+      { name: "Morocco", group: "C", elo: 1824 },
+      { name: "Haiti", group: "C", elo: 1548 },
+      { name: "Scotland", group: "C", elo: 1782 },
+      { name: "United States", group: "D", elo: 1726, host: true },
+      { name: "Paraguay", group: "D", elo: 1833 },
+      { name: "Australia", group: "D", elo: 1777 },
+      { name: "Turkey", group: "D", elo: 1911 },
+      { name: "Germany", group: "E", elo: 1932 },
+      { name: "Curacao", group: "E", elo: 1434 },
+      { name: "Ivory Coast", group: "E", elo: 1695 },
+      { name: "Ecuador", group: "E", elo: 1935 },
+      { name: "Netherlands", group: "F", elo: 1944 },
+      { name: "Japan", group: "F", elo: 1906 },
+      { name: "Sweden", group: "F", elo: 1712 },
+      { name: "Tunisia", group: "F", elo: 1628 },
+      { name: "Belgium", group: "G", elo: 1893 },
+      { name: "Egypt", group: "G", elo: 1696 },
+      { name: "Iran", group: "G", elo: 1772 },
+      { name: "New Zealand", group: "G", elo: 1562 },
+      { name: "Spain", group: "H", elo: 2155 },
+      { name: "Cape Verde", group: "H", elo: 1578 },
+      { name: "Saudi Arabia", group: "H", elo: 1569 },
+      { name: "Uruguay", group: "H", elo: 1892 },
+      { name: "France", group: "I", elo: 2062 },
+      { name: "Senegal", group: "I", elo: 1867 },
+      { name: "Iraq", group: "I", elo: 1618 },
+      { name: "Norway", group: "I", elo: 1917 },
+      { name: "Argentina", group: "J", elo: 2114 },
+      { name: "Algeria", group: "J", elo: 1760 },
+      { name: "Austria", group: "J", elo: 1830 },
+      { name: "Jordan", group: "J", elo: 1685 },
+      { name: "Portugal", group: "K", elo: 1986 },
+      { name: "DR Congo", group: "K", elo: 1661 },
+      { name: "Uzbekistan", group: "K", elo: 1718 },
+      { name: "Colombia", group: "K", elo: 1977 },
+      { name: "England", group: "L", elo: 2021 },
+      { name: "Croatia", group: "L", elo: 1908 },
+      { name: "Ghana", group: "L", elo: 1510 },
+      { name: "Panama", group: "L", elo: 1730 }
+    ];
+
+    const TEAM_ZH = {
+      "Mexico": "墨西哥",
+      "South Africa": "南非",
+      "South Korea": "韩国",
+      "Czech Republic": "捷克",
+      "Canada": "加拿大",
+      "Bosnia and Herzegovina": "波黑",
+      "Qatar": "卡塔尔",
+      "Switzerland": "瑞士",
+      "Brazil": "巴西",
+      "Morocco": "摩洛哥",
+      "Haiti": "海地",
+      "Scotland": "苏格兰",
+      "United States": "美国",
+      "Paraguay": "巴拉圭",
+      "Australia": "澳大利亚",
+      "Turkey": "土耳其",
+      "Germany": "德国",
+      "Curacao": "库拉索",
+      "Ivory Coast": "科特迪瓦",
+      "Ecuador": "厄瓜多尔",
+      "Netherlands": "荷兰",
+      "Japan": "日本",
+      "Sweden": "瑞典",
+      "Tunisia": "突尼斯",
+      "Belgium": "比利时",
+      "Egypt": "埃及",
+      "Iran": "伊朗",
+      "New Zealand": "新西兰",
+      "Spain": "西班牙",
+      "Cape Verde": "佛得角",
+      "Saudi Arabia": "沙特阿拉伯",
+      "Uruguay": "乌拉圭",
+      "France": "法国",
+      "Senegal": "塞内加尔",
+      "Iraq": "伊拉克",
+      "Norway": "挪威",
+      "Argentina": "阿根廷",
+      "Algeria": "阿尔及利亚",
+      "Austria": "奥地利",
+      "Jordan": "约旦",
+      "Portugal": "葡萄牙",
+      "DR Congo": "民主刚果",
+      "Uzbekistan": "乌兹别克斯坦",
+      "Colombia": "哥伦比亚",
+      "England": "英格兰",
+      "Croatia": "克罗地亚",
+      "Ghana": "加纳",
+      "Panama": "巴拿马"
+    };
+
+    function teamLabel(name) {
+      return TEAM_ZH[name] || name;
+    }
+
+    const GROUPS = Object.fromEntries("ABCDEFGHIJKL".split("").map(letter => [
+      letter,
+      TEAM_DATA.filter(team => team.group === letter).map(team => team.name)
+    ]));
+
+    const TEAMS = Object.fromEntries(TEAM_DATA.map(team => [team.name, team]));
+    const HOSTS = new Set(TEAM_DATA.filter(team => team.host).map(team => team.name));
+    const FIXTURE_PATTERN = [[0, 1], [2, 3], [3, 1], [0, 2], [3, 0], [1, 2]];
+    const THIRD_SLOTS = ["1A", "1B", "1D", "1E", "1G", "1I", "1K", "1L"];
+    const THIRD_MAP = Object.fromEntries(THIRD_TABLE.split(";").map(pair => {
+      const [key, opponents] = pair.split(":");
+      return [key, Object.fromEntries(THIRD_SLOTS.map((slot, index) => [slot, opponents[index]]))];
+    }));
+
+    const R32 = [
+      { id: 73, a: "2A", b: "2B" },
+      { id: 74, a: "1E", thirdSlot: "1E" },
+      { id: 75, a: "1F", b: "2C" },
+      { id: 76, a: "1C", b: "2F" },
+      { id: 77, a: "1I", thirdSlot: "1I" },
+      { id: 78, a: "2E", b: "2I" },
+      { id: 79, a: "1A", thirdSlot: "1A" },
+      { id: 80, a: "1L", thirdSlot: "1L" },
+      { id: 81, a: "1D", thirdSlot: "1D" },
+      { id: 82, a: "1G", thirdSlot: "1G" },
+      { id: 83, a: "2K", b: "2L" },
+      { id: 84, a: "1H", b: "2J" },
+      { id: 85, a: "1B", thirdSlot: "1B" },
+      { id: 86, a: "1J", b: "2H" },
+      { id: 87, a: "1K", thirdSlot: "1K" },
+      { id: 88, a: "2D", b: "2G" }
+    ];
+
+    const KNOCKOUT = [
+      { id: 89, a: 74, b: 77, stage: "R16" },
+      { id: 90, a: 73, b: 75, stage: "R16" },
+      { id: 91, a: 76, b: 78, stage: "R16" },
+      { id: 92, a: 79, b: 80, stage: "R16" },
+      { id: 93, a: 83, b: 84, stage: "R16" },
+      { id: 94, a: 81, b: 82, stage: "R16" },
+      { id: 95, a: 86, b: 88, stage: "R16" },
+      { id: 96, a: 85, b: 87, stage: "R16" },
+      { id: 97, a: 89, b: 90, stage: "QF" },
+      { id: 98, a: 93, b: 94, stage: "QF" },
+      { id: 99, a: 91, b: 92, stage: "QF" },
+      { id: 100, a: 95, b: 96, stage: "QF" },
+      { id: 101, a: 97, b: 98, stage: "SF" },
+      { id: 102, a: 99, b: 100, stage: "SF" },
+      { id: 104, a: 101, b: 102, stage: "Final" }
+    ];
+
+    const KNOWN_RESULTS = {
+      "A-1": [2, 0],
+      "A-2": [2, 1]
+    };
+
+    const RESULTS_API_URL = "https://worldcup26.ir/get/games";
+    const TEAM_NAME_ALIASES = {
+      "bosnia herzegovina": "bosnia and herzegovina",
+      "cape verde islands": "cape verde",
+      "congo dr": "dr congo",
+      "cote d ivoire": "ivory coast",
+      "czechia": "czech republic",
+      "democratic republic of congo": "dr congo",
+      "d r congo": "dr congo",
+      "korea republic": "south korea",
+      "republic of korea": "south korea",
+      "turkiye": "turkey",
+      "usa": "united states",
+      "united states of america": "united states"
+    };
+
+    let knownResults = { ...KNOWN_RESULTS };
+    let resultsSync = {
+      status: "使用本地内置赛果",
+      updatedAt: null,
+      matched: Object.keys(KNOWN_RESULTS).length,
+      source: "本地内置"
+    };
+    let lastResultsSignature = resultsSignature(knownResults);
+    let lastRows = [];
+
+    function config() {
+      return {
+        sims: clamp(parseInt(document.getElementById("sims").value, 10) || 20000, 1000, 100000),
+        seed: parseInt(document.getElementById("seed").value, 10) || 20260612,
+        goals: clamp(parseFloat(document.getElementById("goals").value) || 2.35, 1.6, 4),
+        scale: clamp(parseFloat(document.getElementById("scale").value) || 420, 250, 650),
+        hostBoost: clamp(parseFloat(document.getElementById("hostBoost").value) || 35, 0, 120),
+        margin: clamp(parseFloat(document.getElementById("margin").value) || 0, 0, 20) / 100,
+        useKnown: document.getElementById("useKnown").checked
+      };
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function resultsSignature(results) {
+      return Object.keys(results).sort().map(key => `${key}:${results[key].join("-")}`).join("|");
+    }
+
+    function normalizeTeamName(name) {
+      const normalized = String(name || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/&/g, " and ")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+      return TEAM_NAME_ALIASES[normalized] || normalized;
+    }
+
+    function scheduledFixtures() {
+      const fixtures = [];
+      for (const [group, teams] of Object.entries(GROUPS)) {
+        FIXTURE_PATTERN.forEach(([a, b], index) => {
+          fixtures.push({
+            id: `${group}-${index + 1}`,
+            group,
+            teamA: teams[a],
+            teamB: teams[b]
+          });
+        });
+      }
+      return fixtures;
+    }
+
+    function fixtureLookupByTeams() {
+      const lookup = new Map();
+      scheduledFixtures().forEach(fixture => {
+        const group = fixture.group.toUpperCase();
+        const home = normalizeTeamName(fixture.teamA);
+        const away = normalizeTeamName(fixture.teamB);
+        lookup.set(`${group}|${home}|${away}`, { id: fixture.id, reversed: false });
+        lookup.set(`${group}|${away}|${home}`, { id: fixture.id, reversed: true });
+      });
+      return lookup;
+    }
+
+    function updateSyncStatus() {
+      const count = Object.keys(knownResults).length;
+      const statusText = document.getElementById("syncStatusText");
+      const statusMeta = document.getElementById("syncStatusMeta");
+      const resultPill = document.getElementById("resultCountPill");
+      if (statusText) statusText.textContent = resultsSync.status;
+      if (statusMeta) {
+        statusMeta.textContent = resultsSync.updatedAt
+          ? `最后同步 ${resultsSync.updatedAt.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`
+          : `${resultsSync.source}已加载`;
+      }
+      if (resultPill) resultPill.textContent = `已赛 ${count} 场`;
+    }
+
+    function applyExternalResults(games) {
+      const lookup = fixtureLookupByTeams();
+      const nextResults = { ...KNOWN_RESULTS };
+      let finished = 0;
+      let matched = 0;
+
+      games.forEach(game => {
+        if (String(game.type || "").toLowerCase() !== "group") return;
+        const isFinished = String(game.finished || "").toUpperCase() === "TRUE" || String(game.time_elapsed || "").toLowerCase() === "finished";
+        if (!isFinished) return;
+
+        const homeScore = Number(game.home_score);
+        const awayScore = Number(game.away_score);
+        if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return;
+
+        finished += 1;
+        const group = String(game.group || "").toUpperCase();
+        const home = normalizeTeamName(game.home_team_name_en);
+        const away = normalizeTeamName(game.away_team_name_en);
+        const match = lookup.get(`${group}|${home}|${away}`);
+        if (!match) return;
+
+        nextResults[match.id] = match.reversed ? [awayScore, homeScore] : [homeScore, awayScore];
+        matched += 1;
+      });
+
+      const nextSignature = resultsSignature(nextResults);
+      const changed = nextSignature !== lastResultsSignature;
+      knownResults = nextResults;
+      lastResultsSignature = nextSignature;
+      resultsSync = {
+        status: matched > 0 ? `线上赛果已同步 ${matched} 场` : "线上接口暂未匹配到已赛结果",
+        updatedAt: new Date(),
+        matched,
+        finished,
+        source: "线上赛果"
+      };
+      return changed;
+    }
+
+    function knownResultsSummary() {
+      const fixtures = buildFixtures().filter(fixture => fixture.known);
+      if (!fixtures.length) return "暂无已赛结果，按赛前模型重跑。";
+      const preview = fixtures.slice(0, 4).map(fixture => `${teamLabel(fixture.teamA)} ${fixture.known[0]}-${fixture.known[1]} ${teamLabel(fixture.teamB)}`);
+      const suffix = fixtures.length > preview.length ? " 等" : "";
+      return `已纳入 ${fixtures.length} 场已赛结果：${preview.join("，")}${suffix}。`;
+    }
+
+    function populateMatchSelectors(preserveSelection = true) {
+      const fixtures = buildFixtures();
+      const options = fixtures
+        .map(fixture => `<option value="${fixture.id}">${fixtureLabel(fixture)}</option>`)
+        .join("");
+      const futureFixtures = fixtures.filter(fixture => !fixture.known);
+      const matchOne = document.getElementById("matchOne");
+      const matchTwo = document.getElementById("matchTwo");
+      const previousOne = matchOne.value;
+      const previousTwo = matchTwo.value;
+      const ids = new Set(fixtures.map(fixture => fixture.id));
+
+      matchOne.innerHTML = options;
+      matchTwo.innerHTML = options;
+      matchOne.value = preserveSelection && ids.has(previousOne) ? previousOne : (futureFixtures[0] || fixtures[0]).id;
+      matchTwo.value = preserveSelection && ids.has(previousTwo) ? previousTwo : (futureFixtures[1] || fixtures[1] || fixtures[0]).id;
+    }
+
+    async function syncLatestResults(silent = false) {
+      if (!silent) {
+        resultsSync = { ...resultsSync, status: "正在同步线上赛果" };
+        updateSyncStatus();
+      }
+
+      try {
+        const response = await fetch(`${RESULTS_API_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const games = Array.isArray(data) ? data : data.games;
+        if (!Array.isArray(games)) throw new Error("赛果格式异常");
+
+        const changed = applyExternalResults(games);
+        updateSyncStatus();
+        if (changed) {
+          populateMatchSelectors(true);
+          renderMatchPredict();
+          runSimulation();
+        } else {
+          renderFixtures(config());
+          renderVerify(config());
+          const logLine = document.getElementById("logLine");
+          if (logLine) {
+            logLine.textContent = config().useKnown ? knownResultsSummary() : "未纳入已赛结果，按赛前模型重跑。";
+          }
+        }
+      } catch (error) {
+        resultsSync = {
+          ...resultsSync,
+          status: "线上赛果暂不可用，使用本地兜底",
+          updatedAt: resultsSync.updatedAt,
+          source: "本地兜底"
+        };
+        updateSyncStatus();
+      }
+    }
+
+    function mulberry32(seed) {
+      let value = seed >>> 0;
+      return function rand() {
+        value += 0x6D2B79F5;
+        let t = value;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function lambdas(teamA, teamB, cfg) {
+      const a = TEAMS[teamA];
+      const b = TEAMS[teamB];
+      const boost = (HOSTS.has(teamA) ? cfg.hostBoost : 0) - (HOSTS.has(teamB) ? cfg.hostBoost : 0);
+      const ratio = Math.exp((a.elo - b.elo + boost) / cfg.scale);
+      const lambdaA = cfg.goals * ratio / (1 + ratio);
+      const lambdaB = cfg.goals / (1 + ratio);
+      return [lambdaA, lambdaB];
+    }
+
+    function poisson(lambda, rand) {
+      const limit = Math.exp(-lambda);
+      let p = 1;
+      let k = 0;
+      do {
+        k += 1;
+        p *= rand();
+      } while (p > limit);
+      return k - 1;
+    }
+
+    function poissonPmf(lambda, maxGoals) {
+      const arr = [];
+      arr[0] = Math.exp(-lambda);
+      for (let i = 1; i <= maxGoals; i++) arr[i] = arr[i - 1] * lambda / i;
+      return arr;
+    }
+
+    function scoreDistribution(lambdaA, lambdaB, max = 10) {
+      const pA = poissonPmf(lambdaA, max);
+      const pB = poissonPmf(lambdaB, max);
+      let home = 0, draw = 0, away = 0, over25 = 0, btts = 0, lowGoals = 0, midGoals = 0, highGoals = 0;
+      const scores = [];
+      for (let i = 0; i <= max; i++) {
+        for (let j = 0; j <= max; j++) {
+          const p = pA[i] * pB[j];
+          if (i > j) home += p;
+          else if (i === j) draw += p;
+          else away += p;
+          if (i + j >= 3) over25 += p;
+          if (i > 0 && j > 0) btts += p;
+          if (i + j <= 1) lowGoals += p;
+          else if (i + j <= 3) midGoals += p;
+          else highGoals += p;
+          scores.push({ a: i, b: j, p });
+        }
+      }
+      const total = home + draw + away;
+      scores.sort((a, b) => b.p - a.p);
+      return {
+        lambdaA, lambdaB,
+        home: home / total,
+        draw: draw / total,
+        away: away / total,
+        over25,
+        btts,
+        lowGoals,
+        midGoals,
+        highGoals,
+        score: `${scores[0].a}-${scores[0].b}`,
+        altScore: `${scores[1].a}-${scores[1].b}`,
+        thirdScore: `${scores[2].a}-${scores[2].b}`,
+        scoreProb: scores[0].p,
+        altScoreProb: scores[1].p,
+        thirdScoreProb: scores[2].p,
+        scores
+      };
+    }
+
+    function matchModel(teamA, teamB, cfg) {
+      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg);
+      const full = scoreDistribution(lambdaA, lambdaB, 10);
+      return {
+        ...full,
+        half: scoreDistribution(lambdaA * 0.44, lambdaB * 0.44, 6),
+        secondHalf: scoreDistribution(lambdaA * 0.56, lambdaB * 0.56, 6)
+      };
+    }
+
+    function simScore(teamA, teamB, cfg, rand) {
+      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg);
+      return [poisson(lambdaA, rand), poisson(lambdaB, rand)];
+    }
+
+    function knockoutWinner(teamA, teamB, cfg, rand) {
+      const [aScore, bScore] = simScore(teamA, teamB, cfg, rand);
+      if (aScore > bScore) return teamA;
+      if (bScore > aScore) return teamB;
+      const a = TEAMS[teamA];
+      const b = TEAMS[teamB];
+      const boost = (HOSTS.has(teamA) ? cfg.hostBoost : 0) - (HOSTS.has(teamB) ? cfg.hostBoost : 0);
+      const p = 1 / (1 + Math.pow(10, -((a.elo - b.elo + boost) / 400)));
+      return rand() < p ? teamA : teamB;
+    }
+
+    function buildFixtures() {
+      return scheduledFixtures().map(fixture => ({
+        ...fixture,
+        known: knownResults[fixture.id] || null
+      }));
+    }
+
+    function fixtureLabel(fixture) {
+      const known = fixture.known ? "（已赛）" : "";
+      return `${fixture.group}组 第${fixture.id.split("-")[1]}场：${teamLabel(fixture.teamA)} 对 ${teamLabel(fixture.teamB)}${known}`;
+    }
+
+    function fixtureById(id) {
+      return buildFixtures().find(fixture => fixture.id === id) || buildFixtures()[0];
+    }
+
+    function rangeText(value, unit, wide = 0.75) {
+      const low = Math.max(0, Math.floor(value - wide));
+      const high = Math.max(low, Math.ceil(value + wide));
+      return low === high ? `${low}${unit}` : `${low}-${high}${unit}`;
+    }
+
+    function eventForecast(teamA, teamB, cfg) {
+      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg);
+      const eloGap = Math.abs(TEAMS[teamA].elo - TEAMS[teamB].elo);
+      const closeness = 1 - Math.min(eloGap / 520, 0.75);
+      const totalGoals = lambdaA + lambdaB;
+      const yellow = 3.05 + closeness * 0.65 + Math.min(totalGoals, 3) * 0.12;
+      const offside = 2.35 + totalGoals * 0.48 + Math.min(eloGap / 600, 0.7);
+      const corners = 7.1 + totalGoals * 0.9 + closeness * 0.55;
+      const fouls = 20.5 + closeness * 3.2;
+      const redProb = clamp(0.10 + closeness * 0.055 + Math.max(totalGoals - 2.2, 0) * 0.018, 0.08, 0.22);
+      return {
+        first: {
+          yellow: yellow * 0.43,
+          red: redProb * 0.35,
+          offside: offside * 0.46,
+          corners: corners * 0.47,
+          fouls: fouls * 0.46
+        },
+        second: {
+          yellow: yellow * 0.57,
+          red: redProb * 0.65,
+          offside: offside * 0.54,
+          corners: corners * 0.53,
+          fouls: fouls * 0.54
+        },
+        redProb,
+        tension: closeness > 0.68 ? "胶着偏高" : closeness > 0.45 ? "中等" : "强弱分明"
+      };
+    }
+
+    function blankTable(group) {
+      return Object.fromEntries(GROUPS[group].map(name => [
+        name,
+        { name, group, pts: 0, gf: 0, ga: 0, gd: 0, wins: 0 }
+      ]));
+    }
+
+    function addResult(table, teamA, teamB, goalsA, goalsB) {
+      table[teamA].gf += goalsA;
+      table[teamA].ga += goalsB;
+      table[teamB].gf += goalsB;
+      table[teamB].ga += goalsA;
+      table[teamA].gd = table[teamA].gf - table[teamA].ga;
+      table[teamB].gd = table[teamB].gf - table[teamB].ga;
+      if (goalsA > goalsB) {
+        table[teamA].pts += 3;
+        table[teamA].wins += 1;
+      } else if (goalsB > goalsA) {
+        table[teamB].pts += 3;
+        table[teamB].wins += 1;
+      } else {
+        table[teamA].pts += 1;
+        table[teamB].pts += 1;
+      }
+    }
+
+    function rankTeams(rows) {
+      return [...rows].sort((a, b) =>
+        b.pts - a.pts ||
+        b.gd - a.gd ||
+        b.gf - a.gf ||
+        b.wins - a.wins ||
+        TEAMS[b.name].elo - TEAMS[a.name].elo
+      );
+    }
+
+    function simulateTournament(cfg, rand) {
+      const fixtures = buildFixtures();
+      const tables = Object.fromEntries(Object.keys(GROUPS).map(group => [group, blankTable(group)]));
+
+      for (const fixture of fixtures) {
+        const score = cfg.useKnown && fixture.known ? fixture.known : simScore(fixture.teamA, fixture.teamB, cfg, rand);
+        addResult(tables[fixture.group], fixture.teamA, fixture.teamB, score[0], score[1]);
+      }
+
+      const slots = {};
+      const thirdRows = [];
+      const positions = {};
+      for (const group of Object.keys(GROUPS)) {
+        const ranked = rankTeams(Object.values(tables[group]));
+        ranked.forEach((row, index) => positions[row.name] = index + 1);
+        slots[`1${group}`] = ranked[0].name;
+        slots[`2${group}`] = ranked[1].name;
+        thirdRows.push(ranked[2]);
+      }
+
+      const topThird = rankTeams(thirdRows).slice(0, 8);
+      const topThirdByGroup = Object.fromEntries(topThird.map(row => [row.group, row.name]));
+      const key = topThird.map(row => row.group).sort().join("");
+      const thirdAssignments = THIRD_MAP[key] || {};
+      for (const slot of THIRD_SLOTS) {
+        const group = thirdAssignments[slot];
+        if (group && topThirdByGroup[group]) slots[`3${group}`] = topThirdByGroup[group];
+      }
+
+      const winners = {};
+      const reached = { r32: [], r16: [], qf: [], sf: [], final: [] };
+      for (const group of Object.keys(GROUPS)) {
+        reached.r32.push(slots[`1${group}`], slots[`2${group}`]);
+      }
+      topThird.forEach(row => reached.r32.push(row.name));
+
+      for (const match of R32) {
+        const teamA = slots[match.a];
+        const group = match.thirdSlot ? thirdAssignments[match.thirdSlot] : null;
+        const teamB = match.thirdSlot ? topThirdByGroup[group] : slots[match.b];
+        const winner = knockoutWinner(teamA, teamB, cfg, rand);
+        winners[match.id] = winner;
+        reached.r16.push(winner);
+      }
+
+      for (const match of KNOCKOUT) {
+        const teamA = winners[match.a];
+        const teamB = winners[match.b];
+        const winner = knockoutWinner(teamA, teamB, cfg, rand);
+        winners[match.id] = winner;
+        if (match.stage === "R16") reached.qf.push(winner);
+        if (match.stage === "QF") reached.sf.push(winner);
+        if (match.stage === "SF") reached.final.push(winner);
+      }
+
+      return {
+        champion: winners[104],
+        positions,
+        reached
+      };
+    }
+
+    function emptyStats() {
+      return Object.fromEntries(TEAM_DATA.map(team => [team.name, {
+        name: team.name,
+        group: team.group,
+        elo: team.elo,
+        champion: 0,
+        final: 0,
+        sf: 0,
+        qf: 0,
+        r16: 0,
+        r32: 0,
+        first: 0,
+        top2: 0,
+        top3: 0
+      }]));
+    }
+
+    function runSimulation() {
+      const cfg = config();
+      const rand = mulberry32(cfg.seed);
+      const stats = emptyStats();
+      const started = performance.now();
+
+      for (let i = 0; i < cfg.sims; i++) {
+        const result = simulateTournament(cfg, rand);
+        stats[result.champion].champion += 1;
+        Object.entries(result.positions).forEach(([team, pos]) => {
+          if (pos === 1) stats[team].first += 1;
+          if (pos <= 2) stats[team].top2 += 1;
+          if (pos <= 3) stats[team].top3 += 1;
+        });
+        result.reached.r32.forEach(team => stats[team].r32 += 1);
+        result.reached.r16.forEach(team => stats[team].r16 += 1);
+        result.reached.qf.forEach(team => stats[team].qf += 1);
+        result.reached.sf.forEach(team => stats[team].sf += 1);
+        result.reached.final.forEach(team => stats[team].final += 1);
+      }
+
+      const elapsed = performance.now() - started;
+      lastRows = Object.values(stats)
+        .map(row => ({
+          ...row,
+          championP: row.champion / cfg.sims,
+          finalP: row.final / cfg.sims,
+          sfP: row.sf / cfg.sims,
+          qfP: row.qf / cfg.sims,
+          r16P: row.r16 / cfg.sims,
+          r32P: row.r32 / cfg.sims,
+          firstP: row.first / cfg.sims,
+          top2P: row.top2 / cfg.sims,
+          top3P: row.top3 / cfg.sims
+        }))
+        .sort((a, b) => b.championP - a.championP || b.finalP - a.finalP || b.elo - a.elo);
+
+      renderResults(lastRows, cfg, elapsed);
+      renderFixtures(cfg);
+      renderGroups(lastRows);
+      renderVerify(cfg);
+      renderMatchPredict();
+    }
+
+    function pct(value) {
+      return `${(value * 100).toFixed(value >= 0.1 ? 1 : 2)}%`;
+    }
+
+    function odds(value, margin = 0) {
+      if (value <= 0) return "999+";
+      const decimal = 1 / (value * (1 + margin));
+      if (decimal >= 1000) return "999+";
+      return decimal.toFixed(decimal >= 10 ? 1 : 2);
+    }
+
+    function formatTopScores(model, count = 3) {
+      return model.scores.slice(0, count)
+        .map(score => `${score.a}-${score.b} ${pct(score.p)}`)
+        .join(" / ");
+    }
+
+    function topScoreRows(model, count = 5) {
+      return model.scores.slice(0, count).map((score, index) => `
+        <tr>
+          <td class="num">第${index + 1}</td>
+          <td class="num">${score.a}-${score.b}</td>
+          <td class="num">${pct(score.p)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderResults(rows, cfg, elapsed) {
+      const top = rows[0];
+      const tbody = document.querySelector("#champTable tbody");
+      tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+          <td class="num">${index + 1}</td>
+          <td class="team">${teamLabel(row.name)}</td>
+          <td>${row.group}</td>
+          <td class="num">${row.elo}</td>
+          <td class="num"><div class="barcell"><span>${pct(row.championP)}</span><div class="bar"><span style="width:${Math.min(row.championP * 100, 100)}%"></span></div></div></td>
+          <td class="num">${pct(row.finalP)}</td>
+          <td class="num">${pct(row.sfP)}</td>
+          <td class="num">${pct(row.qfP)}</td>
+          <td class="num">${pct(row.r32P)}</td>
+          <td class="num">${odds(row.championP)}</td>
+          <td class="num">${odds(row.championP, cfg.margin)}</td>
+        </tr>
+      `).join("");
+
+      document.getElementById("kpis").innerHTML = [
+        ["头号热门", teamLabel(top.name), `${pct(top.championP)} / 公允 ${odds(top.championP)}`],
+        ["模型前四", rows.slice(0, 4).map(row => teamLabel(row.name)).join(" / "), "按夺冠概率排序"],
+        ["最高 Elo", teamLabel([...rows].sort((a, b) => b.elo - a.elo)[0].name), `${Math.max(...rows.map(row => row.elo))}`],
+        ["模拟耗时", `${(elapsed / 1000).toFixed(2)}s`, `${cfg.sims.toLocaleString()} 次`]
+      ].map(([label, value, hint]) => `
+        <div class="kpi">
+          <div class="label">${label}</div>
+          <div class="value">${value}</div>
+          <div class="hint">${hint}</div>
+        </div>
+      `).join("");
+
+      document.getElementById("runMeta").textContent = `${cfg.sims.toLocaleString()} 次模拟 / 种子 ${cfg.seed}`;
+      document.getElementById("logLine").textContent = cfg.useKnown
+        ? knownResultsSummary()
+        : "未纳入已赛结果，按赛前模型重跑。";
+    }
+
+    function renderFixtures(cfg) {
+      const tbody = document.querySelector("#fixturesTable tbody");
+      tbody.innerHTML = buildFixtures().map(fixture => {
+        const model = matchModel(fixture.teamA, fixture.teamB, cfg);
+        const knownScore = cfg.useKnown && fixture.known ? `${fixture.known[0]}-${fixture.known[1]}` : null;
+        return `
+          <tr>
+            <td>${fixture.group}</td>
+            <td><span class="team">${teamLabel(fixture.teamA)}</span> 对 <span class="team">${teamLabel(fixture.teamB)}</span>${knownScore ? " <span class='muted small'>已赛</span>" : ""}</td>
+            <td class="num">${knownScore || formatTopScores(model, 3)}</td>
+            <td class="num">${pct(model.home)}</td>
+            <td class="num">${pct(model.draw)}</td>
+            <td class="num">${pct(model.away)}</td>
+            <td class="num">${odds(model.home, cfg.margin)}</td>
+            <td class="num">${odds(model.draw, cfg.margin)}</td>
+            <td class="num">${odds(model.away, cfg.margin)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderGroups(rows) {
+      const tbody = document.querySelector("#groupsTable tbody");
+      const ordered = [...rows].sort((a, b) => a.group.localeCompare(b.group) || b.top2P - a.top2P);
+      tbody.innerHTML = ordered.map(row => `
+        <tr>
+          <td>${row.group}</td>
+          <td class="team">${teamLabel(row.name)}</td>
+          <td class="num">${pct(row.firstP)}</td>
+          <td class="num">${pct(row.top2P)}</td>
+          <td class="num">${pct(row.top3P)}</td>
+          <td class="num">${pct(row.r32P)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function scoreText(score) {
+      return `${score[0]}-${score[1]}`;
+    }
+
+    function scoreOutcome(score) {
+      if (score[0] > score[1]) return "主胜";
+      if (score[0] < score[1]) return "客胜";
+      return "平局";
+    }
+
+    function modelOutcome(model) {
+      const options = [
+        ["主胜", model.home],
+        ["平局", model.draw],
+        ["客胜", model.away]
+      ].sort((a, b) => b[1] - a[1]);
+      return options[0][0];
+    }
+
+    function hitMark(ok) {
+      return ok ? "命中" : "未中";
+    }
+
+    function parseScore(text) {
+      const [a, b] = text.split("-").map(Number);
+      return [a || 0, b || 0];
+    }
+
+    function scoreProbability(distribution, a, b) {
+      const found = distribution.scores.find(score => score.a === a && score.b === b);
+      return found ? found.p : 0;
+    }
+
+    function scoreRank(model, text) {
+      const index = model.scores.findIndex(score => `${score.a}-${score.b}` === text);
+      return index >= 0 ? index + 1 : null;
+    }
+
+    function scoreProbabilityByText(model, text) {
+      const found = model.scores.find(score => `${score.a}-${score.b}` === text);
+      return found ? found.p : 0;
+    }
+
+    function bestScorePath(model, fullScoreText) {
+      const [fullA, fullB] = parseScore(fullScoreText);
+      let best = { half: "0-0", second: `${fullA}-${fullB}`, p: 0 };
+      for (let a = 0; a <= fullA; a++) {
+        for (let b = 0; b <= fullB; b++) {
+          const secondA = fullA - a;
+          const secondB = fullB - b;
+          const p = scoreProbability(model.half, a, b) * scoreProbability(model.secondHalf, secondA, secondB);
+          if (p > best.p) best = { half: `${a}-${b}`, second: `${secondA}-${secondB}`, p };
+        }
+      }
+      return best;
+    }
+
+    function renderVerify(cfg) {
+      const verified = buildFixtures().filter(fixture => fixture.known);
+      const rows = verified.map(fixture => {
+        const model = matchModel(fixture.teamA, fixture.teamB, cfg);
+        const actual = scoreText(fixture.known);
+        const predictedOutcome = modelOutcome(model);
+        const actualOutcome = scoreOutcome(fixture.known);
+        const actualOver25 = fixture.known[0] + fixture.known[1] >= 3;
+        const modelOver25 = model.over25 >= 0.5;
+        const actualBtts = fixture.known[0] > 0 && fixture.known[1] > 0;
+        const modelBtts = model.btts >= 0.5;
+        const actualRank = scoreRank(model, actual);
+        return {
+          fixture,
+          model,
+          actual,
+          actualRank,
+          actualProb: scoreProbabilityByText(model, actual),
+          outcomeHit: predictedOutcome === actualOutcome,
+          exactHit: model.score === actual,
+          top2Hit: model.score === actual || model.altScore === actual,
+          top3Hit: model.score === actual || model.altScore === actual || model.thirdScore === actual,
+          overHit: modelOver25 === actualOver25,
+          bttsHit: modelBtts === actualBtts,
+          predictedOutcome,
+          actualOutcome,
+          modelOver25,
+          actualOver25,
+          modelBtts,
+          actualBtts
+        };
+      });
+
+      const count = Math.max(rows.length, 1);
+      const rate = key => rows.filter(row => row[key]).length / count;
+      document.getElementById("verifyNote").textContent = `验真只统计已经有真实赛果的比赛。当前纳入 ${rows.length} 场，来源：${resultsSync.source}。`;
+      document.getElementById("verifyKpis").innerHTML = [
+        ["已赛样本", `${rows.length}场`, "样本很小，仅作校准参考"],
+        ["胜平负方向", pct(rate("outcomeHit")), "看模型方向是否正确"],
+        ["概率第1精确比分", pct(rate("exactHit")), "只看最高概率比分"],
+        ["前3比分命中", pct(rate("top3Hit")), "前三个概率比分任一命中"]
+      ].map(([label, value, hint]) => `
+        <div class="kpi">
+          <div class="label">${label}</div>
+          <div class="value">${value}</div>
+          <div class="hint">${hint}</div>
+        </div>
+      `).join("");
+
+      document.querySelector("#verifyTable tbody").innerHTML = rows.map(row => `
+        <tr>
+          <td>${teamLabel(row.fixture.teamA)} 对 ${teamLabel(row.fixture.teamB)}</td>
+          <td class="num">${row.actual}</td>
+          <td class="num">${row.model.score}</td>
+          <td class="num">${row.model.altScore}</td>
+          <td class="num">${row.model.thirdScore}</td>
+          <td class="num">${row.actualRank ? `第${row.actualRank}<br><span class="small muted">${pct(row.actualProb)}</span>` : "10球外"}</td>
+          <td class="num">${hitMark(row.outcomeHit)}<br><span class="small muted">预测${row.predictedOutcome} / 实际${row.actualOutcome}</span></td>
+          <td class="num">${hitMark(row.exactHit)}</td>
+          <td class="num">${hitMark(row.top2Hit)}</td>
+          <td class="num">${hitMark(row.top3Hit)}</td>
+          <td class="num">${hitMark(row.overHit)}<br><span class="small muted">预测${row.modelOver25 ? "大" : "小"} / 实际${row.actualOver25 ? "大" : "小"}</span></td>
+          <td class="num">${hitMark(row.bttsHit)}<br><span class="small muted">预测${row.modelBtts ? "是" : "否"} / 实际${row.actualBtts ? "是" : "否"}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderMatchCard(fixture, cfg, title) {
+      const teamA = fixture.teamA;
+      const teamB = fixture.teamB;
+      const model = matchModel(teamA, teamB, cfg);
+      const events = eventForecast(teamA, teamB, cfg);
+      const knownScore = cfg.useKnown && fixture.known ? `${fixture.known[0]}-${fixture.known[1]}` : null;
+      const primaryScore = knownScore || model.score;
+      const primaryLabel = knownScore ? "已赛比分" : "概率第1";
+      const path = bestScorePath(model, primaryScore);
+      return `
+        <div class="match-card">
+          <h3>${title}｜${teamLabel(teamA)} 对 ${teamLabel(teamB)}</h3>
+          <div class="small muted">${fixture.group}组｜期望进球 ${model.lambdaA.toFixed(2)} - ${model.lambdaB.toFixed(2)}｜节奏判断：${events.tension}</div>
+          <div class="score-options">
+            <div class="score-option">
+              <span class="muted small">${knownScore ? primaryLabel : "概率第1"}</span>
+              <strong>${knownScore ? primaryScore : model.score}</strong>
+              <span class="small muted">${knownScore ? "模型仍给出赛前分布" : `命中概率约 ${pct(model.scoreProb)}`}</span>
+            </div>
+            <div class="score-option">
+              <span class="muted small">概率第2</span>
+              <strong>${model.altScore}</strong>
+              <span class="small muted">命中概率约 ${pct(model.altScoreProb)}</span>
+            </div>
+            <div class="score-option">
+              <span class="muted small">概率第3</span>
+              <strong>${model.thirdScore}</strong>
+              <span class="small muted">命中概率约 ${pct(model.thirdScoreProb)}</span>
+            </div>
+          </div>
+          <div class="table-wrap" style="margin-top:10px">
+            <table class="event-table">
+              <thead>
+                <tr><th>排序</th><th>比分</th><th>命中概率</th></tr>
+              </thead>
+              <tbody>${topScoreRows(model, 5)}</tbody>
+            </table>
+          </div>
+          <div class="odds-grid">
+            <div class="odd"><div class="o-label">主胜</div><div class="o-value">${pct(model.home)}</div><div class="small muted">赔率 ${odds(model.home, cfg.margin)}</div></div>
+            <div class="odd"><div class="o-label">平局</div><div class="o-value">${pct(model.draw)}</div><div class="small muted">赔率 ${odds(model.draw, cfg.margin)}</div></div>
+            <div class="odd"><div class="o-label">客胜</div><div class="o-value">${pct(model.away)}</div><div class="small muted">赔率 ${odds(model.away, cfg.margin)}</div></div>
+          </div>
+          <div class="odds-grid">
+            <div class="odd"><div class="o-label">0-1球</div><div class="o-value">${pct(model.lowGoals)}</div><div class="small muted">低比分区间</div></div>
+            <div class="odd"><div class="o-label">2-3球</div><div class="o-value">${pct(model.midGoals)}</div><div class="small muted">常规区间</div></div>
+            <div class="odd"><div class="o-label">4球以上</div><div class="o-value">${pct(model.highGoals)}</div><div class="small muted">大比分概率</div></div>
+          </div>
+          <span class="risk-chip">半全场路径：${path.half} → ${primaryScore}（下半场 ${path.second}）</span>
+          <div class="table-wrap" style="margin-top:10px">
+            <table class="event-table">
+              <thead>
+                <tr><th>项目</th><th>上半场预测</th><th>下半场预测</th><th>备注</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>比分</td><td>${path.half}</td><td>${path.second}（下半场进球）</td><td>全场概率第1 ${primaryScore}，概率第2 ${model.altScore}</td></tr>
+                <tr><td>黄牌</td><td>${rangeText(events.first.yellow, "张")}</td><td>${rangeText(events.second.yellow, "张")}</td><td>下半场更容易升温</td></tr>
+                <tr><td>红牌</td><td>${pct(events.first.red)}</td><td>${pct(events.second.red)}</td><td>全场红牌概率约 ${pct(events.redProb)}</td></tr>
+                <tr><td>越位</td><td>${rangeText(events.first.offside, "次", 0.65)}</td><td>${rangeText(events.second.offside, "次", 0.65)}</td><td>领先方回收时会降低</td></tr>
+                <tr><td>角球</td><td>${rangeText(events.first.corners, "个", 1)}</td><td>${rangeText(events.second.corners, "个", 1)}</td><td>落后一方后段角球可能增加</td></tr>
+                <tr><td>犯规</td><td>${rangeText(events.first.fouls, "次", 2)}</td><td>${rangeText(events.second.fouls, "次", 2)}</td><td>只作为强度参考</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMatchPredict() {
+      const cfg = config();
+      const first = fixtureById(document.getElementById("matchOne").value);
+      const second = fixtureById(document.getElementById("matchTwo").value);
+      document.getElementById("matchPredict").innerHTML = [
+        renderMatchCard(first, cfg, "比赛一"),
+        renderMatchCard(second, cfg, "比赛二")
+      ].join("");
+    }
+
+    function exportCsv() {
+      if (!lastRows.length) return;
+      const header = ["排名", "球队", "小组", "Elo评分", "夺冠概率", "进决赛概率", "四强概率", "八强概率", "晋级32强概率", "公允赔率"];
+      const lines = [header.join(",")];
+      lastRows.forEach((row, index) => {
+        lines.push([
+          index + 1,
+          teamLabel(row.name),
+          row.group,
+          row.elo,
+          (row.championP * 100).toFixed(4),
+          (row.finalP * 100).toFixed(4),
+          (row.sfP * 100).toFixed(4),
+          (row.qfP * 100).toFixed(4),
+          (row.r32P * 100).toFixed(4),
+          odds(row.championP)
+        ].join(","));
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "2026世界杯_Elo评分_蒙特卡洛预测.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function init() {
+      populateMatchSelectors(false);
+      updateSyncStatus();
+
+      document.getElementById("runBtn").addEventListener("click", () => {
+        const button = document.getElementById("runBtn");
+        button.disabled = true;
+        button.textContent = "计算中...";
+        setTimeout(() => {
+          runSimulation();
+          button.disabled = false;
+          button.textContent = "运行模拟";
+        }, 20);
+      });
+
+      document.getElementById("exportBtn").addEventListener("click", exportCsv);
+      ["matchOne", "matchTwo", "goals", "scale", "hostBoost", "margin"].forEach(id => {
+        document.getElementById(id).addEventListener("change", () => {
+          renderMatchPredict();
+          renderFixtures(config());
+          renderVerify(config());
+        });
+      });
+      document.getElementById("useKnown").addEventListener("change", () => {
+        renderMatchPredict();
+        renderFixtures(config());
+        renderVerify(config());
+      });
+
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach(node => node.classList.remove("active"));
+          document.querySelectorAll(".tabpane").forEach(node => node.classList.add("hidden"));
+          tab.classList.add("active");
+          document.getElementById(`tab-${tab.dataset.tab}`).classList.remove("hidden");
+        });
+      });
+
+      renderMatchPredict();
+      runSimulation();
+      syncLatestResults();
+      setInterval(() => syncLatestResults(true), 5 * 60 * 1000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
