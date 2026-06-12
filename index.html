@@ -712,7 +712,7 @@
         <input id="seed" type="number" value="20260612" />
       </div>
       <div>
-        <label for="goals">平均总进球</label>
+        <label for="goals">基准总进球</label>
         <input id="goals" type="number" min="1.6" max="4" step="0.05" value="2.35" />
       </div>
       <div>
@@ -722,6 +722,18 @@
       <div>
         <label for="hostBoost">主办国加成</label>
         <input id="hostBoost" type="number" min="0" max="120" step="5" value="35" />
+      </div>
+      <div>
+        <label for="dcRho">低比分相关</label>
+        <input id="dcRho" type="number" min="-0.25" max="0.15" step="0.01" value="-0.08" />
+      </div>
+      <div>
+        <label for="motivation">战意修正</label>
+        <input id="motivation" type="number" min="0" max="1" step="0.05" value="0.65" />
+      </div>
+      <div>
+        <label for="penaltyChaos">点球随机度</label>
+        <input id="penaltyChaos" type="number" min="0" max="1" step="0.05" value="0.65" />
       </div>
       <div>
         <label for="margin">赔率水位</label>
@@ -734,6 +746,10 @@
       <div class="toggle">
         <input id="useKnown" type="checkbox" checked />
         <span>使用已赛结果</span>
+      </div>
+      <div class="toggle">
+        <input id="dynamicElo" type="checkbox" checked />
+        <span>动态锦标赛 Elo</span>
       </div>
       <div>
         <label>&nbsp;</label>
@@ -864,12 +880,12 @@
 
         <div class="panel-body tabpane hidden" id="tab-method">
           <div class="note">投注倍率只代表模型给出的公允赔率。若实际平台赔率高于模型公允赔率，才可能存在模型意义上的“价格更高”；这仍不等于投注建议。</div>
-          <p><strong>比分预测逻辑：</strong>当前比分基于三类数据：国家队 Elo 评分、2026 世界杯实际分组/赛程、已赛比分开关。先计算双方 Elo 差，并给主办国加成；再把总进球期望拆成两队各自的期望进球。</p>
-          <p><strong>具体公式：</strong>设总进球参数为 G，Elo 差为 D，缩放参数为 S，则强弱比 r = exp(D / S)。球队A期望进球 = G * r / (1 + r)，球队B期望进球 = G / (1 + r)。</p>
-          <p><strong>比分排序：</strong>对 0-0 到 10-10 的所有比分逐个计算概率：P(比分 i-j) = 泊松(i, 球队A期望进球) * 泊松(j, 球队B期望进球)，然后按命中概率从高到低排序。页面展示的比分选择就是这个排序，不额外插入某个大比分。</p>
-          <p><strong>为什么常见 1-0 / 1-1：</strong>单个精确比分的概率峰值通常落在低比分，尤其在保守总进球参数下。大比分不是没有，而是分散在很多具体比分里，所以页面保留“4球以上概率”作为尾部风险参考，而不是强推某个大比分。</p>
-          <p><strong>模拟流程：</strong>每轮模拟都会跑完 72 场小组赛、官方 32 强第三名分配、16 强到决赛。淘汰赛 90 分钟打平时，用 Elo 生成加时/点球胜者。</p>
-          <p><strong>小组排序：</strong>积分、净胜球、进球数、胜场、Elo 兜底。真实国际足联规则还会细分相互战绩、公平竞赛和抽签，本工具用于概率估算，未逐项复刻纪律分。</p>
+          <p><strong>比分预测逻辑：</strong>当前比分基于国家队 Elo、2026 世界杯实际分组/赛程、已赛比分开关和自动同步赛果。新版不再把“全场平均总进球”硬拆给两队，而是用 Elo 派生攻击强度和防守强度：球队A期望进球 = 基准进球 * 比赛节奏 * A攻击强度 / B防守强度。</p>
+          <p><strong>低比分修正：</strong>具体比分仍用泊松分布逐个计算，但对 0-0、1-0、0-1、1-1 加入 Dixon-Coles 低比分相关修正。负向相关参数会提高 0-0 和 1-1 的相对权重，同时压低部分过度集中的一球小胜，减少独立泊松对低比分结构的偏差。</p>
+          <p><strong>比分排序：</strong>对 0-0 到 10-10 的所有比分计算修正后概率，再按命中概率从高到低排序。页面展示的比分选择就是这个排序，不额外插入某个大比分。</p>
+          <p><strong>赛事情境：</strong>小组第三轮会根据前两轮积分加入战意修正：已基本锁定出线的球队降低强度，必须抢分的球队提高强度；如果双方平局都较安全，会降低节奏并提高低比分平局权重。</p>
+          <p><strong>模拟流程：</strong>每轮模拟都会跑完 72 场小组赛、官方 32 强第三名分配、16 强到决赛。每条模拟路径会根据比赛结果微调动态锦标赛 Elo，让爆冷或连胜影响后续比赛。</p>
+          <p><strong>淘汰赛与小组排序：</strong>淘汰赛 90 分钟打平后，点球/加时胜率会向 50-50 压缩，避免强队在点球大战中被 Elo 过度偏袒。小组排序补入同分球队之间的胜负关系，再用积分、净胜球、进球数、胜场和 Elo 兜底。</p>
           <p class="source">来源：赛制与赛程参考 <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/scores-fixtures" target="_blank" rel="noreferrer">国际足联赛程页</a>、<a href="https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf" target="_blank" rel="noreferrer">国际足联赛事规程</a>；Elo 参考 <a href="https://www.international-football.net/elo-ratings-table?year=2026&month=06&day=12" target="_blank" rel="noreferrer">国家队 Elo 评分表</a>；已赛比分会优先从 <a href="https://worldcup26.ir/get/games" target="_blank" rel="noreferrer">WorldCup26 公开赛果接口</a>同步，接口不可用时使用本地内置赛果。</p>
         </div>
 
@@ -1075,16 +1091,27 @@
     };
     let lastResultsSignature = resultsSignature(knownResults);
     let lastRows = [];
+    const BASE_ELO_MEAN = TEAM_DATA.reduce((sum, team) => sum + team.elo, 0) / TEAM_DATA.length;
+    let scoreDistCache = new Map();
+
+    function readNumber(id, fallback, min, max) {
+      const raw = parseFloat(document.getElementById(id).value);
+      return clamp(Number.isFinite(raw) ? raw : fallback, min, max);
+    }
 
     function config() {
       return {
         sims: clamp(parseInt(document.getElementById("sims").value, 10) || 20000, 1000, 100000),
         seed: parseInt(document.getElementById("seed").value, 10) || 20260612,
-        goals: clamp(parseFloat(document.getElementById("goals").value) || 2.35, 1.6, 4),
-        scale: clamp(parseFloat(document.getElementById("scale").value) || 420, 250, 650),
-        hostBoost: clamp(parseFloat(document.getElementById("hostBoost").value) || 35, 0, 120),
-        margin: clamp(parseFloat(document.getElementById("margin").value) || 0, 0, 20) / 100,
-        useKnown: document.getElementById("useKnown").checked
+        goals: readNumber("goals", 2.35, 1.6, 4),
+        scale: readNumber("scale", 420, 250, 650),
+        hostBoost: readNumber("hostBoost", 35, 0, 120),
+        dcRho: readNumber("dcRho", -0.08, -0.25, 0.15),
+        motivation: readNumber("motivation", 0.65, 0, 1),
+        penaltyChaos: readNumber("penaltyChaos", 0.65, 0, 1),
+        margin: readNumber("margin", 0, 0, 20) / 100,
+        useKnown: document.getElementById("useKnown").checked,
+        dynamicElo: document.getElementById("dynamicElo").checked
       };
     }
 
@@ -1264,13 +1291,25 @@
       };
     }
 
-    function lambdas(teamA, teamB, cfg) {
-      const a = TEAMS[teamA];
-      const b = TEAMS[teamB];
-      const boost = (HOSTS.has(teamA) ? cfg.hostBoost : 0) - (HOSTS.has(teamB) ? cfg.hostBoost : 0);
-      const ratio = Math.exp((a.elo - b.elo + boost) / cfg.scale);
-      const lambdaA = cfg.goals * ratio / (1 + ratio);
-      const lambdaB = cfg.goals / (1 + ratio);
+    function currentElo(name, state) {
+      return state?.elo?.[name] ?? TEAMS[name].elo;
+    }
+
+    function effectiveElo(name, cfg, state, sideAdjust = 0) {
+      return currentElo(name, state) + (HOSTS.has(name) ? cfg.hostBoost : 0) + sideAdjust;
+    }
+
+    function lambdas(teamA, teamB, cfg, state = null, context = {}) {
+      const eloA = effectiveElo(teamA, cfg, state, context.eloA || 0);
+      const eloB = effectiveElo(teamB, cfg, state, context.eloB || 0);
+      const attackA = Math.exp(((eloA - BASE_ELO_MEAN) * 0.58) / cfg.scale);
+      const attackB = Math.exp(((eloB - BASE_ELO_MEAN) * 0.58) / cfg.scale);
+      const defenseA = Math.exp(((eloA - BASE_ELO_MEAN) * 0.42) / cfg.scale);
+      const defenseB = Math.exp(((eloB - BASE_ELO_MEAN) * 0.42) / cfg.scale);
+      const pace = clamp(context.pace || 1, 0.72, 1.22);
+      const base = cfg.goals / 2;
+      const lambdaA = clamp(base * pace * attackA / defenseB, 0.12, 4.8);
+      const lambdaB = clamp(base * pace * attackB / defenseA, 0.12, 4.8);
       return [lambdaA, lambdaB];
     }
 
@@ -1292,32 +1331,46 @@
       return arr;
     }
 
-    function scoreDistribution(lambdaA, lambdaB, max = 10) {
+    function dixonColesFactor(homeGoals, awayGoals, lambdaA, lambdaB, rho) {
+      if (homeGoals === 0 && awayGoals === 0) return 1 - lambdaA * lambdaB * rho;
+      if (homeGoals === 0 && awayGoals === 1) return 1 + lambdaA * rho;
+      if (homeGoals === 1 && awayGoals === 0) return 1 + lambdaB * rho;
+      if (homeGoals === 1 && awayGoals === 1) return 1 - rho;
+      return 1;
+    }
+
+    function scoreDistribution(lambdaA, lambdaB, max = 10, cfg = config(), context = {}) {
       const pA = poissonPmf(lambdaA, max);
       const pB = poissonPmf(lambdaB, max);
       let home = 0, draw = 0, away = 0, over25 = 0, btts = 0, lowGoals = 0, midGoals = 0, highGoals = 0;
       const scores = [];
+      const rho = clamp((cfg.dcRho ?? -0.08) + (context.dcShift || 0), -0.30, 0.20);
+      let total = 0;
       for (let i = 0; i <= max; i++) {
         for (let j = 0; j <= max; j++) {
-          const p = pA[i] * pB[j];
-          if (i > j) home += p;
-          else if (i === j) draw += p;
-          else away += p;
-          if (i + j >= 3) over25 += p;
-          if (i > 0 && j > 0) btts += p;
-          if (i + j <= 1) lowGoals += p;
-          else if (i + j <= 3) midGoals += p;
-          else highGoals += p;
+          const factor = clamp(dixonColesFactor(i, j, lambdaA, lambdaB, rho), 0.04, 2.80);
+          const p = pA[i] * pB[j] * factor;
+          total += p;
           scores.push({ a: i, b: j, p });
         }
       }
-      const total = home + draw + away;
+      scores.forEach(score => {
+        score.p = score.p / total;
+        if (score.a > score.b) home += score.p;
+        else if (score.a === score.b) draw += score.p;
+        else away += score.p;
+        if (score.a + score.b >= 3) over25 += score.p;
+        if (score.a > 0 && score.b > 0) btts += score.p;
+        if (score.a + score.b <= 1) lowGoals += score.p;
+        else if (score.a + score.b <= 3) midGoals += score.p;
+        else highGoals += score.p;
+      });
       scores.sort((a, b) => b.p - a.p);
       return {
         lambdaA, lambdaB,
-        home: home / total,
-        draw: draw / total,
-        away: away / total,
+        home,
+        draw,
+        away,
         over25,
         btts,
         lowGoals,
@@ -1333,29 +1386,66 @@
       };
     }
 
-    function matchModel(teamA, teamB, cfg) {
-      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg);
-      const full = scoreDistribution(lambdaA, lambdaB, 10);
+    function cachedDistribution(lambdaA, lambdaB, cfg, context = {}, max = 8) {
+      const key = [
+        lambdaA.toFixed(2),
+        lambdaB.toFixed(2),
+        max,
+        cfg.dcRho.toFixed(2),
+        (context.dcShift || 0).toFixed(2)
+      ].join("|");
+      if (!scoreDistCache.has(key)) scoreDistCache.set(key, scoreDistribution(lambdaA, lambdaB, max, cfg, context));
+      return scoreDistCache.get(key);
+    }
+
+    function matchModel(teamA, teamB, cfg, state = null, context = {}) {
+      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg, state, context);
+      const full = scoreDistribution(lambdaA, lambdaB, 10, cfg, context);
       return {
         ...full,
-        half: scoreDistribution(lambdaA * 0.44, lambdaB * 0.44, 6),
-        secondHalf: scoreDistribution(lambdaA * 0.56, lambdaB * 0.56, 6)
+        half: scoreDistribution(lambdaA * 0.44, lambdaB * 0.44, 6, cfg, context),
+        secondHalf: scoreDistribution(lambdaA * 0.56, lambdaB * 0.56, 6, cfg, context)
       };
     }
 
-    function simScore(teamA, teamB, cfg, rand) {
-      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg);
-      return [poisson(lambdaA, rand), poisson(lambdaB, rand)];
+    function sampleScoreFromDistribution(distribution, rand) {
+      let draw = rand();
+      for (const score of distribution.scores) {
+        draw -= score.p;
+        if (draw <= 0) return [score.a, score.b];
+      }
+      const fallback = distribution.scores[distribution.scores.length - 1];
+      return [fallback.a, fallback.b];
     }
 
-    function knockoutWinner(teamA, teamB, cfg, rand) {
-      const [aScore, bScore] = simScore(teamA, teamB, cfg, rand);
+    function simScore(teamA, teamB, cfg, rand, state = null, context = {}) {
+      const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg, state, context);
+      return sampleScoreFromDistribution(cachedDistribution(lambdaA, lambdaB, cfg, context, 8), rand);
+    }
+
+    function eloWinProbability(teamA, teamB, cfg, state, context = {}) {
+      const diff = effectiveElo(teamA, cfg, state, context.eloA || 0) - effectiveElo(teamB, cfg, state, context.eloB || 0);
+      return 1 / (1 + Math.pow(10, -(diff / 400)));
+    }
+
+    function updateDynamicElo(state, teamA, teamB, goalsA, goalsB, cfg, context = {}) {
+      if (!cfg.dynamicElo || !state?.elo) return;
+      const result = goalsA > goalsB ? 1 : goalsA < goalsB ? 0 : 0.5;
+      const expected = eloWinProbability(teamA, teamB, cfg, state, context);
+      const marginFactor = 1 + Math.min(Math.abs(goalsA - goalsB), 4) * 0.22;
+      const delta = 18 * marginFactor * (result - expected);
+      state.elo[teamA] += delta;
+      state.elo[teamB] -= delta;
+    }
+
+    function knockoutWinner(teamA, teamB, cfg, rand, state = null) {
+      const [aScore, bScore] = simScore(teamA, teamB, cfg, rand, state);
+      updateDynamicElo(state, teamA, teamB, aScore, bScore, cfg);
       if (aScore > bScore) return teamA;
       if (bScore > aScore) return teamB;
-      const a = TEAMS[teamA];
-      const b = TEAMS[teamB];
-      const boost = (HOSTS.has(teamA) ? cfg.hostBoost : 0) - (HOSTS.has(teamB) ? cfg.hostBoost : 0);
-      const p = 1 / (1 + Math.pow(10, -((a.elo - b.elo + boost) / 400)));
+      const raw = eloWinProbability(teamA, teamB, cfg, state);
+      const compression = 1 - cfg.penaltyChaos * 0.72;
+      const p = clamp(0.5 + (raw - 0.5) * compression, 0.36, 0.64);
       return rand() < p ? teamA : teamB;
     }
 
@@ -1418,7 +1508,29 @@
       ]));
     }
 
-    function addResult(table, teamA, teamB, goalsA, goalsB) {
+    function groupMatchContext(fixture, table, matchIndex, cfg) {
+      if (matchIndex < 4) return {};
+      const rowA = table[fixture.teamA];
+      const rowB = table[fixture.teamB];
+      const secureA = rowA.pts >= 6;
+      const secureB = rowB.pts >= 6;
+      const desperateA = rowA.pts <= 1;
+      const desperateB = rowB.pts <= 1;
+      const drawFriendly = rowA.pts >= 4 && rowB.pts >= 4;
+      const force = cfg.motivation;
+
+      return {
+        eloA: (secureA ? -95 : desperateA ? 38 : 0) * force,
+        eloB: (secureB ? -95 : desperateB ? 38 : 0) * force,
+        pace: 1
+          + ((desperateA || desperateB) ? 0.06 * force : 0)
+          - ((secureA || secureB) ? 0.04 * force : 0)
+          - (drawFriendly ? 0.12 * force : 0),
+        dcShift: drawFriendly ? -0.05 * force : 0
+      };
+    }
+
+    function addResult(table, teamA, teamB, goalsA, goalsB, results = null) {
       table[teamA].gf += goalsA;
       table[teamA].ga += goalsB;
       table[teamB].gf += goalsB;
@@ -1435,32 +1547,92 @@
         table[teamA].pts += 1;
         table[teamB].pts += 1;
       }
+      if (results) results.push({ teamA, teamB, goalsA, goalsB });
     }
 
-    function rankTeams(rows) {
-      return [...rows].sort((a, b) =>
-        b.pts - a.pts ||
+    function baseGroupCompare(a, b) {
+      return b.pts - a.pts ||
         b.gd - a.gd ||
-        b.gf - a.gf ||
+        b.gf - a.gf;
+    }
+
+    function tieKey(row) {
+      return `${row.pts}|${row.gd}|${row.gf}`;
+    }
+
+    function headToHeadRows(cluster, results) {
+      const names = new Set(cluster.map(row => row.name));
+      const table = Object.fromEntries(cluster.map(row => [row.name, { pts: 0, gd: 0, gf: 0 }]));
+      results
+        .filter(result => names.has(result.teamA) && names.has(result.teamB))
+        .forEach(result => {
+          table[result.teamA].gf += result.goalsA;
+          table[result.teamA].gd += result.goalsA - result.goalsB;
+          table[result.teamB].gf += result.goalsB;
+          table[result.teamB].gd += result.goalsB - result.goalsA;
+          if (result.goalsA > result.goalsB) table[result.teamA].pts += 3;
+          else if (result.goalsB > result.goalsA) table[result.teamB].pts += 3;
+          else {
+            table[result.teamA].pts += 1;
+            table[result.teamB].pts += 1;
+          }
+        });
+      return table;
+    }
+
+    function rankTeams(rows, results = []) {
+      const sorted = [...rows].sort((a, b) =>
+        baseGroupCompare(a, b) ||
         b.wins - a.wins ||
         TEAMS[b.name].elo - TEAMS[a.name].elo
       );
+      if (!results.length) return sorted;
+
+      const ranked = [];
+      for (let i = 0; i < sorted.length;) {
+        const cluster = [sorted[i]];
+        let j = i + 1;
+        while (j < sorted.length && tieKey(sorted[j]) === tieKey(sorted[i])) {
+          cluster.push(sorted[j]);
+          j += 1;
+        }
+        if (cluster.length > 1) {
+          const h2h = headToHeadRows(cluster, results);
+          cluster.sort((a, b) =>
+            h2h[b.name].pts - h2h[a.name].pts ||
+            h2h[b.name].gd - h2h[a.name].gd ||
+            h2h[b.name].gf - h2h[a.name].gf ||
+            b.wins - a.wins ||
+            TEAMS[b.name].elo - TEAMS[a.name].elo
+          );
+        }
+        ranked.push(...cluster);
+        i = j;
+      }
+      return ranked;
     }
 
     function simulateTournament(cfg, rand) {
       const fixtures = buildFixtures();
       const tables = Object.fromEntries(Object.keys(GROUPS).map(group => [group, blankTable(group)]));
+      const groupResults = Object.fromEntries(Object.keys(GROUPS).map(group => [group, []]));
+      const state = {
+        elo: Object.fromEntries(TEAM_DATA.map(team => [team.name, team.elo]))
+      };
 
       for (const fixture of fixtures) {
-        const score = cfg.useKnown && fixture.known ? fixture.known : simScore(fixture.teamA, fixture.teamB, cfg, rand);
-        addResult(tables[fixture.group], fixture.teamA, fixture.teamB, score[0], score[1]);
+        const matchIndex = Number(fixture.id.split("-")[1]) - 1;
+        const context = groupMatchContext(fixture, tables[fixture.group], matchIndex, cfg);
+        const score = cfg.useKnown && fixture.known ? fixture.known : simScore(fixture.teamA, fixture.teamB, cfg, rand, state, context);
+        addResult(tables[fixture.group], fixture.teamA, fixture.teamB, score[0], score[1], groupResults[fixture.group]);
+        updateDynamicElo(state, fixture.teamA, fixture.teamB, score[0], score[1], cfg, context);
       }
 
       const slots = {};
       const thirdRows = [];
       const positions = {};
       for (const group of Object.keys(GROUPS)) {
-        const ranked = rankTeams(Object.values(tables[group]));
+        const ranked = rankTeams(Object.values(tables[group]), groupResults[group]);
         ranked.forEach((row, index) => positions[row.name] = index + 1);
         slots[`1${group}`] = ranked[0].name;
         slots[`2${group}`] = ranked[1].name;
@@ -1487,7 +1659,7 @@
         const teamA = slots[match.a];
         const group = match.thirdSlot ? thirdAssignments[match.thirdSlot] : null;
         const teamB = match.thirdSlot ? topThirdByGroup[group] : slots[match.b];
-        const winner = knockoutWinner(teamA, teamB, cfg, rand);
+        const winner = knockoutWinner(teamA, teamB, cfg, rand, state);
         winners[match.id] = winner;
         reached.r16.push(winner);
       }
@@ -1495,7 +1667,7 @@
       for (const match of KNOCKOUT) {
         const teamA = winners[match.a];
         const teamB = winners[match.b];
-        const winner = knockoutWinner(teamA, teamB, cfg, rand);
+        const winner = knockoutWinner(teamA, teamB, cfg, rand, state);
         winners[match.id] = winner;
         if (match.stage === "R16") reached.qf.push(winner);
         if (match.stage === "QF") reached.sf.push(winner);
@@ -1531,6 +1703,7 @@
       const rand = mulberry32(cfg.seed);
       const stats = emptyStats();
       const started = performance.now();
+      scoreDistCache = new Map();
 
       for (let i = 0; i < cfg.sims; i++) {
         const result = simulateTournament(cfg, rand);
@@ -1918,18 +2091,18 @@
       });
 
       document.getElementById("exportBtn").addEventListener("click", exportCsv);
-      ["matchOne", "matchTwo", "goals", "scale", "hostBoost", "margin"].forEach(id => {
+      ["matchOne", "matchTwo", "goals", "scale", "hostBoost", "dcRho", "motivation", "penaltyChaos", "margin"].forEach(id => {
         document.getElementById(id).addEventListener("change", () => {
           renderMatchPredict();
           renderFixtures(config());
           renderVerify(config());
         });
       });
-      document.getElementById("useKnown").addEventListener("change", () => {
+      ["useKnown", "dynamicElo"].forEach(id => document.getElementById(id).addEventListener("change", () => {
         renderMatchPredict();
         renderFixtures(config());
         renderVerify(config());
-      });
+      }));
 
       document.querySelectorAll(".tab").forEach(tab => {
         tab.addEventListener("click", () => {
