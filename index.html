@@ -776,6 +776,45 @@
       margin: 8px 0;
     }
 
+    .core-picks {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .core-pick {
+      min-height: 82px;
+      display: grid;
+      align-content: space-between;
+      gap: 6px;
+      padding: 10px;
+      border: 1px solid rgba(108, 223, 194, 0.22);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(35, 77, 67, 0.72), rgba(9, 27, 23, 0.86));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .core-label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .core-value {
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .core-detail {
+      color: #cfe2d9;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
     .mini-chip {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -845,6 +884,7 @@
     @media (max-width: 900px) {
       .dashboard { grid-template-columns: 1fr; }
       .pick-row { grid-template-columns: 1fr; }
+      .core-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .score-stack { text-align: left; }
       .dual-match-grid { grid-template-columns: 1fr; }
       .score-options { grid-template-columns: 1fr; }
@@ -2571,6 +2611,35 @@
       ].sort((a, b) => b.p - a.p)[0];
     }
 
+    function handicapRecommendation(model) {
+      const side = model.away > model.home + 0.03 ? "away" : "home";
+      const totals = { win: 0, draw: 0, loss: 0 };
+      model.scores.forEach(score => {
+        if (side === "home") {
+          const adjustedHome = score.a - 1;
+          if (adjustedHome > score.b) totals.win += score.p;
+          else if (adjustedHome === score.b) totals.draw += score.p;
+          else totals.loss += score.p;
+        } else {
+          const adjustedAway = score.b - 1;
+          if (adjustedAway > score.a) totals.win += score.p;
+          else if (adjustedAway === score.a) totals.draw += score.p;
+          else totals.loss += score.p;
+        }
+      });
+      const pick = [
+        { key: "win", label: "让胜", short: "让胜", p: totals.win },
+        { key: "draw", label: "让平", short: "让平", p: totals.draw },
+        { key: "loss", label: "让负", short: "让负", p: totals.loss }
+      ].sort((a, b) => b.p - a.p)[0];
+      return {
+        side,
+        lineLabel: side === "home" ? "主让1" : "客让1",
+        pick,
+        totals
+      };
+    }
+
     function teamProfile(name) {
       return TEAM_NOTES[name] || {
         players: "核心阵容以官方首发为准",
@@ -2620,6 +2689,8 @@
       const context = contextForFixture(fixture, cfg);
       const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, context);
       const pick = outcomePick(model);
+      const halfPick = outcomePick(model.half);
+      const handicap = handicapRecommendation(model);
       const beforeOrder = fixture.known
         ? (Number.isFinite(Number(knownResultMeta[fixture.id]?.order)) ? Number(knownResultMeta[fixture.id].order) : Infinity)
         : Infinity;
@@ -2636,7 +2707,7 @@
         `事件倾向：${events.tension}，下半场黄牌${rangeText(events.second.yellow, "张")}，越位${rangeText(events.first.offside + events.second.offside, "次", 0.8)}`,
         `主观：${model.highGoals > 0.38 ? "本届大比分偏多，防4球以上" : "节奏偏常规"}；${favoriteNotWin > 0.40 ? "热门不胜风险偏高" : "方向相对集中"}`
       ];
-      return { fixture, model, pick, logic };
+      return { fixture, model, pick, halfPick, handicap, logic };
     }
 
     function renderTimelinePicks(cfg) {
@@ -2653,6 +2724,8 @@
         const rec = recommendationForFixture(fixture, cfg);
         const model = rec.model;
         const pick = rec.pick;
+        const halfPick = rec.halfPick;
+        const handicap = rec.handicap;
         return `
           <div class="pick-row">
             <div class="timeblock">
@@ -2666,6 +2739,28 @@
                 <span class="muted">vs</span>
                 <span>${teamLabel(fixture.teamB)}</span>
                 <span class="pick-badge">${pick.short}</span>
+              </div>
+              <div class="core-picks">
+                <div class="core-pick">
+                  <div class="core-label">比分推荐</div>
+                  <div class="core-value">${model.score}</div>
+                  <div class="core-detail">备选 ${model.altScore} / ${model.thirdScore}</div>
+                </div>
+                <div class="core-pick">
+                  <div class="core-label">胜平负推荐</div>
+                  <div class="core-value">${pick.label}</div>
+                  <div class="core-detail">${pct(pick.p)}｜公允 ${odds(pick.p, cfg.margin)}</div>
+                </div>
+                <div class="core-pick">
+                  <div class="core-label">半场胜平负</div>
+                  <div class="core-value">${halfPick.label}</div>
+                  <div class="core-detail">半场概率 ${pct(halfPick.p)}</div>
+                </div>
+                <div class="core-pick">
+                  <div class="core-label">让球胜平负</div>
+                  <div class="core-value">${handicap.pick.label}</div>
+                  <div class="core-detail">${handicap.lineLabel}｜${pct(handicap.pick.p)}</div>
+                </div>
               </div>
               <div class="pick-meta">
                 <span class="mini-chip">胜 ${pct(model.home)}</span>
