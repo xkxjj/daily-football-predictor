@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>2026 世界杯 Elo评分 + 蒙特卡洛夺冠概率预测器</title>
+  <link rel="icon" href="data:," />
   <style>
     :root {
       --bg: #f5f6f3;
@@ -697,7 +698,154 @@
       margin-top: 8px;
     }
 
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .headline-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .pick-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .pick-row {
+      display: grid;
+      grid-template-columns: minmax(132px, 0.7fr) minmax(0, 1fr) minmax(128px, 0.65fr);
+      gap: 12px;
+      align-items: start;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(130, 173, 153, 0.18);
+    }
+
+    .pick-row:last-child { border-bottom: 0; }
+
+    .timeblock {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .timeblock strong {
+      color: #ffffff;
+      font-size: 15px;
+    }
+
+    .matchline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: #ffffff;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .pick-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #04130f;
+      background: linear-gradient(135deg, var(--green), var(--blue));
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pick-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .mini-chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 7px;
+      color: #d7fff3;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 12px;
+    }
+
+    .logic-lines {
+      display: grid;
+      gap: 5px;
+      color: #cfe2d9;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .logic-lines span::before {
+      content: "· ";
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .score-stack {
+      display: grid;
+      gap: 6px;
+      text-align: right;
+    }
+
+    .score-stack strong {
+      color: #ffffff;
+      font-size: 28px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .score-stack .small { color: var(--muted); }
+
+    .champion-brief,
+    .verify-brief {
+      display: grid;
+      gap: 10px;
+    }
+
+    .champion-pair {
+      display: grid;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(130, 173, 153, 0.18);
+    }
+
+    .champion-pair:last-child { border-bottom: 0; }
+
+    .champion-pair strong {
+      color: #ffffff;
+      font-size: 16px;
+    }
+
+    .verify-focus {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .verify-focus .kpi { margin: 0; }
+
     @media (max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .pick-row { grid-template-columns: 1fr; }
+      .score-stack { text-align: left; }
       .dual-match-grid { grid-template-columns: 1fr; }
       .score-options { grid-template-columns: 1fr; }
     }
@@ -712,7 +860,7 @@
         <div class="status-strip">
           <span class="status-dot"></span>
           <span class="small muted">预测引擎就绪</span>
-          <span class="small muted" id="syncStatusText">正在同步线上赛果</span>
+          <span class="small muted" id="syncStatusText">正在同步赛果数据</span>
           <span class="small muted" id="syncStatusMeta">本地兜底已启用</span>
         </div>
       </div>
@@ -720,6 +868,46 @@
         <div class="pill">数据日：2026-06-12</div>
         <div class="pill">48 队 / 12 组 / 104 场</div>
         <div class="pill" id="resultCountPill">已赛 2 场</div>
+      </div>
+    </div>
+
+    <div class="dashboard">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>按开赛时间推荐</h2>
+          <div class="section-tools">
+            <span class="small muted" id="scheduleMeta">等待赛程同步</span>
+            <button class="secondary" id="refreshScheduleBtn">刷新推荐</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="pick-list" id="timelinePicks"></div>
+        </div>
+      </section>
+
+      <div class="headline-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>冠亚预测入口</h2>
+            <div class="section-tools">
+              <div class="small muted" id="finalMeta">等待模拟</div>
+              <button class="secondary" id="openChampionBtn">完整榜单</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="champion-brief" id="championBrief"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>自查验真重点</h2>
+            <button class="secondary" id="openVerifyBtn">打开验真表</button>
+          </div>
+          <div class="panel-body">
+            <div class="verify-brief" id="verifyBrief"></div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -734,19 +922,19 @@
       </div>
       <div>
         <label for="goals">基准总进球</label>
-        <input id="goals" type="number" min="1.6" max="4" step="0.05" value="2.35" />
+        <input id="goals" type="number" min="1.6" max="4" step="0.05" value="2.75" />
       </div>
       <div>
         <label for="scale">Elo 进球缩放</label>
-        <input id="scale" type="number" min="250" max="650" step="10" value="420" />
+        <input id="scale" type="number" min="250" max="650" step="10" value="500" />
       </div>
       <div>
         <label for="hostBoost">主办国加成</label>
-        <input id="hostBoost" type="number" min="0" max="120" step="5" value="35" />
+        <input id="hostBoost" type="number" min="0" max="120" step="5" value="55" />
       </div>
       <div>
         <label for="dcRho">低比分相关</label>
-        <input id="dcRho" type="number" min="-0.25" max="0.15" step="0.01" value="-0.08" />
+        <input id="dcRho" type="number" min="-0.25" max="0.15" step="0.01" value="-0.06" />
       </div>
       <div>
         <label for="motivation">战意修正</label>
@@ -763,6 +951,14 @@
       <div>
         <label for="formWeight">状态校准</label>
         <input id="formWeight" type="number" min="0" max="1" step="0.05" value="0.45" />
+      </div>
+      <div>
+        <label for="varianceWeight">比分方差</label>
+        <input id="varianceWeight" type="number" min="0" max="1" step="0.05" value="0.55" />
+      </div>
+      <div>
+        <label for="climateWeight">赛果气候</label>
+        <input id="climateWeight" type="number" min="0" max="1" step="0.05" value="0.60" />
       </div>
       <div>
         <label for="margin">赔率水位</label>
@@ -795,7 +991,7 @@
     </div>
 
     <div class="layout">
-      <section class="panel">
+      <section class="panel" id="championPanel">
         <div class="panel-head">
           <h2>夺冠概率</h2>
           <div class="small muted" id="runMeta">等待运行</div>
@@ -856,6 +1052,7 @@
             <table id="fixturesTable">
               <thead>
                 <tr>
+                  <th>时间</th>
                   <th>组</th>
                   <th>对阵</th>
                   <th class="num">预测比分</th>
@@ -943,6 +1140,8 @@
         <div class="panel-body tabpane hidden" id="tab-method">
           <div class="note">投注倍率只代表模型给出的公允赔率。若实际平台赔率高于模型公允赔率，才可能存在模型意义上的“价格更高”；这仍不等于投注建议。</div>
           <p><strong>比分预测逻辑：</strong>当前比分基于国家队 Elo、2026 世界杯实际分组/赛程、已赛比分开关和自动同步赛果。新版不再把“全场平均总进球”硬拆给两队，而是用 Elo 派生攻击强度和防守强度：球队A期望进球 = 基准进球 * 比赛节奏 * A攻击强度 / B防守强度。</p>
+          <p><strong>常量因素复盘：</strong>前 20 场真实赛果显示，原模型的基准总进球偏低、Elo 强弱差过度自信、主办国加成偏保守，所以默认值已调整为更开放的 2.75 球、更平滑的 Elo 缩放和更高的东道主加成。</p>
+          <p><strong>变量因素复盘：</strong>已赛样本里双方进球、冷平和 4 球以上比赛明显不少，因此模型加入“赛果气候”和“比分方差”：赛果气候会随真实比赛滚动修正总进球、平局、双方进球；比分方差会按强弱差和东道主比赛提高尾部分布。</p>
           <p><strong>低比分修正：</strong>具体比分仍用泊松分布逐个计算，但对 0-0、1-0、0-1、1-1 加入 Dixon-Coles 低比分相关修正。负向相关参数会提高 0-0 和 1-1 的相对权重，同时压低部分过度集中的一球小胜，减少独立泊松对低比分结构的偏差。</p>
           <p><strong>比分排序：</strong>对 0-0 到 10-10 的所有比分计算修正后概率，再按命中概率从高到低排序。页面展示的比分选择就是这个排序，不额外插入某个大比分。</p>
           <p><strong>数据校准：</strong>若你在“数据校准”里导入十进制盘口，模型会把胜平负和大小球盘口转成隐含概率，再对每个比分做轻度再加权。盘口不是硬覆盖模型，只是把市场共识作为一层保守校准；没有盘口的比赛不会虚构数据。</p>
@@ -950,14 +1149,14 @@
           <p><strong>赛事情境：</strong>小组第三轮会根据前两轮积分加入战意修正：已基本锁定出线的球队降低强度，必须抢分的球队提高强度；如果双方平局都较安全，会降低节奏并提高低比分平局权重。</p>
           <p><strong>模拟流程：</strong>每轮模拟都会跑完 72 场小组赛、官方 32 强第三名分配、16 强到决赛。每条模拟路径会根据比赛结果微调动态锦标赛 Elo，让爆冷或连胜影响后续比赛。</p>
           <p><strong>淘汰赛与小组排序：</strong>淘汰赛 90 分钟打平后，点球/加时胜率会向 50-50 压缩，避免强队在点球大战中被 Elo 过度偏袒。小组排序补入同分球队之间的胜负关系，再用积分、净胜球、进球数、胜场和 Elo 兜底。</p>
-          <p class="source">来源：赛制与赛程参考 <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/scores-fixtures" target="_blank" rel="noreferrer">国际足联赛程页</a>、<a href="https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf" target="_blank" rel="noreferrer">国际足联赛事规程</a>；Elo 参考 <a href="https://www.international-football.net/elo-ratings-table?year=2026&month=06&day=12" target="_blank" rel="noreferrer">国家队 Elo 评分表</a>；已赛比分会优先从 <a href="https://worldcup26.ir/get/games" target="_blank" rel="noreferrer">WorldCup26 公开赛果接口</a>同步，接口不可用时使用本地内置赛果。</p>
+          <p class="source">来源：赛制与赛程参考 <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/scores-fixtures" target="_blank" rel="noreferrer">国际足联赛程页</a>、<a href="https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf" target="_blank" rel="noreferrer">国际足联赛事规程</a>；Elo 参考 <a href="https://www.international-football.net/elo-ratings-table?year=2026&month=06&day=12" target="_blank" rel="noreferrer">国家队 Elo 评分表</a>；已赛比分会优先读取同站 <code>data/games.json</code>，这个文件可由 GitHub Actions 定时从 <a href="https://worldcup26.ir/get/games" target="_blank" rel="noreferrer">WorldCup26 公开赛果接口</a>更新；数据不可用时使用本地内置赛果。</p>
         </div>
 
         <div class="panel-body tabpane hidden" id="tab-share">
           <ul class="share-list">
             <li><strong>离线发文件：</strong>把 <code>index.html</code> 发给朋友，朋友双击能用；但这只是固定版本，不保证同步更新。</li>
-            <li><strong>同步分享：</strong>把整个文件夹部署到 GitHub Pages、Cloudflare Pages、Netlify 或 Vercel，朋友访问同一个公开链接。页面每次打开都会自动同步线上已赛结果。</li>
-            <li><strong>自动刷新：</strong>页面打开后每 5 分钟会再同步一次赛果；接口不可用时会继续使用本地内置赛果，不影响预测器打开。</li>
+            <li><strong>同步分享：</strong>把整个文件夹部署到 GitHub Pages、Cloudflare Pages、Netlify 或 Vercel，朋友访问同一个公开链接。页面优先读取同站 <code>data/games.json</code>，不受浏览器跨域限制。</li>
+            <li><strong>自动刷新：</strong>仓库里的 GitHub Actions 会定时拉取最新赛果并更新 <code>data/games.json</code>；页面打开后每 5 分钟也会重新读取一次，数据不可用时继续使用本地兜底。</li>
             <li><strong>本地预览：</strong><code>127.0.0.1</code> 只代表你自己的电脑，不能作为公网链接发给朋友。</li>
           </ul>
         </div>
@@ -1130,7 +1329,12 @@
       "A-2": [2, 1]
     };
 
-    const RESULTS_API_URL = "https://worldcup26.ir/get/games";
+    const SAME_ORIGIN_RESULTS_URL = "data/games.json";
+    const REMOTE_RESULTS_URL = "https://worldcup26.ir/get/games";
+    const RESULTS_API_SOURCES = [
+      { url: SAME_ORIGIN_RESULTS_URL, source: "自动更新数据" },
+      { url: REMOTE_RESULTS_URL, source: "线上赛果" }
+    ];
     const TEAM_NAME_ALIASES = {
       "bosnia herzegovina": "bosnia and herzegovina",
       "cape verde islands": "cape verde",
@@ -1146,6 +1350,51 @@
       "united states of america": "united states"
     };
 
+    const TEAM_NOTES = {
+      "Argentina": { players: "梅西、劳塔罗、阿尔瓦雷斯、麦卡利斯特", style: "控球耐心强，领先后节奏管理成熟" },
+      "France": { players: "姆巴佩、格列兹曼、登贝莱、楚阿梅尼", style: "边路冲击和反击纵深强，淘汰赛经验厚" },
+      "Brazil": { players: "维尼修斯、罗德里戈、吉马良斯、马尔基尼奥斯", style: "个人突破强，但遇到低位防守时波动偏大" },
+      "Spain": { players: "罗德里、佩德里、亚马尔、尼科威廉姆斯", style: "控球压制强，若早进球容易打出连续进攻" },
+      "Portugal": { players: "C罗、B费、B席、莱奥", style: "阵地战火力足，强弱差比赛容易拉开比分" },
+      "England": { players: "凯恩、贝林厄姆、萨卡、福登", style: "前场配置豪华，慢热时平局风险会抬升" },
+      "Germany": { players: "穆西亚拉、维尔茨、哈弗茨、基米希", style: "中前场轮转快，面对弱队有大比分能力" },
+      "Netherlands": { players: "范戴克、德容、加克波、德佩", style: "身体和边路推进兼备，领先后仍有二次打击" },
+      "Belgium": { players: "德布劳内、卢卡库、多库、奥蓬达", style: "进攻点多但防线年龄结构带来波动" },
+      "Uruguay": { players: "巴尔韦德、努涅斯、阿劳霍、本坦库尔", style: "对抗强、转换快，比赛容易开放" },
+      "Colombia": { players: "路易斯迪亚斯、J罗、莱尔马、穆尼奥斯", style: "边路一对一强，节奏起来后连续制造机会" },
+      "Croatia": { players: "莫德里奇、科瓦契奇、格瓦迪奥尔、佩里西奇", style: "经验和控球稳定，但年龄结构使回追风险上升" },
+      "Switzerland": { players: "扎卡、阿坎吉、科贝尔、恩博洛", style: "中轴稳定，强强对话不怯，杀死比赛效率一般" },
+      "Canada": { players: "阿方索戴维斯、乔纳森戴维、布坎南、欧斯塔基奥", style: "速度和冲刺优势明显，主场加成较强" },
+      "Mexico": { players: "希门尼斯、洛萨诺、阿尔瓦雷斯、安图纳", style: "主场气氛和对抗强度足，防线重组时需防反击" },
+      "United States": { players: "普利西奇、麦肯尼、雷纳、巴洛贡", style: "主场推进速度快，顺风球有大比分潜力" },
+      "South Korea": { players: "孙兴慜、李刚仁、黄仁范、李在城", style: "反击和肋部推进质量高，落后时韧性强" },
+      "Japan": { players: "三笘薰、久保建英、远藤航、堂安律", style: "传切速度快，面对压迫有出球能力" },
+      "Morocco": { players: "阿什拉夫、齐耶赫、阿姆拉巴特、恩内斯里", style: "防守组织好，反击和定位球有威胁" },
+      "Senegal": { players: "马内、库利巴利、萨尔、盖耶", style: "身体对抗强，转换速度快，适合打开放局" },
+      "Norway": { players: "哈兰德、厄德高、索尔洛特、阿耶尔", style: "禁区终结效率高，强点明确" },
+      "Austria": { players: "阿瑙托维奇、萨比策、莱默尔、鲍姆加特纳", style: "高压和二点球强，比赛节奏不慢" },
+      "Algeria": { players: "马赫雷斯、本纳赛尔、古伊里、曼迪", style: "边路创造力强，但回防稳定性有起伏" },
+      "Ghana": { players: "库杜斯、托马斯、阿尤、伊纳基威廉姆斯", style: "个人冲击强，防线稳定性决定上限" },
+      "Qatar": { players: "阿菲夫、阿里、海多斯、胡希", style: "大赛韧性不错，低位反击和定位球能偷分" },
+      "Iraq": { players: "侯赛因、巴耶什、伊克巴尔、阿里阿德南", style: "身体投入高，落后后容易变开放" },
+      "Uzbekistan": { players: "肖穆罗多夫、法伊祖拉耶夫、乌鲁诺夫、哈姆罗别科夫", style: "中前场跑动积极，面对强队更依赖反击" },
+      "DR Congo": { players: "姆本巴、巴坎布、维萨、邦贡达", style: "身体和速度条件好，比赛波动偏大" },
+      "Scotland": { players: "麦金、麦克托米奈、罗伯逊、蒂尔尼", style: "定位球和二点球强，防守韧性足" },
+      "Bosnia and Herzegovina": { players: "哲科、德米罗维奇、科拉希纳茨、巴伊拉克塔雷维奇", style: "前场支点和身体对抗有威胁" },
+      "Czech Republic": { players: "希克、绍切克、曹法尔、赫洛热克", style: "高点和定位球突出，逆风时会直接化" },
+      "South Africa": { players: "福斯特、莫科埃纳、马塞科、威廉姆斯", style: "运动能力不错，但纪律和阵容完整度会影响下限" },
+      "Sweden": { players: "伊萨克、库卢塞夫斯基、福斯贝里、林德洛夫", style: "前场终结点强，顺风球有拉开能力" },
+      "Tunisia": { players: "斯希里、莱杜尼、哈兹里、德拉格", style: "防守投入高，但被早进球会很被动" },
+      "Ecuador": { players: "凯塞多、恩纳瓦伦西亚、因卡皮耶、埃斯图皮尼安", style: "中场硬度强，低比分拉扯能力好" },
+      "Ivory Coast": { players: "凯西、阿迪格拉、佩佩、哈勒", style: "身体优势明显，边路冲击和定位球有威胁" },
+      "New Zealand": { players: "克里斯伍德、辛格、卡卡切、贝尔", style: "空中球和定位球是主要武器" },
+      "Saudi Arabia": { players: "多萨里、布赖坎、卡诺、奥韦斯", style: "反击速度快，大赛抗压经验不错" },
+      "Cape Verde": { players: "贝贝、瑞安门德斯、利夫拉门托、沃佐尼亚", style: "低位防守耐心足，爆冷多靠效率" },
+      "Haiti": { players: "纳松、皮埃罗、杜克、阿德", style: "冲刺和对抗不差，但控球稳定性弱" },
+      "Jordan": { players: "塔马里、奈马特、阿尔阿拉布、拉瓦布德", style: "前场速度点鲜明，防守压力大时易丢空间" },
+      "Panama": { players: "法哈多、巴尔塞纳斯、戈多伊、穆里略", style: "对抗积极，强队压制下容易靠定位球找机会" }
+    };
+
     let knownResults = { ...KNOWN_RESULTS };
     let resultsSync = {
       status: "使用本地内置赛果",
@@ -1156,11 +1405,20 @@
     let lastResultsSignature = resultsSignature(knownResults);
     let lastRows = [];
     const BASE_ELO_MEAN = TEAM_DATA.reduce((sum, team) => sum + team.elo, 0) / TEAM_DATA.length;
+    const CLIMATE_PRIOR = {
+      matches: 12,
+      avgGoals: 3.05,
+      bttsRate: 0.66,
+      drawRate: 0.36,
+      highRate: 0.38
+    };
     let knownResultMeta = {
       "A-1": { order: 1 },
       "A-2": { order: 2 }
     };
+    let fixtureScheduleMeta = {};
     let marketLines = {};
+    let lastFinalPairs = [];
     let scoreDistCache = new Map();
 
     function readNumber(id, fallback, min, max) {
@@ -1172,14 +1430,16 @@
       return {
         sims: clamp(parseInt(document.getElementById("sims").value, 10) || 20000, 1000, 100000),
         seed: parseInt(document.getElementById("seed").value, 10) || 20260612,
-        goals: readNumber("goals", 2.35, 1.6, 4),
-        scale: readNumber("scale", 420, 250, 650),
-        hostBoost: readNumber("hostBoost", 35, 0, 120),
-        dcRho: readNumber("dcRho", -0.08, -0.25, 0.15),
+        goals: readNumber("goals", 2.75, 1.6, 4),
+        scale: readNumber("scale", 500, 250, 650),
+        hostBoost: readNumber("hostBoost", 55, 0, 120),
+        dcRho: readNumber("dcRho", -0.06, -0.25, 0.15),
         motivation: readNumber("motivation", 0.65, 0, 1),
         penaltyChaos: readNumber("penaltyChaos", 0.65, 0, 1),
         marketWeight: readNumber("marketWeight", 0.35, 0, 1),
         formWeight: readNumber("formWeight", 0.45, 0, 1),
+        varianceWeight: readNumber("varianceWeight", 0.55, 0, 1),
+        climateWeight: readNumber("climateWeight", 0.60, 0, 1),
         margin: readNumber("margin", 0, 0, 20) / 100,
         useKnown: document.getElementById("useKnown").checked,
         dynamicElo: document.getElementById("dynamicElo").checked,
@@ -1194,6 +1454,26 @@
 
     function resultsSignature(results) {
       return Object.keys(results).sort().map(key => `${key}:${results[key].join("-")}`).join("|");
+    }
+
+    function parseLocalMatchDate(text) {
+      const match = String(text || "").match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+      if (!match) return null;
+      const [, month, day, year, hour, minute] = match;
+      return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+    }
+
+    function formatMatchTime(meta = {}) {
+      const date = meta.dateObject || parseLocalMatchDate(meta.localDate);
+      if (!date || Number.isNaN(date.getTime())) return meta.localDate || "时间待定";
+      return date.toLocaleString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        weekday: "short",
+        hour12: false
+      });
     }
 
     function normalizeTeamName(name) {
@@ -1249,15 +1529,30 @@
       if (resultPill) resultPill.textContent = `已赛 ${count} 场`;
     }
 
-    function applyExternalResults(games) {
+    function applyExternalResults(games, sourceLabel = "线上赛果") {
       const lookup = fixtureLookupByTeams();
       const nextResults = { ...KNOWN_RESULTS };
       const nextMeta = { ...knownResultMeta };
+      const nextScheduleMeta = { ...fixtureScheduleMeta };
       let finished = 0;
       let matched = 0;
 
       games.forEach(game => {
         if (String(game.type || "").toLowerCase() !== "group") return;
+        const group = String(game.group || "").toUpperCase();
+        const home = normalizeTeamName(game.home_team_name_en);
+        const away = normalizeTeamName(game.away_team_name_en);
+        const match = lookup.get(`${group}|${home}|${away}`);
+        if (!match) return;
+
+        nextScheduleMeta[match.id] = {
+          apiId: Number(game.id) || 999,
+          matchday: Number(game.matchday) || 0,
+          localDate: game.local_date || "",
+          dateObject: parseLocalMatchDate(game.local_date),
+          reversed: match.reversed
+        };
+
         const isFinished = String(game.finished || "").toUpperCase() === "TRUE" || String(game.time_elapsed || "").toLowerCase() === "finished";
         if (!isFinished) return;
 
@@ -1266,11 +1561,6 @@
         if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return;
 
         finished += 1;
-        const group = String(game.group || "").toUpperCase();
-        const home = normalizeTeamName(game.home_team_name_en);
-        const away = normalizeTeamName(game.away_team_name_en);
-        const match = lookup.get(`${group}|${home}|${away}`);
-        if (!match) return;
 
         nextResults[match.id] = match.reversed ? [awayScore, homeScore] : [homeScore, awayScore];
         nextMeta[match.id] = {
@@ -1284,13 +1574,14 @@
       const changed = nextSignature !== lastResultsSignature;
       knownResults = nextResults;
       knownResultMeta = nextMeta;
+      fixtureScheduleMeta = nextScheduleMeta;
       lastResultsSignature = nextSignature;
       resultsSync = {
-        status: matched > 0 ? `线上赛果已同步 ${matched} 场` : "线上接口暂未匹配到已赛结果",
+        status: matched > 0 ? `${sourceLabel}已同步 ${matched} 场` : `${sourceLabel}暂未匹配到已赛结果`,
         updatedAt: new Date(),
         matched,
         finished,
-        source: "线上赛果"
+        source: sourceLabel
       };
       return changed;
     }
@@ -1321,42 +1612,76 @@
       matchTwo.value = preserveSelection && ids.has(previousTwo) ? previousTwo : (futureFixtures[1] || fixtures[1] || fixtures[0]).id;
     }
 
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function withCacheBust(url) {
+      return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    }
+
+    async function loadResultsGames() {
+      const failures = [];
+      for (const source of RESULTS_API_SOURCES) {
+        try {
+          const response = await fetchWithTimeout(withCacheBust(source.url), { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          const games = Array.isArray(data) ? data : data.games;
+          if (!Array.isArray(games)) throw new Error("赛果格式异常");
+          return { games, source: source.source };
+        } catch (error) {
+          failures.push(`${source.source}: ${error.message}`);
+        }
+      }
+      throw new Error(failures.join("；"));
+    }
+
     async function syncLatestResults(silent = false) {
       if (!silent) {
-        resultsSync = { ...resultsSync, status: "正在同步线上赛果" };
+        resultsSync = { ...resultsSync, status: "正在同步赛果数据" };
         updateSyncStatus();
       }
 
       try {
-        const response = await fetch(`${RESULTS_API_URL}?t=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        const games = Array.isArray(data) ? data : data.games;
-        if (!Array.isArray(games)) throw new Error("赛果格式异常");
-
-        const changed = applyExternalResults(games);
+        const payload = await loadResultsGames();
+        const changed = applyExternalResults(payload.games, payload.source);
         updateSyncStatus();
         if (changed) {
           populateMatchSelectors(true);
           renderMatchPredict();
           runSimulation();
         } else {
-          renderFixtures(config());
-          renderVerify(config());
-          renderCalibration(config());
+          const cfg = config();
+          renderFixtures(cfg);
+          renderVerify(cfg);
+          renderCalibration(cfg);
+          renderTimelinePicks(cfg);
+          renderVerifyBrief(cfg);
+          if (lastRows.length) renderChampionBrief(lastRows, cfg);
           const logLine = document.getElementById("logLine");
           if (logLine) {
-            logLine.textContent = config().useKnown ? knownResultsSummary() : "未纳入已赛结果，按赛前模型重跑。";
+            logLine.textContent = cfg.useKnown ? knownResultsSummary() : "未纳入已赛结果，按赛前模型重跑。";
           }
         }
       } catch (error) {
         resultsSync = {
           ...resultsSync,
-          status: "线上赛果暂不可用，使用本地兜底",
+          status: "赛果数据暂不可用，使用本地兜底",
           updatedAt: resultsSync.updatedAt,
           source: "本地兜底"
         };
         updateSyncStatus();
+        const cfg = config();
+        renderTimelinePicks(cfg);
+        renderVerifyBrief(cfg);
+        if (lastRows.length) renderChampionBrief(lastRows, cfg);
       }
     }
 
@@ -1507,6 +1832,38 @@
       };
     }
 
+    function applyScoreCalibration(distribution, cfg, context = {}) {
+      const variance = clamp(cfg.varianceWeight ?? 0, 0, 1);
+      const tailBoost = clamp(context.tailBoost || 1, 0.70, 1.70);
+      const bttsBias = clamp(context.bttsBias || 1, 0.75, 1.45);
+      const drawBias = clamp(context.drawBias || 1, 0.70, 1.45);
+      const lowTotalBias = clamp(context.lowTotalBias || 1, 0.70, 1.35);
+      const favoriteSide = context.favoriteSide || null;
+      const favoriteTail = clamp(context.favoriteTail || 1, 0.85, 1.45);
+
+      if (variance <= 0 && tailBoost === 1 && bttsBias === 1 && drawBias === 1 && lowTotalBias === 1 && favoriteTail === 1) {
+        return distribution;
+      }
+
+      const scores = distribution.scores.map(score => {
+        const total = score.a + score.b;
+        let factor = 1;
+        if (total >= 4) factor *= Math.pow(tailBoost, (total - 3) * (0.75 + variance * 0.45));
+        if (total <= 1) factor *= lowTotalBias;
+        if (score.a > 0 && score.b > 0) factor *= bttsBias;
+        if (score.a === score.b) factor *= drawBias;
+        if (favoriteSide === "A" && score.a > score.b && total >= 3) {
+          factor *= Math.pow(favoriteTail, Math.min(score.a - score.b, 4) * 0.35);
+        }
+        if (favoriteSide === "B" && score.b > score.a && total >= 3) {
+          factor *= Math.pow(favoriteTail, Math.min(score.b - score.a, 4) * 0.35);
+        }
+        return { ...score, p: score.p * clamp(factor, 0.35, 4.20) };
+      });
+
+      return rebuildDistribution(distribution.lambdaA, distribution.lambdaB, scores);
+    }
+
     function oddsToProbability(value) {
       const oddsValue = Number(value);
       return Number.isFinite(oddsValue) && oddsValue > 1 ? 1 / oddsValue : 0;
@@ -1594,11 +1951,18 @@
         max,
         cfg.dcRho.toFixed(2),
         (context.dcShift || 0).toFixed(2),
+        cfg.varianceWeight.toFixed(2),
+        (context.tailBoost || 1).toFixed(2),
+        (context.bttsBias || 1).toFixed(2),
+        (context.drawBias || 1).toFixed(2),
+        (context.lowTotalBias || 1).toFixed(2),
+        (context.favoriteTail || 1).toFixed(2),
+        context.favoriteSide || "",
         cfg.useMarket ? cfg.marketWeight.toFixed(2) : "0",
         marketSignature(context.market)
       ].join("|");
       if (!scoreDistCache.has(key)) {
-        const distribution = scoreDistribution(lambdaA, lambdaB, max, cfg, context);
+        const distribution = applyScoreCalibration(scoreDistribution(lambdaA, lambdaB, max, cfg, context), cfg, context);
         scoreDistCache.set(key, applyMarketCalibration(distribution, context.market, cfg));
       }
       return scoreDistCache.get(key);
@@ -1606,7 +1970,8 @@
 
     function matchModel(teamA, teamB, cfg, state = null, context = {}) {
       const [lambdaA, lambdaB] = lambdas(teamA, teamB, cfg, state, context);
-      const full = applyMarketCalibration(scoreDistribution(lambdaA, lambdaB, 10, cfg, context), context.market, cfg);
+      const calibrated = applyScoreCalibration(scoreDistribution(lambdaA, lambdaB, 10, cfg, context), cfg, context);
+      const full = applyMarketCalibration(calibrated, context.market, cfg);
       return {
         ...full,
         half: scoreDistribution(lambdaA * 0.44, lambdaB * 0.44, 6, cfg, context),
@@ -1657,6 +2022,63 @@
       return stats;
     }
 
+    function tournamentClimateContext(beforeOrder = Infinity, cfg = config()) {
+      const weight = clamp(cfg.climateWeight ?? 0, 0, 1);
+      if (weight <= 0) return {};
+
+      let matches = CLIMATE_PRIOR.matches;
+      let goals = CLIMATE_PRIOR.avgGoals * CLIMATE_PRIOR.matches;
+      let btts = CLIMATE_PRIOR.bttsRate * CLIMATE_PRIOR.matches;
+      let draws = CLIMATE_PRIOR.drawRate * CLIMATE_PRIOR.matches;
+      let high = CLIMATE_PRIOR.highRate * CLIMATE_PRIOR.matches;
+
+      scheduledFixtures().forEach(fixture => {
+        const score = knownResults[fixture.id];
+        if (!score) return;
+        const meta = knownResultMeta[fixture.id] || {};
+        const order = Number.isFinite(Number(meta.order)) ? Number(meta.order) : Infinity;
+        if (order >= beforeOrder) return;
+        matches += 1;
+        const total = score[0] + score[1];
+        goals += total;
+        if (score[0] > 0 && score[1] > 0) btts += 1;
+        if (score[0] === score[1]) draws += 1;
+        if (total >= 4) high += 1;
+      });
+
+      const avgGoals = goals / Math.max(matches, 1);
+      const bttsRate = btts / Math.max(matches, 1);
+      const drawRate = draws / Math.max(matches, 1);
+      const highRate = high / Math.max(matches, 1);
+
+      return {
+        pace: 1 + weight * clamp((avgGoals - cfg.goals) / 3.2, -0.08, 0.16),
+        tailBoost: 1 + weight * clamp((highRate - 0.24) * 1.05, -0.06, 0.30),
+        bttsBias: 1 + weight * clamp((bttsRate - 0.48) * 0.55, -0.05, 0.22),
+        drawBias: 1 + weight * clamp((drawRate - 0.26) * 0.50, -0.06, 0.18),
+        lowTotalBias: 1 + weight * clamp((0.20 - highRate) * 0.35, -0.08, 0.08)
+      };
+    }
+
+    function matchupScoreContext(teamA, teamB, cfg, state = null, context = {}) {
+      const variance = clamp(cfg.varianceWeight ?? 0, 0, 1);
+      if (variance <= 0) return {};
+      const eloA = effectiveElo(teamA, cfg, state, context.eloA || 0);
+      const eloB = effectiveElo(teamB, cfg, state, context.eloB || 0);
+      const gap = Math.abs(eloA - eloB);
+      const balanced = 1 - Math.min(gap / 520, 1);
+      const mismatch = Math.min(gap / 650, 1);
+      const hostGame = HOSTS.has(teamA) || HOSTS.has(teamB);
+      return {
+        favoriteSide: eloA >= eloB ? "A" : "B",
+        tailBoost: 1 + variance * (0.06 + mismatch * 0.17 + (hostGame ? 0.04 : 0)),
+        favoriteTail: 1 + variance * (0.05 + mismatch * 0.20 + (hostGame ? 0.04 : 0)),
+        bttsBias: 1 + variance * (0.04 + balanced * 0.07),
+        drawBias: 1 + variance * (balanced * 0.12 - mismatch * 0.05),
+        lowTotalBias: 1 - variance * (0.04 + mismatch * 0.02)
+      };
+    }
+
     function formFactors(row, cfg) {
       if (!row || row.played <= 0) return { attack: 1, defense: 1, pace: 1 };
       const gfRate = row.gf / row.played;
@@ -1692,7 +2114,12 @@
         attackA: 1,
         attackB: 1,
         defenseA: 1,
-        defenseB: 1
+        defenseB: 1,
+        tailBoost: 1,
+        bttsBias: 1,
+        drawBias: 1,
+        lowTotalBias: 1,
+        favoriteTail: 1
       };
       contexts.filter(Boolean).forEach(context => {
         combined.eloA += context.eloA || 0;
@@ -1703,10 +2130,21 @@
         combined.attackB *= context.attackB || 1;
         combined.defenseA *= context.defenseA || 1;
         combined.defenseB *= context.defenseB || 1;
+        combined.tailBoost *= context.tailBoost || 1;
+        combined.bttsBias *= context.bttsBias || 1;
+        combined.drawBias *= context.drawBias || 1;
+        combined.lowTotalBias *= context.lowTotalBias || 1;
+        combined.favoriteTail *= context.favoriteTail || 1;
+        if (context.favoriteSide) combined.favoriteSide = context.favoriteSide;
         if (context.market) combined.market = context.market;
       });
       combined.pace = clamp(combined.pace, 0.72, 1.22);
       combined.dcShift = clamp(combined.dcShift, -0.20, 0.20);
+      combined.tailBoost = clamp(combined.tailBoost, 0.70, 1.70);
+      combined.bttsBias = clamp(combined.bttsBias, 0.75, 1.45);
+      combined.drawBias = clamp(combined.drawBias, 0.70, 1.45);
+      combined.lowTotalBias = clamp(combined.lowTotalBias, 0.70, 1.35);
+      combined.favoriteTail = clamp(combined.favoriteTail, 0.85, 1.45);
       return combined;
     }
 
@@ -1719,7 +2157,12 @@
         ? (Number.isFinite(Number(knownResultMeta[fixture.id]?.order)) ? Number(knownResultMeta[fixture.id].order) : Infinity)
         : Infinity;
       const formContext = cfg.useKnown ? formContextFromStats(fixture.teamA, fixture.teamB, knownFormStats(beforeOrder), cfg) : {};
-      return combineContexts(formContext, { market: marketLineForFixture(fixture) });
+      return combineContexts(
+        tournamentClimateContext(beforeOrder, cfg),
+        matchupScoreContext(fixture.teamA, fixture.teamB, cfg, null, formContext),
+        formContext,
+        { market: marketLineForFixture(fixture) }
+      );
     }
 
     function sampleScoreFromDistribution(distribution, rand) {
@@ -1753,11 +2196,15 @@
     }
 
     function knockoutWinner(teamA, teamB, cfg, rand, state = null) {
-      const [aScore, bScore] = simScore(teamA, teamB, cfg, rand, state);
-      updateDynamicElo(state, teamA, teamB, aScore, bScore, cfg);
+      const context = combineContexts(
+        tournamentClimateContext(Infinity, cfg),
+        matchupScoreContext(teamA, teamB, cfg, state)
+      );
+      const [aScore, bScore] = simScore(teamA, teamB, cfg, rand, state, context);
+      updateDynamicElo(state, teamA, teamB, aScore, bScore, cfg, context);
       if (aScore > bScore) return teamA;
       if (bScore > aScore) return teamB;
-      const raw = eloWinProbability(teamA, teamB, cfg, state);
+      const raw = eloWinProbability(teamA, teamB, cfg, state, context);
       const compression = 1 - cfg.penaltyChaos * 0.72;
       const p = clamp(0.5 + (raw - 0.5) * compression, 0.36, 0.64);
       return rand() < p ? teamA : teamB;
@@ -1766,7 +2213,8 @@
     function buildFixtures() {
       return scheduledFixtures().map(fixture => ({
         ...fixture,
-        known: knownResults[fixture.id] || null
+        known: knownResults[fixture.id] || null,
+        meta: fixtureScheduleMeta[fixture.id] || {}
       }));
     }
 
@@ -1939,8 +2387,11 @@
 
       for (const fixture of fixtures) {
         const matchIndex = Number(fixture.id.split("-")[1]) - 1;
+        const groupContext = groupMatchContext(fixture, tables[fixture.group], matchIndex, cfg);
         const context = combineContexts(
-          groupMatchContext(fixture, tables[fixture.group], matchIndex, cfg),
+          tournamentClimateContext(Infinity, cfg),
+          groupContext,
+          matchupScoreContext(fixture.teamA, fixture.teamB, cfg, state, groupContext),
           { market: marketLineForFixture(fixture) }
         );
         const score = cfg.useKnown && fixture.known ? fixture.known : simScore(fixture.teamA, fixture.teamB, cfg, rand, state, context);
@@ -1970,6 +2421,7 @@
 
       const winners = {};
       const reached = { r32: [], r16: [], qf: [], sf: [], final: [] };
+      let runnerUp = null;
       for (const group of Object.keys(GROUPS)) {
         reached.r32.push(slots[`1${group}`], slots[`2${group}`]);
       }
@@ -1992,10 +2444,12 @@
         if (match.stage === "R16") reached.qf.push(winner);
         if (match.stage === "QF") reached.sf.push(winner);
         if (match.stage === "SF") reached.final.push(winner);
+        if (match.stage === "Final") runnerUp = winner === teamA ? teamB : teamA;
       }
 
       return {
         champion: winners[104],
+        runnerUp,
         positions,
         reached
       };
@@ -2007,6 +2461,7 @@
         group: team.group,
         elo: team.elo,
         champion: 0,
+        runnerUp: 0,
         final: 0,
         sf: 0,
         qf: 0,
@@ -2022,12 +2477,18 @@
       const cfg = config();
       const rand = mulberry32(cfg.seed);
       const stats = emptyStats();
+      const finalPairs = new Map();
       const started = performance.now();
       scoreDistCache = new Map();
 
       for (let i = 0; i < cfg.sims; i++) {
         const result = simulateTournament(cfg, rand);
         stats[result.champion].champion += 1;
+        if (result.runnerUp) stats[result.runnerUp].runnerUp += 1;
+        if (result.champion && result.runnerUp) {
+          const pairKey = `${result.champion}|${result.runnerUp}`;
+          finalPairs.set(pairKey, (finalPairs.get(pairKey) || 0) + 1);
+        }
         Object.entries(result.positions).forEach(([team, pos]) => {
           if (pos === 1) stats[team].first += 1;
           if (pos <= 2) stats[team].top2 += 1;
@@ -2045,6 +2506,7 @@
         .map(row => ({
           ...row,
           championP: row.champion / cfg.sims,
+          runnerUpP: row.runnerUp / cfg.sims,
           finalP: row.final / cfg.sims,
           sfP: row.sf / cfg.sims,
           qfP: row.qf / cfg.sims,
@@ -2055,6 +2517,13 @@
           top3P: row.top3 / cfg.sims
         }))
         .sort((a, b) => b.championP - a.championP || b.finalP - a.finalP || b.elo - a.elo);
+      lastFinalPairs = [...finalPairs.entries()]
+        .map(([key, count]) => {
+          const [champion, runnerUp] = key.split("|");
+          return { champion, runnerUp, p: count / cfg.sims };
+        })
+        .sort((a, b) => b.p - a.p)
+        .slice(0, 8);
 
       renderResults(lastRows, cfg, elapsed);
       renderFixtures(cfg);
@@ -2062,6 +2531,9 @@
       renderVerify(cfg);
       renderMatchPredict();
       renderCalibration(cfg);
+      renderTimelinePicks(cfg);
+      renderChampionBrief(lastRows, cfg);
+      renderVerifyBrief(cfg);
     }
 
     function pct(value) {
@@ -2089,6 +2561,218 @@
           <td class="num">${pct(score.p)}</td>
         </tr>
       `).join("");
+    }
+
+    function outcomePick(model) {
+      return [
+        { key: "home", label: "主胜", short: "胜", p: model.home },
+        { key: "draw", label: "平局", short: "平", p: model.draw },
+        { key: "away", label: "客胜", short: "负", p: model.away }
+      ].sort((a, b) => b.p - a.p)[0];
+    }
+
+    function teamProfile(name) {
+      return TEAM_NOTES[name] || {
+        players: "核心阵容以官方首发为准",
+        style: "按 Elo、已赛状态和小组处境进行客观估计"
+      };
+    }
+
+    function teamFormLine(name, beforeOrder, cfg) {
+      if (!cfg.useKnown) return `${teamLabel(name)}未纳入已赛状态`;
+      const stats = knownFormStats(beforeOrder)[name] || { played: 0, gf: 0, ga: 0, pts: 0 };
+      if (!stats.played) return `${teamLabel(name)}本届样本不足`;
+      return `${teamLabel(name)}本届${stats.played}场 ${stats.gf}-${stats.ga}，${stats.pts}分`;
+    }
+
+    function tournamentClimateLine(beforeOrder = Infinity) {
+      const rows = [];
+      scheduledFixtures().forEach(fixture => {
+        const score = knownResults[fixture.id];
+        if (!score) return;
+        const meta = knownResultMeta[fixture.id] || {};
+        const order = Number.isFinite(Number(meta.order)) ? Number(meta.order) : Infinity;
+        if (order >= beforeOrder) return;
+        rows.push(score);
+      });
+      if (!rows.length) return "本届走势：已赛样本不足，暂以赛前长期均值为主";
+      const goals = rows.reduce((sum, score) => sum + score[0] + score[1], 0);
+      const draws = rows.filter(score => score[0] === score[1]).length;
+      const btts = rows.filter(score => score[0] > 0 && score[1] > 0).length;
+      const high = rows.filter(score => score[0] + score[1] >= 4).length;
+      return `本届走势：已赛${rows.length}场，场均${(goals / rows.length).toFixed(2)}球，平局${pct(draws / rows.length)}，双方进球${pct(btts / rows.length)}，4球+${pct(high / rows.length)}`;
+    }
+
+    function fixtureSortValue(fixture) {
+      const date = fixture.meta?.dateObject || parseLocalMatchDate(fixture.meta?.localDate);
+      if (date && !Number.isNaN(date.getTime())) return date.getTime();
+      return 4102444800000 + (fixture.meta?.apiId || fixture.group.charCodeAt(0) * 10 + Number(fixture.id.split("-")[1]));
+    }
+
+    function upcomingFixtures(limit = 8) {
+      return buildFixtures()
+        .filter(fixture => !fixture.known)
+        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b))
+        .slice(0, limit);
+    }
+
+    function recommendationForFixture(fixture, cfg) {
+      const context = contextForFixture(fixture, cfg);
+      const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, context);
+      const pick = outcomePick(model);
+      const beforeOrder = fixture.known
+        ? (Number.isFinite(Number(knownResultMeta[fixture.id]?.order)) ? Number(knownResultMeta[fixture.id].order) : Infinity)
+        : Infinity;
+      const profileA = teamProfile(fixture.teamA);
+      const profileB = teamProfile(fixture.teamB);
+      const eloDiff = TEAMS[fixture.teamA].elo - TEAMS[fixture.teamB].elo + (HOSTS.has(fixture.teamA) ? cfg.hostBoost : 0) - (HOSTS.has(fixture.teamB) ? cfg.hostBoost : 0);
+      const favoriteNotWin = pick.key === "home" ? model.draw + model.away : pick.key === "away" ? model.home + model.draw : 1 - model.draw;
+      const events = eventForecast(fixture.teamA, fixture.teamB, cfg, context);
+      const logic = [
+        `客观：Elo差 ${Math.round(eloDiff)}，模型给${pick.label} ${pct(pick.p)}，前3比分 ${formatTopScores(model, 3)}`,
+        tournamentClimateLine(beforeOrder),
+        `状态：${teamFormLine(fixture.teamA, beforeOrder, cfg)}；${teamFormLine(fixture.teamB, beforeOrder, cfg)}`,
+        `球员/风格：${teamLabel(fixture.teamA)}看 ${profileA.players}；${teamLabel(fixture.teamB)}看 ${profileB.players}；${profileA.style} 对 ${profileB.style}`,
+        `事件倾向：${events.tension}，下半场黄牌${rangeText(events.second.yellow, "张")}，越位${rangeText(events.first.offside + events.second.offside, "次", 0.8)}`,
+        `主观：${model.highGoals > 0.38 ? "本届大比分偏多，防4球以上" : "节奏偏常规"}；${favoriteNotWin > 0.40 ? "热门不胜风险偏高" : "方向相对集中"}`
+      ];
+      return { fixture, model, pick, logic };
+    }
+
+    function renderTimelinePicks(cfg) {
+      const container = document.getElementById("timelinePicks");
+      const meta = document.getElementById("scheduleMeta");
+      if (!container) return;
+      const fixtures = upcomingFixtures(8);
+      if (meta) meta.textContent = fixtures.length ? `未来 ${fixtures.length} 场，按开赛时间排序` : "小组赛程已完成或等待同步";
+      if (!fixtures.length) {
+        container.innerHTML = `<div class="note">暂无未赛小组赛。若线上赛程接口短暂不可用，请稍后刷新。</div>`;
+        return;
+      }
+      container.innerHTML = fixtures.map(fixture => {
+        const rec = recommendationForFixture(fixture, cfg);
+        const model = rec.model;
+        const pick = rec.pick;
+        return `
+          <div class="pick-row">
+            <div class="timeblock">
+              <strong>${formatMatchTime(fixture.meta)}</strong>
+              <span>${fixture.group}组 第${fixture.id.split("-")[1]}场</span>
+              <span>${fixture.meta?.localDate || "赛程时间待同步"}</span>
+            </div>
+            <div>
+              <div class="matchline">
+                <span>${teamLabel(fixture.teamA)}</span>
+                <span class="muted">vs</span>
+                <span>${teamLabel(fixture.teamB)}</span>
+                <span class="pick-badge">${pick.short}</span>
+              </div>
+              <div class="pick-meta">
+                <span class="mini-chip">胜 ${pct(model.home)}</span>
+                <span class="mini-chip">平 ${pct(model.draw)}</span>
+                <span class="mini-chip">负 ${pct(model.away)}</span>
+                <span class="mini-chip">4球+ ${pct(model.highGoals)}</span>
+                <span class="mini-chip">双方进球 ${pct(model.btts)}</span>
+              </div>
+              <div class="logic-lines">${rec.logic.map(line => `<span>${line}</span>`).join("")}</div>
+            </div>
+            <div class="score-stack">
+              <span class="small muted">推荐比分</span>
+              <strong>${model.score}</strong>
+              <span class="small">备选 ${model.altScore} / ${model.thirdScore}</span>
+              <span class="small">公允 ${odds(pick.p, cfg.margin)}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderChampionBrief(rows, cfg) {
+      const container = document.getElementById("championBrief");
+      const meta = document.getElementById("finalMeta");
+      if (!container) return;
+      if (!rows.length) {
+        container.innerHTML = `<div class="note">等待蒙特卡洛模拟完成。</div>`;
+        return;
+      }
+      const champion = rows[0];
+      const runner = [...rows]
+        .filter(row => row.name !== champion.name)
+        .sort((a, b) => b.runnerUpP - a.runnerUpP || b.finalP - a.finalP)[0] || rows[1] || champion;
+      if (meta) meta.textContent = `${cfg.sims.toLocaleString()} 次路径模拟`;
+      const pairRows = lastFinalPairs.slice(0, 3).map(pair => `
+        <div class="champion-pair">
+          <strong>${teamLabel(pair.champion)} 冠军 / ${teamLabel(pair.runnerUp)} 亚军</strong>
+          <span class="small muted">路径概率 ${pct(pair.p)}，受小组排名和淘汰赛分区影响</span>
+        </div>
+      `).join("");
+      container.innerHTML = `
+        <div class="champion-pair">
+          <strong>冠军首选：${teamLabel(champion.name)} ${pct(champion.championP)}</strong>
+          <span class="small muted">进决赛 ${pct(champion.finalP)}，四强 ${pct(champion.sfP)}，公允赔率 ${odds(champion.championP, cfg.margin)}</span>
+        </div>
+        <div class="champion-pair">
+          <strong>亚军候选：${teamLabel(runner.name)} ${pct(runner.runnerUpP)}</strong>
+          <span class="small muted">亚军概率来自决赛输球路径，不等同于进决赛概率</span>
+        </div>
+        ${pairRows || "<div class='small muted'>决赛组合样本等待模拟。</div>"}
+      `;
+    }
+
+    function collectVerifyRows(cfg) {
+      return buildFixtures().filter(fixture => fixture.known).map(fixture => {
+        const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, contextForFixture(fixture, cfg));
+        const actual = scoreText(fixture.known);
+        const predictedOutcome = modelOutcome(model);
+        const actualOutcome = scoreOutcome(fixture.known);
+        const actualOver25 = fixture.known[0] + fixture.known[1] >= 3;
+        const modelOver25 = model.over25 >= 0.5;
+        const actualBtts = fixture.known[0] > 0 && fixture.known[1] > 0;
+        const modelBtts = model.btts >= 0.5;
+        const actualRank = scoreRank(model, actual);
+        return {
+          fixture,
+          model,
+          actual,
+          actualRank,
+          actualProb: scoreProbabilityByText(model, actual),
+          outcomeHit: predictedOutcome === actualOutcome,
+          exactHit: model.score === actual,
+          top2Hit: model.score === actual || model.altScore === actual,
+          top3Hit: model.score === actual || model.altScore === actual || model.thirdScore === actual,
+          overHit: modelOver25 === actualOver25,
+          bttsHit: modelBtts === actualBtts,
+          predictedOutcome,
+          actualOutcome,
+          modelOver25,
+          actualOver25,
+          modelBtts,
+          actualBtts
+        };
+      });
+    }
+
+    function renderVerifyBrief(cfg, rows = collectVerifyRows(cfg)) {
+      const container = document.getElementById("verifyBrief");
+      if (!container) return;
+      const count = Math.max(rows.length, 1);
+      const top3Hits = rows.filter(row => row.top3Hit).length;
+      const outcomeHits = rows.filter(row => row.outcomeHit).length;
+      const exactHits = rows.filter(row => row.exactHit).length;
+      const recentMisses = rows
+        .filter(row => !row.top3Hit)
+        .slice(-3)
+        .map(row => `${teamLabel(row.fixture.teamA)} ${row.actual} ${teamLabel(row.fixture.teamB)}，真实比分排第${row.actualRank || "10+"}`)
+        .join("；");
+      container.innerHTML = `
+        <div class="verify-focus">
+          <div class="kpi"><div class="label">前3比分命中</div><div class="value">${rows.length ? `${top3Hits}/${rows.length}` : "暂无"}</div><div class="hint">${pct(top3Hits / count)}</div></div>
+          <div class="kpi"><div class="label">胜平负方向</div><div class="value">${pct(outcomeHits / count)}</div><div class="hint">方向先于精确比分</div></div>
+          <div class="kpi"><div class="label">第1比分</div><div class="value">${pct(exactHits / count)}</div><div class="hint">最苛刻指标</div></div>
+          <div class="kpi"><div class="label">样本数</div><div class="value">${rows.length}</div><div class="hint">${resultsSync.source}</div></div>
+        </div>
+        <div class="note">${recentMisses ? `近期漏点：${recentMisses}` : "目前暂无前3比分漏点。"} 每次赛果同步后会自动重算。</div>
+      `;
     }
 
     function renderResults(rows, cfg, elapsed) {
@@ -2127,15 +2811,17 @@
       document.getElementById("logLine").textContent = cfg.useKnown
         ? knownResultsSummary()
         : "未纳入已赛结果，按赛前模型重跑。";
+      renderChampionBrief(rows, cfg);
     }
 
     function renderFixtures(cfg) {
       const tbody = document.querySelector("#fixturesTable tbody");
-      tbody.innerHTML = buildFixtures().map(fixture => {
+      tbody.innerHTML = buildFixtures().sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b)).map(fixture => {
         const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, contextForFixture(fixture, cfg));
         const knownScore = cfg.useKnown && fixture.known ? `${fixture.known[0]}-${fixture.known[1]}` : null;
         return `
           <tr>
+            <td>${formatMatchTime(fixture.meta)}</td>
             <td>${fixture.group}</td>
             <td><span class="team">${teamLabel(fixture.teamA)}</span> 对 <span class="team">${teamLabel(fixture.teamB)}</span>${knownScore ? " <span class='muted small'>已赛</span>" : ""}</td>
             <td class="num">${knownScore || formatTopScores(model, 3)}</td>
@@ -2231,13 +2917,15 @@
       if (!status || !tbody) return;
       const marketCount = Object.keys(marketLines).length;
       status.textContent = marketCount
-        ? `已载入 ${marketCount} 场盘口；盘口权重 ${Math.round(cfg.marketWeight * 100)}%，状态权重 ${Math.round(cfg.formWeight * 100)}%。`
-        : `暂无盘口数据；当前只使用 Elo、泊松/Dixon-Coles、已赛状态和蒙特卡洛。`;
+        ? `已载入 ${marketCount} 场盘口；盘口权重 ${Math.round(cfg.marketWeight * 100)}%，状态权重 ${Math.round(cfg.formWeight * 100)}%，赛果气候 ${Math.round(cfg.climateWeight * 100)}%。`
+        : `暂无盘口数据；当前使用 Elo、泊松/Dixon-Coles、比分方差、赛果气候、已赛状态和蒙特卡洛。`;
 
       tbody.innerHTML = buildFixtures().map(fixture => {
         const market = marketLineForFixture(fixture);
         const notes = [];
         if (cfg.useMarket && market) notes.push("盘口参与比分再加权");
+        if (cfg.climateWeight > 0) notes.push("赛果气候修正进球/平局/双方进球");
+        if (cfg.varianceWeight > 0) notes.push("强弱差修正比分方差");
         if (cfg.useForm && cfg.useKnown) notes.push(fixture.known ? "验真只取本场之前状态" : "使用当前已赛状态");
         if (!notes.length) notes.push("按基础模型计算");
         return `
@@ -2309,43 +2997,20 @@
     }
 
     function renderVerify(cfg) {
-      const verified = buildFixtures().filter(fixture => fixture.known);
-      const rows = verified.map(fixture => {
-        const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, contextForFixture(fixture, cfg));
-        const actual = scoreText(fixture.known);
-        const predictedOutcome = modelOutcome(model);
-        const actualOutcome = scoreOutcome(fixture.known);
-        const actualOver25 = fixture.known[0] + fixture.known[1] >= 3;
-        const modelOver25 = model.over25 >= 0.5;
-        const actualBtts = fixture.known[0] > 0 && fixture.known[1] > 0;
-        const modelBtts = model.btts >= 0.5;
-        const actualRank = scoreRank(model, actual);
-        return {
-          fixture,
-          model,
-          actual,
-          actualRank,
-          actualProb: scoreProbabilityByText(model, actual),
-          outcomeHit: predictedOutcome === actualOutcome,
-          exactHit: model.score === actual,
-          top2Hit: model.score === actual || model.altScore === actual,
-          top3Hit: model.score === actual || model.altScore === actual || model.thirdScore === actual,
-          overHit: modelOver25 === actualOver25,
-          bttsHit: modelBtts === actualBtts,
-          predictedOutcome,
-          actualOutcome,
-          modelOver25,
-          actualOver25,
-          modelBtts,
-          actualBtts
-        };
-      });
+      const rows = collectVerifyRows(cfg);
 
       const count = Math.max(rows.length, 1);
       const rate = key => rows.filter(row => row[key]).length / count;
       const top3ScoreHits = rows.filter(row => row.top3Hit).length;
       const top3ScoreRate = rows.length ? top3ScoreHits / rows.length : 0;
-      document.getElementById("verifyNote").textContent = `验真只统计已经有真实赛果的比赛。当前纳入 ${rows.length} 场，来源：${resultsSync.source}。`;
+      const goalTotal = rows.reduce((sum, row) => sum + row.fixture.known[0] + row.fixture.known[1], 0);
+      const drawCount = rows.filter(row => row.fixture.known[0] === row.fixture.known[1]).length;
+      const bttsCount = rows.filter(row => row.fixture.known[0] > 0 && row.fixture.known[1] > 0).length;
+      const highCount = rows.filter(row => row.fixture.known[0] + row.fixture.known[1] >= 4).length;
+      const sampleLine = rows.length
+        ? `样本特征：场均 ${(goalTotal / rows.length).toFixed(2)} 球，平局 ${pct(drawCount / rows.length)}，双方进球 ${pct(bttsCount / rows.length)}，4球以上 ${pct(highCount / rows.length)}。`
+        : "暂无足够样本。";
+      document.getElementById("verifyNote").textContent = `验真只统计已经有真实赛果的比赛。当前纳入 ${rows.length} 场，来源：${resultsSync.source}。${sampleLine}低命中主要来自尾部大比分、双方进球和冷平偏多。`;
       document.getElementById("verifyKpis").innerHTML = [
         ["已赛样本", `${rows.length}场`, "样本很小，仅作校准参考"],
         ["胜平负方向", pct(rate("outcomeHit")), "看模型方向是否正确"],
@@ -2375,6 +3040,7 @@
           <td class="num">${hitMark(row.bttsHit)}<br><span class="small muted">预测${row.modelBtts ? "是" : "否"} / 实际${row.actualBtts ? "是" : "否"}</span></td>
         </tr>
       `).join("");
+      renderVerifyBrief(cfg, rows);
     }
 
     function renderMatchCard(fixture, cfg, title) {
@@ -2485,6 +3151,14 @@
       URL.revokeObjectURL(url);
     }
 
+    function activateTab(tabName) {
+      document.querySelectorAll(".tab").forEach(node => node.classList.toggle("active", node.dataset.tab === tabName));
+      document.querySelectorAll(".tabpane").forEach(node => node.classList.add("hidden"));
+      const pane = document.getElementById(`tab-${tabName}`);
+      if (pane) pane.classList.remove("hidden");
+      pane?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     function init() {
       marketLines = loadStoredMarketLines();
       const marketInput = document.getElementById("marketInput");
@@ -2507,6 +3181,9 @@
       });
 
       document.getElementById("exportBtn").addEventListener("click", exportCsv);
+      document.getElementById("refreshScheduleBtn")?.addEventListener("click", () => syncLatestResults());
+      document.getElementById("openVerifyBtn")?.addEventListener("click", () => activateTab("verify"));
+      document.getElementById("openChampionBtn")?.addEventListener("click", () => document.getElementById("championPanel")?.scrollIntoView({ behavior: "smooth", block: "start" }));
       document.getElementById("loadMarketBtn").addEventListener("click", () => {
         try {
           marketLines = parseMarketLines(document.getElementById("marketInput").value);
@@ -2528,29 +3205,32 @@
         runSimulation();
       });
 
-      ["matchOne", "matchTwo", "goals", "scale", "hostBoost", "dcRho", "motivation", "penaltyChaos", "margin", "marketWeight", "formWeight"].forEach(id => {
+      ["matchOne", "matchTwo", "goals", "scale", "hostBoost", "dcRho", "motivation", "penaltyChaos", "margin", "marketWeight", "formWeight", "varianceWeight", "climateWeight"].forEach(id => {
         document.getElementById(id).addEventListener("change", () => {
+          const cfg = config();
           renderMatchPredict();
-          renderFixtures(config());
-          renderVerify(config());
-          renderCalibration(config());
+          renderFixtures(cfg);
+          renderVerify(cfg);
+          renderCalibration(cfg);
+          renderTimelinePicks(cfg);
+          renderVerifyBrief(cfg);
+          if (lastRows.length) renderChampionBrief(lastRows, cfg);
         });
       });
       ["useKnown", "dynamicElo", "useMarket", "useForm"].forEach(id => document.getElementById(id).addEventListener("change", () => {
         scoreDistCache = new Map();
+        const cfg = config();
         renderMatchPredict();
-        renderFixtures(config());
-        renderVerify(config());
-        renderCalibration(config());
+        renderFixtures(cfg);
+        renderVerify(cfg);
+        renderCalibration(cfg);
+        renderTimelinePicks(cfg);
+        renderVerifyBrief(cfg);
+        if (lastRows.length) renderChampionBrief(lastRows, cfg);
       }));
 
       document.querySelectorAll(".tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-          document.querySelectorAll(".tab").forEach(node => node.classList.remove("active"));
-          document.querySelectorAll(".tabpane").forEach(node => node.classList.add("hidden"));
-          tab.classList.add("active");
-          document.getElementById(`tab-${tab.dataset.tab}`).classList.remove("hidden");
-        });
+        tab.addEventListener("click", () => activateTab(tab.dataset.tab));
       });
 
       renderMatchPredict();
