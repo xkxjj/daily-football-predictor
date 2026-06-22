@@ -1,0 +1,46 @@
+name: Update World Cup Results
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch latest results
+        run: |
+          mkdir -p data
+          curl -fsSL "https://worldcup26.ir/get/games" -o data/games.json.tmp
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          tmp = Path("data/games.json.tmp")
+          target = Path("data/games.json")
+          data = json.loads(tmp.read_text(encoding="utf-8"))
+          games = data if isinstance(data, list) else data.get("games")
+          if not isinstance(games, list) or not games:
+              raise SystemExit("No games found in upstream response")
+          target.write_text(json.dumps({"games": games}, ensure_ascii=False, indent=2), encoding="utf-8")
+          tmp.unlink(missing_ok=True)
+          PY
+
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- data/games.json; then
+            echo "No result changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/games.json
+          git commit -m "Update World Cup results data"
+          git push
