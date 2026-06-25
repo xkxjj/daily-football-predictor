@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2026 世界杯 Elo评分 + 蒙特卡洛夺冠概率预测器</title>
+  <title>2026 世界杯每日比分预测看板</title>
   <link rel="icon" href="data:," />
   <style>
     :root {
@@ -853,24 +853,53 @@
 
     .score-stack .small { color: var(--muted); }
 
-    .champion-brief,
+    .review-list,
+    .learning-list,
     .verify-brief {
       display: grid;
       gap: 10px;
     }
 
-    .champion-pair {
+    .review-row {
       display: grid;
-      gap: 8px;
+      grid-template-columns: minmax(130px, 0.7fr) minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border-bottom: 1px solid rgba(130, 173, 153, 0.18);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .review-row.hit {
+      border: 1px solid rgba(78, 231, 196, 0.35);
+      background: rgba(35, 130, 105, 0.16);
+    }
+
+    .review-row.miss {
+      border: 1px solid rgba(255, 91, 105, 0.35);
+      background: rgba(150, 38, 52, 0.16);
+    }
+
+    .review-row strong,
+    .learning-list strong {
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .hit-text { color: #67f2c8; font-weight: 900; }
+    .miss-text { color: #ff7d8d; font-weight: 900; }
+
+    .learning-item {
+      display: grid;
+      gap: 6px;
       padding: 10px 0;
       border-bottom: 1px solid rgba(130, 173, 153, 0.18);
     }
 
-    .champion-pair:last-child { border-bottom: 0; }
+    .learning-item:last-child { border-bottom: 0; }
 
-    .champion-pair strong {
-      color: #ffffff;
-      font-size: 16px;
+    .champion-hidden {
+      display: none;
     }
 
     .verify-focus {
@@ -885,6 +914,7 @@
       .dashboard { grid-template-columns: 1fr; }
       .pick-row { grid-template-columns: 1fr; }
       .core-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .review-row { grid-template-columns: 1fr; }
       .score-stack { text-align: left; }
       .dual-match-grid { grid-template-columns: 1fr; }
       .score-options { grid-template-columns: 1fr; }
@@ -895,8 +925,8 @@
   <main>
     <div class="topbar">
       <div>
-        <h1>2026 世界杯 Elo评分 + 蒙特卡洛夺冠概率预测器</h1>
-        <p class="sub">用国家队 Elo 评分推导进球期望，泊松分布生成比分，蒙特卡洛重复跑完整 48 队赛程。投注倍率显示为模型公允十进制赔率，不是博彩公司盘口。</p>
+        <h1>2026 世界杯每日比分预测看板</h1>
+        <p class="sub">每天按赛程给出比分、胜平负、半场胜平负和进球数推荐；赛后自动复盘预测与真实比分差距，让模型边看边改。</p>
         <div class="status-strip">
           <span class="status-dot"></span>
           <span class="small muted">预测引擎就绪</span>
@@ -905,7 +935,7 @@
         </div>
       </div>
       <div class="pillrow">
-        <div class="pill">数据日：2026-06-12</div>
+        <div class="pill" id="dataDatePill">数据自动更新</div>
         <div class="pill">48 队 / 12 组 / 104 场</div>
         <div class="pill" id="resultCountPill">已赛 2 场</div>
       </div>
@@ -914,7 +944,7 @@
     <div class="dashboard">
       <section class="panel">
         <div class="panel-head">
-          <h2>按开赛时间推荐</h2>
+          <h2>每日赛程推荐</h2>
           <div class="section-tools">
             <span class="small muted" id="scheduleMeta">等待赛程同步</span>
             <button class="secondary" id="refreshScheduleBtn">刷新推荐</button>
@@ -928,24 +958,24 @@
       <div class="headline-stack">
         <section class="panel">
           <div class="panel-head">
-            <h2>冠亚预测入口</h2>
+            <h2>昨日复盘总结</h2>
             <div class="section-tools">
-              <div class="small muted" id="finalMeta">等待模拟</div>
-              <button class="secondary" id="openChampionBtn">完整榜单</button>
+              <div class="small muted" id="reviewMeta">等待赛果同步</div>
+              <button class="secondary" id="openVerifyBtn">打开验真表</button>
             </div>
           </div>
           <div class="panel-body">
-            <div class="champion-brief" id="championBrief"></div>
+            <div class="review-list" id="dailyReviewBrief"></div>
           </div>
         </section>
 
         <section class="panel">
           <div class="panel-head">
-            <h2>自查验真重点</h2>
-            <button class="secondary" id="openVerifyBtn">打开验真表</button>
+            <h2>系统学习反思</h2>
+            <span class="small muted">随赛果滚动校准</span>
           </div>
           <div class="panel-body">
-            <div class="verify-brief" id="verifyBrief"></div>
+            <div class="learning-list" id="learningBrief"></div>
           </div>
         </section>
       </div>
@@ -1031,7 +1061,7 @@
     </div>
 
     <div class="layout">
-      <section class="panel" id="championPanel">
+      <section class="panel champion-hidden" id="championPanel">
         <div class="panel-head">
           <h2>夺冠概率</h2>
           <div class="small muted" id="runMeta">等待运行</div>
@@ -1560,6 +1590,7 @@
       const statusText = document.getElementById("syncStatusText");
       const statusMeta = document.getElementById("syncStatusMeta");
       const resultPill = document.getElementById("resultCountPill");
+      const dataDatePill = document.getElementById("dataDatePill");
       if (statusText) statusText.textContent = resultsSync.status;
       if (statusMeta) {
         statusMeta.textContent = resultsSync.updatedAt
@@ -1567,6 +1598,11 @@
           : `${resultsSync.source}已加载`;
       }
       if (resultPill) resultPill.textContent = `已赛 ${count} 场`;
+      if (dataDatePill) {
+        dataDatePill.textContent = resultsSync.updatedAt
+          ? `数据更新：${resultsSync.updatedAt.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" })}`
+          : "数据自动更新";
+      }
     }
 
     function applyExternalResults(games, sourceLabel = "线上赛果") {
@@ -2640,6 +2676,16 @@
       };
     }
 
+    function totalGoalsRecommendation(model) {
+      const over = model.over25;
+      const under = 1 - model.over25;
+      const expected = model.lambdaA + model.lambdaB;
+      const band = expected >= 3.35 ? "3-5球" : expected >= 2.45 ? "2-4球" : "0-2球";
+      return over >= under
+        ? { label: "大2.5", p: over, band, expected }
+        : { label: "小2.5", p: under, band, expected };
+    }
+
     function teamProfile(name) {
       return TEAM_NOTES[name] || {
         players: "核心阵容以官方首发为准",
@@ -2678,11 +2724,69 @@
       return 4102444800000 + (fixture.meta?.apiId || fixture.group.charCodeAt(0) * 10 + Number(fixture.id.split("-")[1]));
     }
 
+    function fixtureDate(fixture) {
+      const date = fixture.meta?.dateObject || parseLocalMatchDate(fixture.meta?.localDate);
+      return date && !Number.isNaN(date.getTime()) ? date : null;
+    }
+
+    function startOfLocalDay(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+
+    function dateKey(date) {
+      if (!date) return "";
+      const day = startOfLocalDay(date);
+      return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+    }
+
+    function formatDay(date) {
+      if (!date) return "比赛日待同步";
+      return date.toLocaleDateString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short"
+      });
+    }
+
+    function fixturesOnKey(fixtures, key) {
+      return fixtures.filter(fixture => dateKey(fixtureDate(fixture)) === key)
+        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b));
+    }
+
+    function targetUpcomingDay(fixtures = buildFixtures()) {
+      const open = fixtures.filter(fixture => !fixture.known && fixtureDate(fixture))
+        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b));
+      if (!open.length) return { key: "", date: null, fixtures: [] };
+      const todayKey = dateKey(new Date());
+      const today = open.find(fixture => dateKey(fixtureDate(fixture)) === todayKey);
+      const future = open.find(fixture => dateKey(fixtureDate(fixture)) >= todayKey);
+      const target = today || future || open[0];
+      const key = dateKey(fixtureDate(target));
+      return { key, date: fixtureDate(target), fixtures: fixturesOnKey(open, key) };
+    }
+
+    function targetReviewDay(fixtures = buildFixtures()) {
+      const done = fixtures.filter(fixture => fixture.known && fixtureDate(fixture))
+        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b));
+      if (!done.length) return { key: "", date: null, fixtures: [] };
+      const yesterdayKey = dateKey(addDays(new Date(), -1));
+      const yesterday = done.find(fixture => dateKey(fixtureDate(fixture)) === yesterdayKey);
+      const todayKey = dateKey(new Date());
+      const beforeToday = [...done].reverse().find(fixture => dateKey(fixtureDate(fixture)) < todayKey);
+      const target = yesterday || beforeToday || done[done.length - 1];
+      const key = dateKey(fixtureDate(target));
+      return { key, date: fixtureDate(target), fixtures: fixturesOnKey(done, key) };
+    }
+
     function upcomingFixtures(limit = 8) {
-      return buildFixtures()
-        .filter(fixture => !fixture.known)
-        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b))
-        .slice(0, limit);
+      const day = targetUpcomingDay();
+      return day.fixtures.slice(0, limit);
     }
 
     function recommendationForFixture(fixture, cfg) {
@@ -2691,6 +2795,7 @@
       const pick = outcomePick(model);
       const halfPick = outcomePick(model.half);
       const handicap = handicapRecommendation(model);
+      const totalPick = totalGoalsRecommendation(model);
       const beforeOrder = fixture.known
         ? (Number.isFinite(Number(knownResultMeta[fixture.id]?.order)) ? Number(knownResultMeta[fixture.id].order) : Infinity)
         : Infinity;
@@ -2707,17 +2812,20 @@
         `事件倾向：${events.tension}，下半场黄牌${rangeText(events.second.yellow, "张")}，越位${rangeText(events.first.offside + events.second.offside, "次", 0.8)}`,
         `主观：${model.highGoals > 0.38 ? "本届大比分偏多，防4球以上" : "节奏偏常规"}；${favoriteNotWin > 0.40 ? "热门不胜风险偏高" : "方向相对集中"}`
       ];
-      return { fixture, model, pick, halfPick, handicap, logic };
+      return { fixture, model, pick, halfPick, handicap, totalPick, logic };
     }
 
     function renderTimelinePicks(cfg) {
       const container = document.getElementById("timelinePicks");
       const meta = document.getElementById("scheduleMeta");
       if (!container) return;
-      const fixtures = upcomingFixtures(8);
-      if (meta) meta.textContent = fixtures.length ? `未来 ${fixtures.length} 场，按开赛时间排序` : "小组赛程已完成或等待同步";
+      const day = targetUpcomingDay();
+      const fixtures = day.fixtures;
+      if (meta) meta.textContent = fixtures.length ? `${formatDay(day.date)} ${fixtures.length}场，按开赛时间排序` : "小组赛程已完成或等待同步";
       if (!fixtures.length) {
         container.innerHTML = `<div class="note">暂无未赛小组赛。若线上赛程接口短暂不可用，请稍后刷新。</div>`;
+        renderDailyReview(cfg);
+        renderLearningBrief(cfg);
         return;
       }
       container.innerHTML = fixtures.map(fixture => {
@@ -2726,6 +2834,7 @@
         const pick = rec.pick;
         const halfPick = rec.halfPick;
         const handicap = rec.handicap;
+        const totalPick = rec.totalPick;
         return `
           <div class="pick-row">
             <div class="timeblock">
@@ -2757,15 +2866,16 @@
                   <div class="core-detail">半场概率 ${pct(halfPick.p)}</div>
                 </div>
                 <div class="core-pick">
-                  <div class="core-label">让球胜平负</div>
-                  <div class="core-value">${handicap.pick.label}</div>
-                  <div class="core-detail">${handicap.lineLabel}｜${pct(handicap.pick.p)}</div>
+                  <div class="core-label">进球数推荐</div>
+                  <div class="core-value">${totalPick.label}</div>
+                  <div class="core-detail">${totalPick.band}｜期望${totalPick.expected.toFixed(2)}球</div>
                 </div>
               </div>
               <div class="pick-meta">
                 <span class="mini-chip">胜 ${pct(model.home)}</span>
                 <span class="mini-chip">平 ${pct(model.draw)}</span>
                 <span class="mini-chip">负 ${pct(model.away)}</span>
+                <span class="mini-chip">${handicap.lineLabel} ${handicap.pick.label} ${pct(handicap.pick.p)}</span>
                 <span class="mini-chip">4球+ ${pct(model.highGoals)}</span>
                 <span class="mini-chip">双方进球 ${pct(model.btts)}</span>
               </div>
@@ -2780,6 +2890,8 @@
           </div>
         `;
       }).join("");
+      renderDailyReview(cfg);
+      renderLearningBrief(cfg);
     }
 
     function renderChampionBrief(rows, cfg) {
@@ -2845,6 +2957,105 @@
           actualBtts
         };
       });
+    }
+
+    function scoreGap(actualText, predictedText) {
+      const [actualA, actualB] = parseScore(actualText);
+      const [predA, predB] = parseScore(predictedText);
+      return Math.abs(actualA - predA) + Math.abs(actualB - predB);
+    }
+
+    function renderDailyReview(cfg, rows = collectVerifyRows(cfg)) {
+      const container = document.getElementById("dailyReviewBrief");
+      const meta = document.getElementById("reviewMeta");
+      if (!container) return;
+      const day = targetReviewDay();
+      const ids = new Set(day.fixtures.map(fixture => fixture.id));
+      const reviewRows = rows
+        .filter(row => ids.has(row.fixture.id))
+        .sort((a, b) => fixtureSortValue(a.fixture) - fixtureSortValue(b.fixture));
+
+      if (!reviewRows.length) {
+        if (meta) meta.textContent = "暂无可复盘赛果";
+        container.innerHTML = `<div class="note">等待已赛比分同步后，这里会自动显示上一比赛日复盘。</div>`;
+        return;
+      }
+
+      const top3Hits = reviewRows.filter(row => row.top3Hit).length;
+      const outcomeHits = reviewRows.filter(row => row.outcomeHit).length;
+      const overHits = reviewRows.filter(row => row.overHit).length;
+      const avgGap = reviewRows.reduce((sum, row) => sum + scoreGap(row.actual, row.model.score), 0) / reviewRows.length;
+      if (meta) {
+        meta.textContent = `${formatDay(day.date)} ${reviewRows.length}场｜前3比分 ${top3Hits}/${reviewRows.length}｜均差 ${avgGap.toFixed(1)}球`;
+      }
+
+      container.innerHTML = `
+        <div class="verify-focus">
+          <div class="kpi"><div class="label">前3比分</div><div class="value">${top3Hits}/${reviewRows.length}</div><div class="hint">${pct(top3Hits / reviewRows.length)}</div></div>
+          <div class="kpi"><div class="label">胜平负</div><div class="value">${outcomeHits}/${reviewRows.length}</div><div class="hint">${pct(outcomeHits / reviewRows.length)}</div></div>
+          <div class="kpi"><div class="label">大小2.5</div><div class="value">${overHits}/${reviewRows.length}</div><div class="hint">${pct(overHits / reviewRows.length)}</div></div>
+          <div class="kpi"><div class="label">比分均差</div><div class="value">${avgGap.toFixed(1)}球</div><div class="hint">按概率第1比分算</div></div>
+        </div>
+        ${reviewRows.map(row => {
+          const gap = scoreGap(row.actual, row.model.score);
+          const stateClass = row.top3Hit ? "hit" : "miss";
+          const stateText = row.top3Hit ? "前3命中" : "前3未中";
+          return `
+            <div class="review-row ${stateClass}">
+              <div>
+                <strong>${formatMatchTime(row.fixture.meta)}</strong>
+                <div class="small muted">${teamLabel(row.fixture.teamA)} vs ${teamLabel(row.fixture.teamB)}</div>
+                <div class="${row.top3Hit ? "hit-text" : "miss-text"}">${stateText}</div>
+              </div>
+              <div>
+                <div><strong>真实 ${row.actual}</strong>｜预测第1 ${row.model.score}｜差距 ${gap}球</div>
+                <div class="small muted">前三：${row.model.score} / ${row.model.altScore} / ${row.model.thirdScore}；真实排名 ${row.actualRank ? `第${row.actualRank}` : "10球外"}</div>
+                <div class="small muted">胜平负 ${row.outcomeHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}｜大小2.5 ${row.overHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}｜双方进球 ${row.bttsHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}</div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function renderLearningBrief(cfg, rows = collectVerifyRows(cfg)) {
+      const container = document.getElementById("learningBrief");
+      if (!container) return;
+      if (!rows.length) {
+        container.innerHTML = `<div class="note">暂无足够赛果，模型先按赛前基准预测。</div>`;
+        return;
+      }
+      const count = rows.length;
+      const top3Rate = rows.filter(row => row.top3Hit).length / count;
+      const outcomeRate = rows.filter(row => row.outcomeHit).length / count;
+      const actualGoals = rows.reduce((sum, row) => sum + row.fixture.known[0] + row.fixture.known[1], 0) / count;
+      const expectedGoals = rows.reduce((sum, row) => sum + row.model.lambdaA + row.model.lambdaB, 0) / count;
+      const highRate = rows.filter(row => row.fixture.known[0] + row.fixture.known[1] >= 4).length / count;
+      const drawRate = rows.filter(row => row.fixture.known[0] === row.fixture.known[1]).length / count;
+      const recentMiss = rows.filter(row => !row.top3Hit).slice(-1)[0];
+      const goalBias = actualGoals > expectedGoals + 0.18
+        ? "实际进球继续高于模型期望，后续预测会更重视大2.5和4球以上风险。"
+        : actualGoals < expectedGoals - 0.18
+          ? "实际进球低于模型期望，后续预测会收紧总进球区间。"
+          : "实际进球与模型期望接近，暂不大幅调整总进球基准。";
+      const missLine = recentMiss
+        ? `最近漏点是 ${teamLabel(recentMiss.fixture.teamA)} ${recentMiss.actual} ${teamLabel(recentMiss.fixture.teamB)}，模型第1 ${recentMiss.model.score}，真实比分排${recentMiss.actualRank ? `第${recentMiss.actualRank}` : "10球外"}。`
+        : "最近复盘暂无前3比分漏点。";
+
+      container.innerHTML = `
+        <div class="learning-item">
+          <strong>命中概况</strong>
+          <span class="small muted">已复盘 ${count} 场，前3比分 ${pct(top3Rate)}，胜平负 ${pct(outcomeRate)}。比分比方向难得多，所以主看板会同时给方向和进球数。</span>
+        </div>
+        <div class="learning-item">
+          <strong>进球气候</strong>
+          <span class="small muted">真实场均 ${actualGoals.toFixed(2)} 球，模型期望 ${expectedGoals.toFixed(2)} 球，4球+ ${pct(highRate)}，平局 ${pct(drawRate)}。${goalBias}</span>
+        </div>
+        <div class="learning-item">
+          <strong>最新反思</strong>
+          <span class="small muted">${missLine}</span>
+        </div>
+      `;
     }
 
     function renderVerifyBrief(cfg, rows = collectVerifyRows(cfg)) {
