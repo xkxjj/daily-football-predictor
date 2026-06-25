@@ -687,6 +687,22 @@
       padding: 8px;
     }
 
+    .verify-day-row td {
+      background: rgba(78, 231, 196, 0.12);
+      color: #ffffff;
+      font-weight: 900;
+      border-top: 1px solid rgba(78, 231, 196, 0.30);
+      border-bottom: 1px solid rgba(78, 231, 196, 0.18);
+    }
+
+    .verify-result-hit td {
+      background: rgba(35, 130, 105, 0.12);
+    }
+
+    .verify-result-miss td {
+      background: rgba(150, 38, 52, 0.12);
+    }
+
     .risk-chip {
       display: inline-block;
       padding: 3px 7px;
@@ -1165,10 +1181,12 @@
               <thead>
                 <tr>
                   <th>比赛</th>
+                  <th class="num">北京时</th>
                   <th class="num">真实比分</th>
                   <th class="num">概率第1</th>
                   <th class="num">概率第2</th>
                   <th class="num">概率第3</th>
+                  <th class="num">差距</th>
                   <th class="num">真实比分排名</th>
                   <th class="num">胜平负</th>
                   <th class="num">精确命中</th>
@@ -1530,7 +1548,7 @@
       const match = String(text || "").match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
       if (!match) return null;
       const [, month, day, year, hour, minute] = match;
-      return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+      return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour) - 8, Number(minute)));
     }
 
     function formatMatchTime(meta = {}) {
@@ -1542,7 +1560,8 @@
         hour: "2-digit",
         minute: "2-digit",
         weekday: "short",
-        hour12: false
+        hour12: false,
+        timeZone: "Asia/Shanghai"
       });
     }
 
@@ -2741,8 +2760,13 @@
 
     function dateKey(date) {
       if (!date) return "";
-      const day = startOfLocalDay(date);
-      return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+      const parts = Object.fromEntries(new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(date).filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+      return `${parts.year}-${parts.month}-${parts.day}`;
     }
 
     function formatDay(date) {
@@ -2750,7 +2774,8 @@
       return date.toLocaleDateString("zh-CN", {
         month: "2-digit",
         day: "2-digit",
-        weekday: "short"
+        weekday: "short",
+        timeZone: "Asia/Shanghai"
       });
     }
 
@@ -3255,6 +3280,17 @@
       return "平局";
     }
 
+    function formatBeijingClock(fixture) {
+      const date = fixtureDate(fixture);
+      if (!date) return "待定";
+      return date.toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Shanghai"
+      });
+    }
+
     function modelOutcome(model) {
       const options = [
         ["主胜", model.home],
@@ -3265,7 +3301,7 @@
     }
 
     function hitMark(ok) {
-      return ok ? "命中" : "未中";
+      return ok ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>";
     }
 
     function parseScore(text) {
@@ -3316,7 +3352,21 @@
       const sampleLine = rows.length
         ? `样本特征：场均 ${(goalTotal / rows.length).toFixed(2)} 球，平局 ${pct(drawCount / rows.length)}，双方进球 ${pct(bttsCount / rows.length)}，4球以上 ${pct(highCount / rows.length)}。`
         : "暂无足够样本。";
-      document.getElementById("verifyNote").textContent = `验真只统计已经有真实赛果的比赛。当前纳入 ${rows.length} 场，来源：${resultsSync.source}。${sampleLine}低命中主要来自尾部大比分、双方进球和冷平偏多。`;
+      const orderedRows = [...rows].sort((a, b) => fixtureSortValue(a.fixture) - fixtureSortValue(b.fixture));
+      const groupedRows = [];
+      orderedRows.forEach(row => {
+        const key = dateKey(fixtureDate(row.fixture)) || "unknown";
+        let group = groupedRows.find(item => item.key === key);
+        if (!group) {
+          group = { key, date: fixtureDate(row.fixture), rows: [] };
+          groupedRows.push(group);
+        }
+        group.rows.push(row);
+      });
+      const dayRange = groupedRows.length
+        ? `${formatDay(groupedRows[0].date)} 至 ${formatDay(groupedRows[groupedRows.length - 1].date)}`
+        : "暂无比赛日";
+      document.getElementById("verifyNote").textContent = `验真按世界杯赛程排序，并以北京时间“天”为单位分组。当前纳入 ${rows.length} 场，覆盖 ${dayRange}，来源：${resultsSync.source}。${sampleLine}绿色代表前3比分命中，红色代表前3比分未中。`;
       document.getElementById("verifyKpis").innerHTML = [
         ["已赛样本", `${rows.length}场`, "样本很小，仅作校准参考"],
         ["胜平负方向", pct(rate("outcomeHit")), "看模型方向是否正确"],
@@ -3330,22 +3380,39 @@
         </div>
       `).join("");
 
-      document.querySelector("#verifyTable tbody").innerHTML = rows.map(row => `
-        <tr>
-          <td>${teamLabel(row.fixture.teamA)} 对 ${teamLabel(row.fixture.teamB)}</td>
-          <td class="num">${row.actual}</td>
-          <td class="num">${row.model.score}</td>
-          <td class="num">${row.model.altScore}</td>
-          <td class="num">${row.model.thirdScore}</td>
-          <td class="num">${row.actualRank ? `第${row.actualRank}<br><span class="small muted">${pct(row.actualProb)}</span>` : "10球外"}</td>
-          <td class="num">${hitMark(row.outcomeHit)}<br><span class="small muted">预测${row.predictedOutcome} / 实际${row.actualOutcome}</span></td>
-          <td class="num">${hitMark(row.exactHit)}</td>
-          <td class="num">${hitMark(row.top2Hit)}</td>
-          <td class="num">${hitMark(row.top3Hit)}</td>
-          <td class="num">${hitMark(row.overHit)}<br><span class="small muted">预测${row.modelOver25 ? "大" : "小"} / 实际${row.actualOver25 ? "大" : "小"}</span></td>
-          <td class="num">${hitMark(row.bttsHit)}<br><span class="small muted">预测${row.modelBtts ? "是" : "否"} / 实际${row.actualBtts ? "是" : "否"}</span></td>
-        </tr>
-      `).join("");
+      document.querySelector("#verifyTable tbody").innerHTML = groupedRows.map(group => {
+        const groupCount = Math.max(group.rows.length, 1);
+        const groupTop3 = group.rows.filter(row => row.top3Hit).length;
+        const groupOutcome = group.rows.filter(row => row.outcomeHit).length;
+        const groupAvgGap = group.rows.reduce((sum, row) => sum + scoreGap(row.actual, row.model.score), 0) / groupCount;
+        const groupHeader = `
+          <tr class="verify-day-row">
+            <td colspan="14">北京时间 ${formatDay(group.date)}｜${group.rows.length}场｜前3比分 ${groupTop3}/${group.rows.length}｜胜平负 ${groupOutcome}/${group.rows.length}｜第1比分均差 ${groupAvgGap.toFixed(1)}球</td>
+          </tr>
+        `;
+        const body = group.rows.map(row => {
+          const gap = scoreGap(row.actual, row.model.score);
+          return `
+            <tr class="${row.top3Hit ? "verify-result-hit" : "verify-result-miss"}">
+              <td>${teamLabel(row.fixture.teamA)} 对 ${teamLabel(row.fixture.teamB)}<br><span class="small muted">${row.fixture.group}组 第${row.fixture.id.split("-")[1]}场</span></td>
+              <td class="num">${formatBeijingClock(row.fixture)}</td>
+              <td class="num"><strong>${row.actual}</strong></td>
+              <td class="num">${row.model.score}</td>
+              <td class="num">${row.model.altScore}</td>
+              <td class="num">${row.model.thirdScore}</td>
+              <td class="num">${gap}球</td>
+              <td class="num">${row.actualRank ? `第${row.actualRank}<br><span class="small muted">${pct(row.actualProb)}</span>` : "10球外"}</td>
+              <td class="num">${hitMark(row.outcomeHit)}<br><span class="small muted">预测${row.predictedOutcome} / 实际${row.actualOutcome}</span></td>
+              <td class="num">${hitMark(row.exactHit)}</td>
+              <td class="num">${hitMark(row.top2Hit)}</td>
+              <td class="num">${hitMark(row.top3Hit)}</td>
+              <td class="num">${hitMark(row.overHit)}<br><span class="small muted">预测${row.modelOver25 ? "大" : "小"} / 实际${row.actualOver25 ? "大" : "小"}</span></td>
+              <td class="num">${hitMark(row.bttsHit)}<br><span class="small muted">预测${row.modelBtts ? "是" : "否"} / 实际${row.actualBtts ? "是" : "否"}</span></td>
+            </tr>
+          `;
+        }).join("");
+        return groupHeader + body;
+      }).join("");
       renderVerifyBrief(cfg, rows);
     }
 
