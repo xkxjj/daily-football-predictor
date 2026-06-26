@@ -1775,8 +1775,7 @@
           reversed: match.reversed
         };
 
-        const isFinished = String(game.finished || "").toUpperCase() === "TRUE" || String(game.time_elapsed || "").toLowerCase() === "finished";
-        if (!isFinished) return;
+        if (!isFinishedGame(game)) return;
 
         const homeScore = Number(game.home_score);
         const awayScore = Number(game.away_score);
@@ -1848,8 +1847,19 @@
       return `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
     }
 
+    function isFinishedGame(game) {
+      return String(game.finished || "").toUpperCase() === "TRUE" || String(game.time_elapsed || "").toLowerCase() === "finished";
+    }
+
+    function resultsFreshness(games) {
+      const finishedGames = games.filter(game => String(game.type || "").toLowerCase() === "group" && isFinishedGame(game));
+      const maxFinishedId = finishedGames.reduce((max, game) => Math.max(max, Number(game.id) || 0), 0);
+      return { finished: finishedGames.length, maxFinishedId };
+    }
+
     async function loadResultsGames() {
       const failures = [];
+      const payloads = [];
       for (const source of RESULTS_API_SOURCES) {
         try {
           const response = await fetchWithTimeout(withCacheBust(source.url), { cache: "no-store" });
@@ -1857,12 +1867,18 @@
           const data = await response.json();
           const games = Array.isArray(data) ? data : data.games;
           if (!Array.isArray(games)) throw new Error("赛果格式异常");
-          return { games, source: source.source };
+          payloads.push({ games, source: source.source, ...resultsFreshness(games) });
         } catch (error) {
           failures.push(`${source.source}: ${error.message}`);
         }
       }
-      throw new Error(failures.join("；"));
+      if (!payloads.length) throw new Error(failures.join("；"));
+      payloads.sort((a, b) =>
+        b.finished - a.finished ||
+        b.maxFinishedId - a.maxFinishedId ||
+        (a.source === "线上赛果" ? -1 : b.source === "线上赛果" ? 1 : 0)
+      );
+      return payloads[0];
     }
 
     async function syncLatestResults(silent = false) {
