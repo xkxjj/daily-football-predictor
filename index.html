@@ -1632,6 +1632,7 @@
       "A-2": { order: 2 }
     };
     let fixtureScheduleMeta = {};
+    let externalFixtures = {};
     let marketLines = {};
     let lastFinalPairs = [];
     let scoreDistCache = new Map();
@@ -1704,6 +1705,34 @@
       return TEAM_NAME_ALIASES[normalized] || normalized;
     }
 
+    function teamNameFromApi(name) {
+      if (!name) return null;
+      const normalized = normalizeTeamName(name);
+      const match = TEAM_DATA.find(team => normalizeTeamName(team.name) === normalized);
+      return match ? match.name : null;
+    }
+
+    function isGroupFixtureId(id) {
+      return /^[A-L]-[1-6]$/.test(String(id || ""));
+    }
+
+    function stageLabel(stage) {
+      const key = String(stage || "").toLowerCase();
+      if (key === "r32") return "32强";
+      if (key === "r16") return "16强";
+      if (key === "qf") return "1/4决赛";
+      if (key === "sf") return "半决赛";
+      if (key === "final") return "决赛";
+      if (key === "third") return "三四名";
+      if (/^[A-L]$/.test(String(stage || ""))) return `${stage}组`;
+      return String(stage || "赛程");
+    }
+
+    function fixtureStageLabel(fixture) {
+      if (isGroupFixtureId(fixture.id)) return `${fixture.group}组 第${fixture.id.split("-")[1]}场`;
+      return `${stageLabel(fixture.type || fixture.stage || fixture.group)} 第${fixture.id}场`;
+    }
+
     function scheduledFixtures() {
       const fixtures = [];
       for (const [group, teams] of Object.entries(GROUPS)) {
@@ -1716,7 +1745,7 @@
           });
         });
       }
-      return fixtures;
+      return fixtures.concat(Object.values(externalFixtures));
     }
 
     function fixtureLookupByTeams() {
@@ -1756,23 +1785,46 @@
       const nextResults = { ...KNOWN_RESULTS };
       const nextMeta = { ...knownResultMeta };
       const nextScheduleMeta = { ...fixtureScheduleMeta };
+      const nextExternalFixtures = {};
       let finished = 0;
       let matched = 0;
 
       games.forEach(game => {
-        if (String(game.type || "").toLowerCase() !== "group") return;
+        const type = String(game.type || "").toLowerCase();
+        if (!type) return;
         const group = String(game.group || "").toUpperCase();
-        const home = normalizeTeamName(game.home_team_name_en);
-        const away = normalizeTeamName(game.away_team_name_en);
-        const match = lookup.get(`${group}|${home}|${away}`);
-        if (!match) return;
+        const apiId = Number(game.id) || 999;
+        const fixtureId = type === "group" ? null : String(apiId);
+        const teamA = teamNameFromApi(game.home_team_name_en);
+        const teamB = teamNameFromApi(game.away_team_name_en);
+        let match = null;
+
+        if (type === "group") {
+          const home = normalizeTeamName(game.home_team_name_en);
+          const away = normalizeTeamName(game.away_team_name_en);
+          match = lookup.get(`${group}|${home}|${away}`);
+          if (!match) return;
+        } else {
+          if (!teamA || !teamB) return;
+          match = { id: fixtureId, reversed: false };
+          nextExternalFixtures[fixtureId] = {
+            id: fixtureId,
+            group: group || type.toUpperCase(),
+            type,
+            stage: group || type.toUpperCase(),
+            teamA,
+            teamB
+          };
+        }
 
         nextScheduleMeta[match.id] = {
-          apiId: Number(game.id) || 999,
+          apiId,
           matchday: Number(game.matchday) || 0,
           localDate: game.local_date || "",
           dateObject: parseLocalMatchDate(game.local_date),
-          reversed: match.reversed
+          reversed: match.reversed,
+          type,
+          stage: group || type.toUpperCase()
         };
 
         if (!isFinishedGame(game)) return;
@@ -1785,7 +1837,7 @@
 
         nextResults[match.id] = match.reversed ? [awayScore, homeScore] : [homeScore, awayScore];
         nextMeta[match.id] = {
-          order: Number(game.id) || finished,
+          order: apiId || finished,
           date: game.local_date || game.date || ""
         };
         matched += 1;
@@ -1796,6 +1848,7 @@
       knownResults = nextResults;
       knownResultMeta = nextMeta;
       fixtureScheduleMeta = nextScheduleMeta;
+      externalFixtures = nextExternalFixtures;
       lastResultsSignature = nextSignature;
       resultsSync = {
         status: matched > 0 ? `${sourceLabel}已同步 ${matched} 场` : `${sourceLabel}暂未匹配到已赛结果`,
@@ -1852,7 +1905,7 @@
     }
 
     function resultsFreshness(games) {
-      const finishedGames = games.filter(game => String(game.type || "").toLowerCase() === "group" && isFinishedGame(game));
+      const finishedGames = games.filter(game => isFinishedGame(game));
       const maxFinishedId = finishedGames.reduce((max, game) => Math.max(max, Number(game.id) || 0), 0);
       return { finished: finishedGames.length, maxFinishedId };
     }
@@ -2479,9 +2532,12 @@
         : Infinity;
       const beforeTime = fixtureDate(fixture)?.getTime() ?? null;
       const formContext = cfg.useKnown ? formContextFromStats(fixture.teamA, fixture.teamB, knownFormStats(beforeOrder, beforeTime), cfg) : {};
-      const historyContext = historyContextForMatch(fixture.teamA, fixture.teamB, cfg, "GROUP");
-      const motivationContext = qualificationContext(fixture, cfg);
-      const baseContext = combineContexts(formContext, historyContext, motivationContext, { stage: "GROUP" });
+      const knockout = !isGroupFixtureId(fixture.id);
+      const stage = knockout ? (fixture.stage || fixture.type || fixture.group || "R32") : "GROUP";
+      const historyContext = historyContextForMatch(fixture.teamA, fixture.teamB, cfg, stage);
+      const motivationContext = knockout ? {} : qualificationContext(fixture, cfg);
+      const knockoutContext = knockout ? knockoutStageContext(fixture.teamA, fixture.teamB, cfg, null, stage) : {};
+      const baseContext = combineContexts(formContext, historyContext, motivationContext, knockoutContext, { stage });
       return combineContexts(
         tournamentClimateContext(beforeOrder, cfg, beforeTime),
         baseContext,
@@ -2564,13 +2620,13 @@
       return scheduledFixtures().map(fixture => ({
         ...fixture,
         known: knownResults[fixture.id] || null,
-        meta: fixtureScheduleMeta[fixture.id] || {}
+        meta: fixtureScheduleMeta[fixture.id] || fixture.meta || {}
       }));
     }
 
     function fixtureLabel(fixture) {
       const known = fixture.known ? "（已赛）" : "";
-      return `${fixture.group}组 第${fixture.id.split("-")[1]}场：${teamLabel(fixture.teamA)} 对 ${teamLabel(fixture.teamB)}${known}`;
+      return `${fixtureStageLabel(fixture)}：${teamLabel(fixture.teamA)} 对 ${teamLabel(fixture.teamB)}${known}`;
     }
 
     function fixtureById(id) {
@@ -2809,7 +2865,7 @@
     }
 
     function simulateTournament(cfg, rand) {
-      const fixtures = buildFixtures();
+      const fixtures = buildFixtures().filter(fixture => isGroupFixtureId(fixture.id));
       const tables = Object.fromEntries(Object.keys(GROUPS).map(group => [group, blankTable(group)]));
       const groupResults = Object.fromEntries(Object.keys(GROUPS).map(group => [group, []]));
       const state = {
@@ -3106,6 +3162,25 @@
         : { label: "小2.5", p: under, band, expected };
     }
 
+    function advancementRecommendation(fixture, model, cfg, context = {}) {
+      if (isGroupFixtureId(fixture.id)) return null;
+      const raw = eloWinProbability(fixture.teamA, fixture.teamB, cfg, null, context);
+      const control = stageWeight(fixture.stage || fixture.type || fixture.group || "R32");
+      const compression = 1 - cfg.penaltyChaos * clamp(0.58 - control * 0.08, 0.40, 0.58);
+      const shootoutA = clamp(0.5 + (raw - 0.5) * compression * (1 + control * 0.18), 0.33, 0.67);
+      const homeAdvance = model.home + model.draw * shootoutA;
+      const awayAdvance = model.away + model.draw * (1 - shootoutA);
+      const home = { key: "home", team: fixture.teamA, label: teamLabel(fixture.teamA), p: homeAdvance };
+      const away = { key: "away", team: fixture.teamB, label: teamLabel(fixture.teamB), p: awayAdvance };
+      return {
+        home,
+        away,
+        pick: homeAdvance >= awayAdvance ? home : away,
+        shootoutA,
+        drawPath: model.draw
+      };
+    }
+
     function outcomeConfidence(model, pick) {
       const ranked = [
         { key: "home", p: model.home },
@@ -3164,7 +3239,8 @@
     function fixtureSortValue(fixture) {
       const date = fixture.meta?.dateObject || parseLocalMatchDate(fixture.meta?.localDate);
       if (date && !Number.isNaN(date.getTime())) return date.getTime();
-      return 4102444800000 + (fixture.meta?.apiId || fixture.group.charCodeAt(0) * 10 + Number(fixture.id.split("-")[1]));
+      const fallbackId = Number(fixture.meta?.apiId || fixture.id) || (fixture.group?.charCodeAt(0) || 90) * 10;
+      return 4102444800000 + fallbackId;
     }
 
     function fixtureDate(fixture) {
@@ -3220,6 +3296,27 @@
       return { key, date: fixtureDate(target), fixtures: fixturesOnKey(open, key) };
     }
 
+    function targetUpcomingWindow(fixtures = buildFixtures(), dayCount = 2) {
+      const open = fixtures.filter(fixture => !fixture.known && fixtureDate(fixture) && fixture.teamA && fixture.teamB)
+        .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b));
+      if (!open.length) return { keys: [], date: null, endDate: null, fixtures: [] };
+      const todayKey = dateKey(new Date());
+      const first = open.find(fixture => dateKey(fixtureDate(fixture)) >= todayKey) || open[0];
+      const keys = [];
+      open.forEach(fixture => {
+        const key = dateKey(fixtureDate(fixture));
+        if (key < dateKey(fixtureDate(first))) return;
+        if (!keys.includes(key) && keys.length < dayCount) keys.push(key);
+      });
+      const windowFixtures = open.filter(fixture => keys.includes(dateKey(fixtureDate(fixture))));
+      return {
+        keys,
+        date: fixtureDate(windowFixtures[0]),
+        endDate: fixtureDate(windowFixtures[windowFixtures.length - 1]),
+        fixtures: windowFixtures
+      };
+    }
+
     function targetReviewDay(fixtures = buildFixtures()) {
       const done = fixtures.filter(fixture => fixture.known && fixtureDate(fixture))
         .sort((a, b) => fixtureSortValue(a) - fixtureSortValue(b));
@@ -3234,7 +3331,7 @@
     }
 
     function upcomingFixtures(limit = 8) {
-      const day = targetUpcomingDay();
+      const day = targetUpcomingWindow();
       return day.fixtures.slice(0, limit);
     }
 
@@ -3246,6 +3343,7 @@
       const handicap = handicapRecommendation(model);
       const totalPick = totalGoalsRecommendation(model);
       const scores = recommendedScorePack(model, pick.key);
+      const advance = advancementRecommendation(fixture, model, cfg, context);
       const situation = situationSummary(fixture, context, model);
       const confidence = outcomeConfidence(model, pick);
       const beforeOrder = fixture.known
@@ -3257,27 +3355,32 @@
       const eloDiff = TEAMS[fixture.teamA].elo - TEAMS[fixture.teamB].elo + (HOSTS.has(fixture.teamA) ? cfg.hostBoost : 0) - (HOSTS.has(fixture.teamB) ? cfg.hostBoost : 0);
       const favoriteNotWin = pick.key === "home" ? model.draw + model.away : pick.key === "away" ? model.home + model.draw : 1 - model.draw;
       const events = eventForecast(fixture.teamA, fixture.teamB, cfg, context);
+      const knockoutLine = advance
+        ? `晋级：${advance.pick.label} ${pct(advance.pick.p)}，90分钟平局后加时/点球路径权重 ${pct(advance.drawPath)}`
+        : null;
       const logic = [
         `客观：Elo差 ${Math.round(eloDiff)}，历史强弱与大赛稳定性已校准，模型给${pick.label} ${pct(pick.p)}，联动比分 ${scores.primaryText} / ${scores.secondaryText} / ${scores.tertiaryText}`,
+        knockoutLine,
         situation.main,
         tournamentClimateLine(beforeOrder, beforeTime),
         `状态：${teamFormLine(fixture.teamA, beforeOrder, cfg, beforeTime)}；${teamFormLine(fixture.teamB, beforeOrder, cfg, beforeTime)}`,
         `球员/风格：${teamLabel(fixture.teamA)}看 ${profileA.players}；${teamLabel(fixture.teamB)}看 ${profileB.players}；${profileA.style} 对 ${profileB.style}`,
         `事件倾向：${events.tension}，下半场黄牌${rangeText(events.second.yellow, "张")}，越位${rangeText(events.first.offside + events.second.offside, "次", 0.8)}`,
         `主观：${model.highGoals > 0.38 ? "本届大比分偏多，防4球以上" : "节奏偏常规"}；${favoriteNotWin > 0.40 ? "热门不胜风险偏高" : "方向相对集中"}`
-      ];
-      return { fixture, model, pick, halfPick, handicap, totalPick, scores, logic, situation, confidence };
+      ].filter(Boolean);
+      return { fixture, model, pick, halfPick, handicap, totalPick, scores, advance, logic, situation, confidence };
     }
 
     function renderTimelinePicks(cfg) {
       const container = document.getElementById("timelinePicks");
       const meta = document.getElementById("scheduleMeta");
       if (!container) return;
-      const day = targetUpcomingDay();
+      const day = targetUpcomingWindow(buildFixtures(), 2);
       const fixtures = day.fixtures;
-      if (meta) meta.textContent = fixtures.length ? `${formatDay(day.date)} ${fixtures.length}场，按开赛时间排序` : "小组赛程已完成或等待同步";
+      const dayText = day.keys.length > 1 ? `${formatDay(day.date)} 至 ${formatDay(day.endDate)}` : formatDay(day.date);
+      if (meta) meta.textContent = fixtures.length ? `${dayText} ${fixtures.length}场，按开赛时间排序` : "等待淘汰赛赛程同步";
       if (!fixtures.length) {
-        container.innerHTML = `<div class="note">暂无未赛小组赛。若线上赛程接口短暂不可用，请稍后刷新。</div>`;
+        container.innerHTML = `<div class="note">暂无未来两天可预测赛程。若线上赛程接口短暂不可用，请稍后刷新。</div>`;
         renderDailyReview(cfg);
         renderLearningBrief(cfg);
         return;
@@ -3290,14 +3393,32 @@
         const handicap = rec.handicap;
         const totalPick = rec.totalPick;
         const scores = rec.scores;
+        const advance = rec.advance;
         const situation = rec.situation;
         const pickClass = pick.key === "draw" ? "pick-draw" : pick.key === "away" ? "pick-away" : "pick-home";
         const tagLine = situation.tags.map(tag => `<span class="model-tag">${tag}</span>`).join("");
+        const knockout = !isGroupFixtureId(fixture.id);
+        const directionLabel = knockout ? "90分钟方向" : "胜平负方向";
+        const directionValue = knockout ? pick.label : pick.label;
+        const advanceCard = advance ? `
+                <div class="decision-card">
+                  <div class="decision-label">晋级推荐</div>
+                  <div class="decision-value">${advance.pick.label}</div>
+                  <div class="core-detail">晋级概率 ${pct(advance.pick.p)}｜平局路径 ${pct(advance.drawPath)}</div>
+                </div>` : `
+                <div class="decision-card">
+                  <div class="decision-label">赛局判断</div>
+                  <div class="situation-lines">
+                    <span><b>${situation.pace}</b>｜${situation.risk}</span>
+                    <span>${situation.main}</span>
+                  </div>
+                  ${tagLine}
+                </div>`;
         return `
           <div class="pick-row ${pickClass}">
             <div class="timeblock">
               <strong>${formatMatchTime(fixture.meta)}</strong>
-              <span>${fixture.group}组 第${fixture.id.split("-")[1]}场</span>
+              <span>${fixtureStageLabel(fixture)}</span>
               <span>${fixture.meta?.localDate || "赛程时间待同步"}</span>
             </div>
             <div>
@@ -3309,8 +3430,8 @@
               </div>
               <div class="decision-strip">
                 <div class="decision-card primary">
-                  <div class="decision-label">胜平负方向</div>
-                  <div class="decision-value">${pick.label}</div>
+                  <div class="decision-label">${directionLabel}</div>
+                  <div class="decision-value">${directionValue}</div>
                   <div class="core-detail">${pct(pick.p)}｜${rec.confidence}｜公允 ${odds(pick.p, cfg.margin)}</div>
                 </div>
                 <div class="decision-card">
@@ -3318,23 +3439,17 @@
                   <div class="score-pair"><strong>${scores.primaryText}</strong><span>第1选择</span></div>
                   <div class="core-detail">备选 ${scores.secondaryText} / ${scores.tertiaryText}｜概率随方向联动</div>
                 </div>
-                <div class="decision-card">
-                  <div class="decision-label">赛局判断</div>
-                  <div class="situation-lines">
-                    <span><b>${situation.pace}</b>｜${situation.risk}</span>
-                    <span>${situation.main}</span>
-                  </div>
-                  ${tagLine}
-                </div>
+                ${advanceCard}
               </div>
+              ${advance ? `<div class="pick-meta"><span class="mini-chip">${situation.pace}</span><span class="mini-chip">${situation.risk}</span>${tagLine}</div>` : ""}
               <div class="core-picks">
                 <div class="core-pick">
-                  <div class="core-label">比分推荐</div>
+                  <div class="core-label">${knockout ? "90分钟比分" : "比分推荐"}</div>
                   <div class="core-value">${scores.primaryText}</div>
                   <div class="core-detail">备选 ${scores.secondaryText} / ${scores.tertiaryText}</div>
                 </div>
                 <div class="core-pick">
-                  <div class="core-label">胜平负推荐</div>
+                  <div class="core-label">${knockout ? "90分钟胜平负" : "胜平负推荐"}</div>
                   <div class="core-value">${pick.label}</div>
                   <div class="core-detail">${pct(pick.p)}｜公允 ${odds(pick.p, cfg.margin)}</div>
                 </div>
@@ -3353,6 +3468,7 @@
                 <span class="mini-chip">胜 ${pct(model.home)}</span>
                 <span class="mini-chip">平 ${pct(model.draw)}</span>
                 <span class="mini-chip">负 ${pct(model.away)}</span>
+                ${advance ? `<span class="mini-chip">晋级 ${advance.pick.label} ${pct(advance.pick.p)}</span>` : ""}
                 <span class="mini-chip">${handicap.lineLabel} ${handicap.pick.label} ${pct(handicap.pick.p)}</span>
                 <span class="mini-chip">4球+ ${pct(model.highGoals)}</span>
                 <span class="mini-chip">双方进球 ${pct(model.btts)}</span>
@@ -3604,7 +3720,7 @@
         return `
           <tr>
             <td>${formatMatchTime(fixture.meta)}</td>
-            <td>${fixture.group}</td>
+            <td>${stageLabel(fixture.type || fixture.stage || fixture.group)}</td>
             <td><span class="team">${teamLabel(fixture.teamA)}</span> 对 <span class="team">${teamLabel(fixture.teamB)}</span>${knownScore ? " <span class='muted small'>已赛</span>" : ""}</td>
             <td class="num">${knownScore || formatTopScores(model, 3)}</td>
             <td class="num">${pct(model.home)}</td>
@@ -3846,7 +3962,7 @@
           const gap = scoreGap(row.actual, row.recommendedScores.primaryText);
           return `
             <tr class="${row.top3Hit ? "verify-result-hit" : "verify-result-miss"}">
-              <td>${teamLabel(row.fixture.teamA)} 对 ${teamLabel(row.fixture.teamB)}<br><span class="small muted">${row.fixture.group}组 第${row.fixture.id.split("-")[1]}场</span></td>
+              <td>${teamLabel(row.fixture.teamA)} 对 ${teamLabel(row.fixture.teamB)}<br><span class="small muted">${fixtureStageLabel(row.fixture)}</span></td>
               <td class="num">${formatBeijingClock(row.fixture)}</td>
               <td class="num"><strong>${row.actual}</strong></td>
               <td class="num">${row.recommendedScores.primaryText}</td>
@@ -3883,7 +3999,7 @@
       return `
         <div class="match-card">
           <h3>${title}｜${teamLabel(teamA)} 对 ${teamLabel(teamB)}</h3>
-          <div class="small muted">${fixture.group}组｜期望进球 ${model.lambdaA.toFixed(2)} - ${model.lambdaB.toFixed(2)}｜节奏判断：${events.tension}｜胜平负建议：${pick.label}</div>
+          <div class="small muted">${fixtureStageLabel(fixture)}｜期望进球 ${model.lambdaA.toFixed(2)} - ${model.lambdaB.toFixed(2)}｜节奏判断：${events.tension}｜胜平负建议：${pick.label}</div>
           <div class="score-options">
             <div class="score-option">
               <span class="muted small">${knownScore ? primaryLabel : "概率第1"}</span>
