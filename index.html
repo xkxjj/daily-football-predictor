@@ -1280,6 +1280,7 @@
                   <th class="num">差距</th>
                   <th class="num">真实比分排名</th>
                   <th class="num">胜平负</th>
+                  <th class="num">半全场</th>
                   <th class="num">精确命中</th>
                   <th class="num">前2命中</th>
                   <th class="num">前3命中</th>
@@ -1838,7 +1839,8 @@
         nextResults[match.id] = match.reversed ? [awayScore, homeScore] : [homeScore, awayScore];
         nextMeta[match.id] = {
           order: apiId || finished,
-          date: game.local_date || game.date || ""
+          date: game.local_date || game.date || "",
+          half: halfTimeScoreFromGame(game, match.reversed)
         };
         matched += 1;
       });
@@ -1904,6 +1906,38 @@
       return String(game.finished || "").toUpperCase() === "TRUE" || String(game.time_elapsed || "").toLowerCase() === "finished";
     }
 
+    function scorerMinutes(raw) {
+      const text = String(raw || "");
+      if (!text || text.toLowerCase() === "null") return [];
+      const minutes = [];
+      const pattern = /(?:^|[^\d])(\d{1,3})\s*'?\s*(?:\+\s*(\d{1,2}))?\s*'?/g;
+      let match;
+      while ((match = pattern.exec(text))) {
+        const minute = Number(match[1]);
+        const added = Number(match[2] || 0);
+        if (Number.isFinite(minute)) minutes.push({ minute, added });
+      }
+      return minutes;
+    }
+
+    function isFirstHalfMinute(item) {
+      return item.minute <= 45;
+    }
+
+    function halfTimeScoreFromGame(game, reversed = false) {
+      const homeScore = Number(game.home_score);
+      const awayScore = Number(game.away_score);
+      if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
+      const homeMinutes = scorerMinutes(game.home_scorers);
+      const awayMinutes = scorerMinutes(game.away_scorers);
+      const expectedGoals = homeScore + awayScore;
+      if (expectedGoals === 0) return [0, 0];
+      if (homeMinutes.length !== homeScore || awayMinutes.length !== awayScore) return null;
+      const homeHalf = homeMinutes.filter(isFirstHalfMinute).length;
+      const awayHalf = awayMinutes.filter(isFirstHalfMinute).length;
+      return reversed ? [awayHalf, homeHalf] : [homeHalf, awayHalf];
+    }
+
     function resultsFreshness(games) {
       const finishedGames = games.filter(game => isFinishedGame(game));
       const maxFinishedId = finishedGames.reduce((max, game) => Math.max(max, Number(game.id) || 0), 0);
@@ -1914,6 +1948,9 @@
       const failures = [];
       const payloads = [];
       for (const source of RESULTS_API_SOURCES) {
+        if (source.url === SAME_ORIGIN_RESULTS_URL && typeof location !== "undefined" && location.protocol === "file:") {
+          continue;
+        }
         try {
           const response = await fetchWithTimeout(withCacheBust(source.url), { cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2235,6 +2272,87 @@
       if (score.a > score.b) return "home";
       if (score.a < score.b) return "away";
       return "draw";
+    }
+
+    function scoreOutcomeKeyFromGoals(a, b) {
+      if (a > b) return "home";
+      if (a < b) return "away";
+      return "draw";
+    }
+
+    function outcomeShort(key) {
+      return ({ home: "胜", draw: "平", away: "负" })[key] || "平";
+    }
+
+    function outcomeLong(key) {
+      return ({ home: "主胜", draw: "平局", away: "客胜" })[key] || "平局";
+    }
+
+    function halfFullLabel(halfKey, fullKey) {
+      return `${outcomeShort(halfKey)}-${outcomeShort(fullKey)}`;
+    }
+
+    function halfFullOptions(model) {
+      const buckets = {};
+      model.half.scores.forEach(half => {
+        model.secondHalf.scores.forEach(second => {
+          const fullA = half.a + second.a;
+          const fullB = half.b + second.b;
+          const halfKey = scoreOutcomeKey(half);
+          const fullKey = scoreOutcomeKeyFromGoals(fullA, fullB);
+          const key = `${halfKey}-${fullKey}`;
+          if (!buckets[key]) {
+            buckets[key] = {
+              key,
+              halfKey,
+              fullKey,
+              label: halfFullLabel(halfKey, fullKey),
+              halfLabel: outcomeLong(halfKey),
+              fullLabel: outcomeLong(fullKey),
+              p: 0
+            };
+          }
+          buckets[key].p += half.p * second.p;
+        });
+      });
+      return Object.values(buckets).sort((a, b) => b.p - a.p);
+    }
+
+    function halfFullRecommendation(model, fullPick = null, count = 3) {
+      const raw = halfFullOptions(model);
+      const fullKey = fullPick?.key || recommendationOutcomePick(model).key;
+      const sideStrength = fullKey === "home" ? model.home : fullKey === "away" ? model.away : model.draw;
+      const adjusted = raw.map(option => {
+        let factor = 1;
+        if (fullKey !== "draw" && option.fullKey === fullKey) factor *= 1.08;
+        if (fullKey !== "draw" && option.halfKey === fullKey) factor *= 1 + clamp((sideStrength - 0.48) * 0.55, 0, 0.18);
+        if (fullKey !== "draw" && option.halfKey === "draw" && option.fullKey === fullKey && sideStrength >= 0.58) factor *= 0.92;
+        if (fullKey === "draw" && option.fullKey === "draw") factor *= 1.35;
+        if (fullKey === "draw" && option.halfKey === "draw" && option.fullKey === "draw") factor *= 1.20;
+        if (option.halfKey !== "draw" && option.fullKey === option.halfKey) factor *= 1.04;
+        return { ...option, adjustedP: option.p * factor };
+      }).sort((a, b) => b.adjustedP - a.adjustedP);
+
+      const chosen = [];
+      const seen = new Set();
+      adjusted.forEach(option => {
+        if (chosen.length >= count || seen.has(option.key)) return;
+        chosen.push(option);
+        seen.add(option.key);
+      });
+      raw.forEach(option => {
+        if (chosen.length >= count || seen.has(option.key)) return;
+        chosen.push(option);
+        seen.add(option.key);
+      });
+
+      return {
+        primary: chosen[0],
+        secondary: chosen[1],
+        tertiary: chosen[2],
+        options: raw,
+        adjusted
+      };
     }
 
     function applyMarketCalibration(distribution, market, cfg) {
@@ -3340,6 +3458,7 @@
       const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, context);
       const pick = recommendationOutcomePick(model);
       const halfPick = recommendationOutcomePick(model.half);
+      const halfFull = halfFullRecommendation(model, pick);
       const handicap = handicapRecommendation(model);
       const totalPick = totalGoalsRecommendation(model);
       const scores = recommendedScorePack(model, pick.key);
@@ -3368,7 +3487,7 @@
         `事件倾向：${events.tension}，下半场黄牌${rangeText(events.second.yellow, "张")}，越位${rangeText(events.first.offside + events.second.offside, "次", 0.8)}`,
         `主观：${model.highGoals > 0.38 ? "本届大比分偏多，防4球以上" : "节奏偏常规"}；${favoriteNotWin > 0.40 ? "热门不胜风险偏高" : "方向相对集中"}`
       ].filter(Boolean);
-      return { fixture, model, pick, halfPick, handicap, totalPick, scores, advance, logic, situation, confidence };
+      return { fixture, model, pick, halfPick, halfFull, handicap, totalPick, scores, advance, logic, situation, confidence };
     }
 
     function renderTimelinePicks(cfg) {
@@ -3389,7 +3508,7 @@
         const rec = recommendationForFixture(fixture, cfg);
         const model = rec.model;
         const pick = rec.pick;
-        const halfPick = rec.halfPick;
+        const halfFull = rec.halfFull;
         const handicap = rec.handicap;
         const totalPick = rec.totalPick;
         const scores = rec.scores;
@@ -3454,9 +3573,9 @@
                   <div class="core-detail">${pct(pick.p)}｜公允 ${odds(pick.p, cfg.margin)}</div>
                 </div>
                 <div class="core-pick">
-                  <div class="core-label">半场胜平负</div>
-                  <div class="core-value">${halfPick.label}</div>
-                  <div class="core-detail">半场概率 ${pct(halfPick.p)}</div>
+                  <div class="core-label">半全场胜平负</div>
+                  <div class="core-value">${halfFull.primary.label}</div>
+                  <div class="core-detail">备选 ${halfFull.secondary.label} / ${halfFull.tertiary.label}｜原始概率 ${pct(halfFull.primary.p)}</div>
                 </div>
                 <div class="core-pick">
                   <div class="core-label">进球数推荐</div>
@@ -3518,10 +3637,19 @@
       return buildFixtures().filter(fixture => fixture.known).map(fixture => {
         const model = matchModel(fixture.teamA, fixture.teamB, cfg, null, contextForFixture(fixture, cfg));
         const recommendedOutcome = recommendationOutcomePick(model);
+        const halfFull = halfFullRecommendation(model, recommendedOutcome);
         const recommendedScores = recommendedScorePack(model, recommendedOutcome.key);
         const actual = scoreText(fixture.known);
         const predictedOutcome = recommendedOutcome.label;
         const actualOutcome = scoreOutcome(fixture.known);
+        const actualFullKey = scoreOutcomeKeyFromGoals(fixture.known[0], fixture.known[1]);
+        const actualHalf = knownResultMeta[fixture.id]?.half || null;
+        const actualHalfFullKey = actualHalf
+          ? `${scoreOutcomeKeyFromGoals(actualHalf[0], actualHalf[1])}-${actualFullKey}`
+          : null;
+        const actualHalfFullLabel = actualHalfFullKey
+          ? halfFullLabel(...actualHalfFullKey.split("-"))
+          : "缺少半场";
         const actualOver25 = fixture.known[0] + fixture.known[1] >= 3;
         const modelOver25 = model.over25 >= 0.5;
         const actualBtts = fixture.known[0] > 0 && fixture.known[1] > 0;
@@ -3534,6 +3662,10 @@
           actualRank,
           actualProb: scoreProbabilityByText(model, actual),
           outcomeHit: predictedOutcome === actualOutcome,
+          halfFullHit: actualHalfFullKey ? halfFull.primary.key === actualHalfFullKey : false,
+          halfFullTop3Hit: actualHalfFullKey
+            ? [halfFull.primary.key, halfFull.secondary.key, halfFull.tertiary.key].includes(actualHalfFullKey)
+            : false,
           exactHit: recommendedScores.primaryText === actual,
           top2Hit: recommendedScores.primaryText === actual || recommendedScores.secondaryText === actual,
           top3Hit: recommendedScores.primaryText === actual || recommendedScores.secondaryText === actual || recommendedScores.tertiaryText === actual,
@@ -3541,6 +3673,11 @@
           bttsHit: modelBtts === actualBtts,
           predictedOutcome,
           recommendedOutcome,
+          halfFull,
+          actualHalf,
+          actualHalfScoreText: actualHalf ? scoreText(actualHalf) : "",
+          actualHalfFullKey,
+          actualHalfFullLabel,
           recommendedScores,
           actualOutcome,
           modelOver25,
@@ -3576,6 +3713,8 @@
       const top3Hits = reviewRows.filter(row => row.top3Hit).length;
       const outcomeHits = reviewRows.filter(row => row.outcomeHit).length;
       const overHits = reviewRows.filter(row => row.overHit).length;
+      const halfFullRows = reviewRows.filter(row => row.actualHalfFullKey);
+      const halfFullHits = halfFullRows.filter(row => row.halfFullHit).length;
       const avgGap = reviewRows.reduce((sum, row) => sum + scoreGap(row.actual, row.recommendedScores.primaryText), 0) / reviewRows.length;
       if (meta) {
         meta.textContent = `${formatDay(day.date)} ${reviewRows.length}场｜前3比分 ${top3Hits}/${reviewRows.length}｜均差 ${avgGap.toFixed(1)}球`;
@@ -3585,7 +3724,7 @@
         <div class="verify-focus">
           <div class="kpi"><div class="label">前3比分</div><div class="value">${top3Hits}/${reviewRows.length}</div><div class="hint">${pct(top3Hits / reviewRows.length)}</div></div>
           <div class="kpi"><div class="label">胜平负</div><div class="value">${outcomeHits}/${reviewRows.length}</div><div class="hint">${pct(outcomeHits / reviewRows.length)}</div></div>
-          <div class="kpi"><div class="label">大小2.5</div><div class="value">${overHits}/${reviewRows.length}</div><div class="hint">${pct(overHits / reviewRows.length)}</div></div>
+          <div class="kpi"><div class="label">半全场</div><div class="value">${halfFullRows.length ? `${halfFullHits}/${halfFullRows.length}` : "暂无"}</div><div class="hint">${pct(halfFullHits / Math.max(halfFullRows.length, 1))}</div></div>
           <div class="kpi"><div class="label">比分均差</div><div class="value">${avgGap.toFixed(1)}球</div><div class="hint">按概率第1比分算</div></div>
         </div>
         ${reviewRows.map(row => {
@@ -3602,7 +3741,7 @@
               <div>
                 <div><strong>真实 ${row.actual}</strong>｜预测第1 ${row.recommendedScores.primaryText}｜差距 ${gap}球</div>
                 <div class="small muted">前三：${row.recommendedScores.primaryText} / ${row.recommendedScores.secondaryText} / ${row.recommendedScores.tertiaryText}；真实排名 ${row.actualRank ? `第${row.actualRank}` : "10球外"}</div>
-                <div class="small muted">胜平负 ${row.outcomeHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}｜大小2.5 ${row.overHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}｜双方进球 ${row.bttsHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}</div>
+                <div class="small muted">胜平负 ${row.outcomeHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}｜半全场 ${row.actualHalfFullKey ? (row.halfFullHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>") : "缺少半场"}｜大小2.5 ${row.overHit ? "<span class='hit-text'>命中</span>" : "<span class='miss-text'>未中</span>"}</div>
               </div>
             </div>
           `;
@@ -3620,6 +3759,8 @@
       const count = rows.length;
       const top3Rate = rows.filter(row => row.top3Hit).length / count;
       const outcomeRate = rows.filter(row => row.outcomeHit).length / count;
+      const halfFullRows = rows.filter(row => row.actualHalfFullKey);
+      const halfFullRate = halfFullRows.length ? halfFullRows.filter(row => row.halfFullHit).length / halfFullRows.length : 0;
       const actualGoals = rows.reduce((sum, row) => sum + row.fixture.known[0] + row.fixture.known[1], 0) / count;
       const expectedGoals = rows.reduce((sum, row) => sum + row.model.lambdaA + row.model.lambdaB, 0) / count;
       const highRate = rows.filter(row => row.fixture.known[0] + row.fixture.known[1] >= 4).length / count;
@@ -3637,7 +3778,7 @@
       container.innerHTML = `
         <div class="learning-item">
           <strong>命中概况</strong>
-          <span class="small muted">已复盘 ${count} 场，前3比分 ${pct(top3Rate)}，胜平负 ${pct(outcomeRate)}。比分比方向难得多，所以主看板会同时给方向和进球数。</span>
+          <span class="small muted">已复盘 ${count} 场，前3比分 ${pct(top3Rate)}，胜平负 ${pct(outcomeRate)}，半全场 ${halfFullRows.length ? pct(halfFullRate) : "暂无可验样本"}。比分和半全场都比方向难得多，所以主看板会同时给方向和进球数。</span>
         </div>
         <div class="learning-item">
           <strong>进球气候</strong>
@@ -3656,7 +3797,8 @@
       const count = Math.max(rows.length, 1);
       const top3Hits = rows.filter(row => row.top3Hit).length;
       const outcomeHits = rows.filter(row => row.outcomeHit).length;
-      const exactHits = rows.filter(row => row.exactHit).length;
+      const halfFullRows = rows.filter(row => row.actualHalfFullKey);
+      const halfFullHits = halfFullRows.filter(row => row.halfFullHit).length;
       const recentMisses = rows
         .filter(row => !row.top3Hit)
         .slice(-3)
@@ -3666,7 +3808,7 @@
         <div class="verify-focus">
           <div class="kpi"><div class="label">前3比分命中</div><div class="value">${rows.length ? `${top3Hits}/${rows.length}` : "暂无"}</div><div class="hint">${pct(top3Hits / count)}</div></div>
           <div class="kpi"><div class="label">胜平负方向</div><div class="value">${pct(outcomeHits / count)}</div><div class="hint">方向先于精确比分</div></div>
-          <div class="kpi"><div class="label">第1比分</div><div class="value">${pct(exactHits / count)}</div><div class="hint">最苛刻指标</div></div>
+          <div class="kpi"><div class="label">半全场</div><div class="value">${halfFullRows.length ? `${halfFullHits}/${halfFullRows.length}` : "暂无"}</div><div class="hint">${pct(halfFullHits / Math.max(halfFullRows.length, 1))}</div></div>
           <div class="kpi"><div class="label">样本数</div><div class="value">${rows.length}</div><div class="hint">${resultsSync.source}</div></div>
         </div>
         <div class="note">${recentMisses ? `近期漏点：${recentMisses}` : "目前暂无前3比分漏点。"} 每次赛果同步后会自动重算。</div>
@@ -3913,6 +4055,9 @@
       const rate = key => rows.filter(row => row[key]).length / count;
       const top3ScoreHits = rows.filter(row => row.top3Hit).length;
       const top3ScoreRate = rows.length ? top3ScoreHits / rows.length : 0;
+      const halfFullRows = rows.filter(row => row.actualHalfFullKey);
+      const halfFullHits = halfFullRows.filter(row => row.halfFullHit).length;
+      const halfFullTop3Hits = halfFullRows.filter(row => row.halfFullTop3Hit).length;
       const goalTotal = rows.reduce((sum, row) => sum + row.fixture.known[0] + row.fixture.known[1], 0);
       const drawCount = rows.filter(row => row.fixture.known[0] === row.fixture.known[1]).length;
       const bttsCount = rows.filter(row => row.fixture.known[0] > 0 && row.fixture.known[1] > 0).length;
@@ -3938,6 +4083,8 @@
       document.getElementById("verifyKpis").innerHTML = [
         ["已赛样本", `${rows.length}场`, "样本很小，仅作校准参考"],
         ["胜平负方向", pct(rate("outcomeHit")), "看模型方向是否正确"],
+        ["半全场第1", halfFullRows.length ? `${halfFullHits}/${halfFullRows.length} = ${pct(halfFullHits / halfFullRows.length)}` : "暂无", "由进球时间反推半场比分"],
+        ["半全场前3", halfFullRows.length ? `${halfFullTop3Hits}/${halfFullRows.length} = ${pct(halfFullTop3Hits / halfFullRows.length)}` : "暂无", "半全场三选一命中"],
         ["概率第1精确比分", pct(rate("exactHit")), "只看最高概率比分"],
         ["前3比分命中率", rows.length ? `${top3ScoreHits}/${rows.length} = ${pct(top3ScoreRate)}` : "暂无", "前三个概率比分任一命中"]
       ].map(([label, value, hint]) => `
@@ -3952,10 +4099,12 @@
         const groupCount = Math.max(group.rows.length, 1);
         const groupTop3 = group.rows.filter(row => row.top3Hit).length;
         const groupOutcome = group.rows.filter(row => row.outcomeHit).length;
+        const groupHalfFullRows = group.rows.filter(row => row.actualHalfFullKey);
+        const groupHalfFullHits = groupHalfFullRows.filter(row => row.halfFullHit).length;
         const groupAvgGap = group.rows.reduce((sum, row) => sum + scoreGap(row.actual, row.recommendedScores.primaryText), 0) / groupCount;
         const groupHeader = `
           <tr class="verify-day-row">
-            <td colspan="14">北京时间 ${formatDay(group.date)}｜${group.rows.length}场｜前3比分 ${groupTop3}/${group.rows.length}｜胜平负 ${groupOutcome}/${group.rows.length}｜第1比分均差 ${groupAvgGap.toFixed(1)}球</td>
+            <td colspan="15">北京时间 ${formatDay(group.date)}｜${group.rows.length}场｜前3比分 ${groupTop3}/${group.rows.length}｜胜平负 ${groupOutcome}/${group.rows.length}｜半全场 ${groupHalfFullRows.length ? `${groupHalfFullHits}/${groupHalfFullRows.length}` : "暂无"}｜第1比分均差 ${groupAvgGap.toFixed(1)}球</td>
           </tr>
         `;
         const body = group.rows.map(row => {
@@ -3971,6 +4120,7 @@
               <td class="num">${gap}球</td>
               <td class="num">${row.actualRank ? `第${row.actualRank}<br><span class="small muted">${pct(row.actualProb)}</span>` : "10球外"}</td>
               <td class="num">${hitMark(row.outcomeHit)}<br><span class="small muted">预测${row.predictedOutcome} / 实际${row.actualOutcome}</span></td>
+              <td class="num">${row.actualHalfFullKey ? `${hitMark(row.halfFullHit)}<br><span class="small muted">预测${row.halfFull.primary.label} / 实际${row.actualHalfFullLabel}<br>半场${row.actualHalfScoreText}</span>` : "<span class='small muted'>缺少进球时间</span>"}</td>
               <td class="num">${hitMark(row.exactHit)}</td>
               <td class="num">${hitMark(row.top2Hit)}</td>
               <td class="num">${hitMark(row.top3Hit)}</td>
@@ -3990,6 +4140,7 @@
       const context = contextForFixture(fixture, cfg);
       const model = matchModel(teamA, teamB, cfg, null, context);
       const pick = recommendationOutcomePick(model);
+      const halfFull = halfFullRecommendation(model, pick);
       const scorePack = recommendedScorePack(model, pick.key);
       const events = eventForecast(teamA, teamB, cfg, context);
       const knownScore = cfg.useKnown && fixture.known ? `${fixture.known[0]}-${fixture.known[1]}` : null;
@@ -4035,13 +4186,15 @@
             <div class="odd"><div class="o-label">2-3球</div><div class="o-value">${pct(model.midGoals)}</div><div class="small muted">常规区间</div></div>
             <div class="odd"><div class="o-label">4球以上</div><div class="o-value">${pct(model.highGoals)}</div><div class="small muted">大比分概率</div></div>
           </div>
-          <span class="risk-chip">半全场路径：${path.half} → ${primaryScore}（下半场 ${path.second}）</span>
+          <span class="risk-chip">半全场胜平负：${halfFull.primary.label}（备选 ${halfFull.secondary.label}/${halfFull.tertiary.label}）</span>
+          <span class="risk-chip">比分路径：${path.half} → ${primaryScore}（下半场 ${path.second}）</span>
           <div class="table-wrap" style="margin-top:10px">
             <table class="event-table">
               <thead>
                 <tr><th>项目</th><th>上半场预测</th><th>下半场预测</th><th>备注</th></tr>
               </thead>
               <tbody>
+                <tr><td>半全场</td><td>${halfFull.primary.halfLabel}</td><td>${halfFull.primary.fullLabel}</td><td>备选 ${halfFull.secondary.label} / ${halfFull.tertiary.label}</td></tr>
                 <tr><td>比分</td><td>${path.half}</td><td>${path.second}（下半场进球）</td><td>全场建议 ${primaryScore}，备选 ${scorePack.secondaryText}</td></tr>
                 <tr><td>黄牌</td><td>${rangeText(events.first.yellow, "张")}</td><td>${rangeText(events.second.yellow, "张")}</td><td>下半场更容易升温</td></tr>
                 <tr><td>红牌</td><td>${pct(events.first.red)}</td><td>${pct(events.second.red)}</td><td>全场红牌概率约 ${pct(events.redProb)}</td></tr>
@@ -4177,7 +4330,12 @@
       });
 
       renderMatchPredict();
-      runSimulation();
+      const initialCfg = config();
+      renderFixtures(initialCfg);
+      renderVerify(initialCfg);
+      renderCalibration(initialCfg);
+      renderTimelinePicks(initialCfg);
+      renderVerifyBrief(initialCfg);
       syncLatestResults();
       setInterval(() => syncLatestResults(true), 5 * 60 * 1000);
     }
