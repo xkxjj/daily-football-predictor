@@ -91,6 +91,7 @@ function renderMatches(matches) {
       reasoning.direction && `<p><b>方向：</b>${escapeHtml(reasoning.direction)}</p>`,
       reasoning.score && `<p><b>比分：</b>${escapeHtml(reasoning.score)}</p>`,
       reasoning.draw && `<p><b>平局：</b>${escapeHtml(reasoning.draw)}</p>`,
+      reasoning.context && `<p><b>场外 / 人员 / 交锋：</b>${escapeHtml(reasoning.context)}</p>`,
       reasoning.halfFull && `<p><b>半场：</b>${escapeHtml(reasoning.halfFull)}</p>`
     ].filter(Boolean).join("");
     const objective = match.factors.objective.map(x => `<div><b>客观</b> · ${escapeHtml(x)}</div>`).join("");

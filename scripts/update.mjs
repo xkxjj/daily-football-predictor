@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
+import { fetchContextFeed, mergeContexts } from "./lib/context-feed.mjs";
 import { calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -36,7 +37,13 @@ function activeAdjustment(adjustments, match, now) {
   const entry = adjustments.matches?.[match.id] || adjustments.matches?.[`${match.home}|${match.away}`];
   if (!entry) return null;
   if (entry.expiresAt && new Date(entry.expiresAt) <= now) return null;
-  return entry;
+  const stillActive = item => item?.source && (!item.expiresAt || new Date(item.expiresAt) > now);
+  return {
+    ...entry,
+    externalMarket: stillActive(entry.externalMarket) ? entry.externalMarket : null,
+    teamNews: (entry.teamNews || []).filter(stillActive),
+    coachNews: (entry.coachNews || []).filter(stillActive)
+  };
 }
 
 function publicRecord(record) {
@@ -49,22 +56,29 @@ const now = new Date();
 const today = dateInShanghai(now);
 const windowEnd = addDays(today, 1);
 
-const [historyFile, state, adjustments] = await Promise.all([
+const [historyFile, state, localAdjustments, contextFeed] = await Promise.all([
   readJson(paths.history, { version: 1, records: [] }),
   readJson(paths.state, { version: 1, teamRatings: {}, leagueGoals: {}, processedResults: [] }),
-  readJson(paths.adjustments, { version: 1, matches: {} })
+  readJson(paths.adjustments, { version: 2, matches: {} }),
+  fetchContextFeed(process.env.FOOTBALL_CONTEXT_FEED_URL, process.env.FOOTBALL_CONTEXT_FEED_TOKEN)
+    .catch(error => {
+      console.warn(`联网情报源暂不可用，继续使用本地与官方数据：${error.message}`);
+      return { configured: true, source: null, updatedAt: null, matches: {}, error: error.message };
+    })
 ]);
+const adjustments = mergeContexts(contextFeed, localAdjustments);
 
-// 2.1 首次运行时回填 180 天；日常仅复查 45 天，兼顾延期赛果且不重复施压官方接口。
-const needsBackfill = state.schemaVersion !== 2;
+// 2.2 首次升级时回填两年用于交锋样本；日常仅复查 45 天，且通过 matchId 去重。
+const needsBackfill = state.schemaVersion !== 3;
 if (needsBackfill) {
   state.teamRatings = {};
   state.teamForm = {};
   state.leagueGoals = {};
+  state.headToHead = {};
   state.processedResults = [];
-  state.schemaVersion = 2;
+  state.schemaVersion = 3;
 }
-const historyStart = addDays(today, needsBackfill ? -180 : -45);
+const historyStart = addDays(today, needsBackfill ? -730 : -45);
 
 console.log(`同步体彩网：赛程 ${today}—${windowEnd}，赛果 ${historyStart}—${today}`);
 const [schedule, results] = await Promise.all([fetchSchedule(), fetchResults(historyStart, today)]);
@@ -123,7 +137,16 @@ const verification = verificationSummary(records);
 const dashboard = {
   generatedAt: now.toISOString(),
   window: { start: today, end: windowEnd, timezone: "Asia/Shanghai" },
-  source: sourceInfo,
+  source: {
+    ...sourceInfo,
+    contextFeed: {
+      configured: contextFeed.configured,
+      source: contextFeed.source,
+      updatedAt: contextFeed.updatedAt,
+      availableMatches: Object.keys(contextFeed.matches || {}).length,
+      error: contextFeed.error || null
+    }
+  },
   model: modelInfo,
   matches: dashboardMatches,
   verification,

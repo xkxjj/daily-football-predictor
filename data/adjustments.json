@@ -1,5 +1,36 @@
 {
-  "version": 1,
-  "description": "可审计的赛前情境修正。键使用体彩网 matchId，或“主队|客队”。只填写已经核验的伤停、轮换、动机、天气等信息。",
+  "version": 2,
+  "description": "可审计的赛前情报。键使用体彩网 matchId，或“主队|客队”。场外赔率、教练和球员信息必须记录来源、可信度及失效时间。",
+  "schemaExample": {
+    "expiresAt": "2026-08-01T00:00:00+08:00",
+    "reason": "示例，不会参与任何比赛",
+    "externalMarket": {
+      "source": "已授权的赔率数据源",
+      "capturedAt": "2026-07-31T12:00:00+08:00",
+      "confidence": 0.8,
+      "openingResult": { "home": 2.1, "draw": 3.2, "away": 3.4 },
+      "result": { "home": 1.95, "draw": 3.3, "away": 3.75 }
+    },
+    "teamNews": [
+      {
+        "type": "injury",
+        "label": "主队核心前锋缺阵",
+        "source": "俱乐部官方公告 URL",
+        "confidence": 0.95,
+        "homeGoalsDelta": -0.18,
+        "awayGoalsDelta": 0
+      }
+    ],
+    "coachNews": [
+      {
+        "type": "coach_change",
+        "label": "客队更换主教练后的短期调整",
+        "source": "俱乐部官方公告 URL",
+        "confidence": 0.75,
+        "homeGoalsDelta": 0,
+        "awayGoalsDelta": 0.08
+      }
+    ]
+  },
   "matches": {}
 }

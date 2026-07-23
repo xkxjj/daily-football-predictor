@@ -9,6 +9,29 @@ function normalizeOdds(odds) {
   return raw.map(value => value / total);
 }
 
+function blendProbabilities(primary, auxiliary, weight) {
+  if (!primary) return auxiliary;
+  if (!auxiliary) return primary;
+  const safeWeight = clamp(Number(weight) || 0, 0, 1);
+  return primary.map((value, index) => value * (1 - safeWeight) + auxiliary[index] * safeWeight);
+}
+
+function pairKey(homeId, awayId) {
+  return [String(homeId), String(awayId)].sort().join("|");
+}
+
+function marketContext(match, adjustment) {
+  const verifiedExternal = adjustment?.externalMarket?.source ? adjustment.externalMarket : null;
+  const official = normalizeOdds(match.odds?.result);
+  const external = normalizeOdds(verifiedExternal?.result);
+  const openingExternal = normalizeOdds(verifiedExternal?.openingResult);
+  const confidence = clamp(Number(verifiedExternal?.confidence ?? 0.65), 0, 1);
+  const externalWeight = official && external ? clamp(0.08 + confidence * 0.22, 0.08, 0.30) : external ? 1 : 0;
+  const consensus = blendProbabilities(official, external, externalWeight);
+  const movement = external && openingExternal ? external.map((value, index) => value - openingExternal[index]) : null;
+  return { official, external, openingExternal, consensus, confidence, externalWeight, movement };
+}
+
 function outcome(home, away) {
   return home > away ? "胜" : home < away ? "负" : "平";
 }
@@ -89,6 +112,69 @@ function teamGoalPrior(match, state, context) {
   };
 }
 
+function headToHeadContext(match, state) {
+  const rows = state.headToHead?.[pairKey(match.homeId, match.awayId)]?.matches || [];
+  const relevant = [...rows]
+    .filter(row => [String(row.homeId), String(row.awayId)].includes(String(match.homeId)))
+    .sort((a, b) => String(b.matchDate).localeCompare(String(a.matchDate)))
+    .slice(0, 8);
+  if (!relevant.length) return { count: 0, weight: 0, probabilities: null, summary: "暂无可匹配的历史交锋样本" };
+
+  const now = Date.now();
+  let weightedWins = 0, weightedDraws = 0, weightedLosses = 0, weightedFor = 0, weightedAgainst = 0, totalWeight = 0;
+  for (const row of relevant) {
+    const ageDays = Math.max(0, (now - new Date(`${row.matchDate}T12:00:00Z`).getTime()) / 86_400_000);
+    const recency = Math.exp(-ageDays / 540);
+    const currentHomeWasHome = String(row.homeId) === String(match.homeId);
+    const goalsFor = currentHomeWasHome ? row.homeGoals : row.awayGoals;
+    const goalsAgainst = currentHomeWasHome ? row.awayGoals : row.homeGoals;
+    weightedFor += goalsFor * recency;
+    weightedAgainst += goalsAgainst * recency;
+    totalWeight += recency;
+    if (goalsFor > goalsAgainst) weightedWins += recency;
+    else if (goalsFor < goalsAgainst) weightedLosses += recency;
+    else weightedDraws += recency;
+  }
+  const probabilities = totalWeight
+    ? [weightedWins / totalWeight, weightedDraws / totalWeight, weightedLosses / totalWeight]
+    : null;
+  // 交锋的阵容和教练更替很快，因此最多只占方向判断的 10%。
+  const weight = clamp(totalWeight / 40, 0, 0.10);
+  const averageFor = weightedFor / totalWeight;
+  const averageAgainst = weightedAgainst / totalWeight;
+  return {
+    count: relevant.length,
+    weight,
+    probabilities,
+    averageFor,
+    averageAgainst,
+    summary: `近 ${relevant.length} 次交锋按时间衰减后，当前主队视角为胜 ${(probabilities[0] * 100).toFixed(0)}% / 平 ${(probabilities[1] * 100).toFixed(0)}% / 负 ${(probabilities[2] * 100).toFixed(0)}%，场均进球 ${averageFor.toFixed(2)}:${averageAgainst.toFixed(2)}`
+  };
+}
+
+function situationalContext(adjustment) {
+  const entries = [...(adjustment?.teamNews || []), ...(adjustment?.coachNews || [])];
+  let homeGoalsDelta = Number(adjustment?.homeGoalsDelta || 0);
+  let awayGoalsDelta = Number(adjustment?.awayGoalsDelta || 0);
+  const applied = [];
+  for (const entry of entries) {
+    if (!entry?.source) continue;
+    const confidence = clamp(Number(entry.confidence ?? 0.65), 0, 1);
+    const homeDelta = Number(entry.homeGoalsDelta || 0) * confidence;
+    const awayDelta = Number(entry.awayGoalsDelta || 0) * confidence;
+    if (!Number.isFinite(homeDelta) || !Number.isFinite(awayDelta)) continue;
+    homeGoalsDelta += homeDelta;
+    awayGoalsDelta += awayDelta;
+    const label = entry.label || entry.name || entry.type || "赛前情报";
+    applied.push(`${label}（可信度 ${(confidence * 100).toFixed(0)}%，xG ${homeDelta >= 0 ? "+" : ""}${homeDelta.toFixed(2)} / ${awayDelta >= 0 ? "+" : ""}${awayDelta.toFixed(2)}）`);
+  }
+  return {
+    homeGoalsDelta: clamp(homeGoalsDelta, -0.45, 0.45),
+    awayGoalsDelta: clamp(awayGoalsDelta, -0.45, 0.45),
+    applied
+  };
+}
+
 function preserveDrawSignal(probabilities, context) {
   const historyWeight = Math.min(0.28, context.count / 250);
   const draw = clamp(probabilities[1] * (1 - historyWeight) + context.drawRate * historyWeight, 0.14, 0.42);
@@ -98,12 +184,14 @@ function preserveDrawSignal(probabilities, context) {
     : [(1 - draw) / 2, draw, (1 - draw) / 2];
 }
 
-function fitExpectedGoals(target, handicapTarget, handicap, statPrior) {
+function fitExpectedGoals(target, handicapTarget, handicap, statPrior, weights = {}) {
+  const resultWeight = Number(weights.result ?? 1.7);
+  const handicapWeight = Number(weights.handicap ?? 0.82);
   let best = { loss: Infinity, home: 1.4, away: 1.15 };
   for (let h = 0.3; h <= 3.8; h += 0.1) for (let a = 0.25; a <= 3.5; a += 0.1) {
     const dist = distribution(h, a, handicap);
-    let loss = 1.7 * target.reduce((sum, p, i) => sum + (dist.result[i] - p) ** 2, 0);
-    if (handicapTarget) loss += 0.82 * handicapTarget.reduce((sum, p, i) => sum + (dist.handicapResult[i] - p) ** 2, 0);
+    let loss = resultWeight * target.reduce((sum, p, i) => sum + (dist.result[i] - p) ** 2, 0);
+    if (handicapTarget) loss += handicapWeight * handicapTarget.reduce((sum, p, i) => sum + (dist.handicapResult[i] - p) ** 2, 0);
     loss += 0.11 * ((h - statPrior.home) ** 2 + (a - statPrior.away) ** 2);
     if (loss < best.loss) best = { loss, home: h, away: a };
   }
@@ -245,22 +333,29 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
 }
 
 export function predictMatch(match, state, learning, adjustment = null) {
-  const market = normalizeOdds(match.odds.result);
+  const marketSignals = marketContext(match, adjustment);
+  const market = marketSignals.consensus;
   const handicapMarket = normalizeOdds(match.odds.handicapResult);
   const elo = eloProbabilities(match, state);
-  const effectiveMarketWeight = market ? learning.marketWeight : 0;
+  const externalOnlyPenalty = marketSignals.official ? 1 : 0.75;
+  const effectiveMarketWeight = market ? learning.marketWeight * externalOnlyPenalty : 0;
   const rawTarget = market ? elo.map((p, index) => effectiveMarketWeight * market[index] + (1 - effectiveMarketWeight) * p) : elo;
   const context = leagueContext(match, state);
-  const target = preserveDrawSignal(rawTarget, context);
+  const headToHead = headToHeadContext(match, state);
+  const h2hTarget = blendProbabilities(rawTarget, headToHead.probabilities, headToHead.weight);
+  const target = preserveDrawSignal(h2hTarget, context);
   const statPrior = teamGoalPrior(match, state, context);
-  const fit = fitExpectedGoals(target, handicapMarket, match.handicap, statPrior);
+  const handicapOnly = !market && Boolean(handicapMarket);
+  const fitWeights = handicapOnly ? { result: 0.72, handicap: 2.15 } : { result: 1.7, handicap: 0.82 };
+  const fit = fitExpectedGoals(target, handicapMarket, match.handicap, statPrior, fitWeights);
   let lambdaHome = clamp(fit.home * learning.goalScale + learning.homeBias, 0.15, 4.5);
   let lambdaAway = clamp(fit.away * learning.goalScale, 0.15, 4.2);
-  if (adjustment) {
-    lambdaHome = clamp(lambdaHome + Number(adjustment.homeGoalsDelta || 0), 0.1, 5);
-    lambdaAway = clamp(lambdaAway + Number(adjustment.awayGoalsDelta || 0), 0.1, 5);
-  }
-  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:v2.1.3`, context, target);
+  const situational = situationalContext(adjustment);
+  lambdaHome = clamp(lambdaHome + situational.homeGoalsDelta, 0.1, 5);
+  lambdaAway = clamp(lambdaAway + situational.awayGoalsDelta, 0.1, 5);
+  const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
+  const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
+  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:v2.2.0`, context, directionTarget);
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
   const drawGap = Math.max(prediction.resultDistribution.胜, prediction.resultDistribution.负) - prediction.resultDistribution.平;
@@ -269,21 +364,50 @@ export function predictMatch(match, state, learning, adjustment = null) {
     ? `平局并非兜底项：市场、Elo 与该联赛历史平局率共同校准后，模型主动选择平。`
     : `平局概率为 ${(prediction.resultDistribution.平 * 100).toFixed(1)}%，与最高方向相差 ${(drawGap * 100).toFixed(1)} 个百分点，已纳入但未列为主选。`;
   const halfFullCandidates = prediction.topHalfFull.map(item => `${item.pick} ${(item.probability * 100).toFixed(1)}%`).join("、");
+  const externalMarketText = marketSignals.external
+    ? `场外盘“${adjustment.externalMarket.source || "已配置数据源"}”去水概率 ${marketSignals.external.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，以 ${(marketSignals.externalWeight * 100).toFixed(0)}% 的受限权重并入官方市场`
+    : "未配置可核验的场外盘数据，本场不凭空补值";
+  const movementText = marketSignals.movement
+    ? `；相对开盘，胜/平/负概率变化 ${marketSignals.movement.map(value => `${value >= 0 ? "+" : ""}${(value * 100).toFixed(1)}`).join(" / ")} 个百分点`
+    : "";
+  const newsText = situational.applied.length
+    ? `教练/球员情报：${situational.applied.join("；")}`
+    : "暂无带来源与可信度的有效教练/球员情报，不做主观加减分";
+  const handicapOnlyText = handicapOnly
+    ? `本场普通胜平负未开售，但官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 的去水概率为 ${handicapMarket.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}；模型已提高让球盘拟合权重，用其反推真实实力差，并非按缺失数据处理。`
+    : handicapMarket
+      ? `官方让球盘去水概率 ${handicapMarket.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，与普通胜平负共同约束比分。`
+      : "本场官方让球盘尚未开售。";
   prediction.reasoning = {
     direction: `方向分布为 ${resultPct}；${scoreDirection}。`,
     score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。在“${prediction.result}”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 ${prediction.score}。`,
     draw: drawReason,
+    context: `${handicapOnlyText}${externalMarketText}${movementText}。${headToHead.summary}，交锋权重限制为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
     halfFull: `半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“${prediction.result}”。候选为 ${halfFullCandidates}，其中包含“半场平”的真实权重，最终主选 ${prediction.halfFull}。`
   };
-  const marketText = market ? `官方胜平负去水概率 ${market.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}` : "胜平负未开售，降低市场信号权重";
+  const marketText = marketSignals.official ? `官方胜平负去水概率 ${marketSignals.official.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}` : "官方胜平负未开售，降低市场信号权重";
   const eloText = `滚动 Elo ${Math.round(state.teamRatings?.[`id:${match.homeId}`] ?? 1500)} : ${Math.round(state.teamRatings?.[`id:${match.awayId}`] ?? 1500)}`;
   const rankText = match.homeRank && match.awayRank ? `联赛排名 ${match.homeRank} : ${match.awayRank}` : "官方页面暂无双方联赛排名";
   return {
     prediction,
-    diagnostics: { marketProbabilities: market, eloProbabilities: elo, targetProbabilities: target, fittedLoss: fit.loss, statPrior },
+    diagnostics: {
+      marketProbabilities: market,
+      officialMarketProbabilities: marketSignals.official,
+      externalMarketProbabilities: marketSignals.external,
+      handicapMarketProbabilities: handicapMarket,
+      handicapOnly,
+      eloProbabilities: elo,
+      targetProbabilities: target,
+      fittedLoss: fit.loss,
+      statPrior,
+      headToHead,
+      situational
+    },
     factors: {
-      objective: [marketText, eloText, rankText, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`],
-      subjective: adjustment?.reason ? [`${adjustment.reason}（主/客进球修正 ${Number(adjustment.homeGoalsDelta || 0).toFixed(2)} / ${Number(adjustment.awayGoalsDelta || 0).toFixed(2)}）`] : ["暂无经核验的人工赛前修正，保持客观基线"]
+      objective: [marketText, handicapOnlyText, externalMarketText + movementText, eloText, rankText, headToHead.summary, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`],
+      subjective: adjustment?.reason || situational.applied.length
+        ? [adjustment?.reason, ...situational.applied, `主/客总 xG 修正 ${situational.homeGoalsDelta.toFixed(2)} / ${situational.awayGoalsDelta.toFixed(2)}`].filter(Boolean)
+        : ["暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"]
     }
   };
 }
@@ -313,6 +437,7 @@ export function updateRatings(state, results) {
   state.teamRatings ||= {};
   state.teamForm ||= {};
   state.leagueGoals ||= {};
+  state.headToHead ||= {};
   state.processedResults ||= [];
   const processed = new Set(state.processedResults);
   for (const result of [...results].sort((a, b) => a.matchDate.localeCompare(b.matchDate))) {
@@ -352,10 +477,24 @@ export function updateRatings(state, results) {
       const halfKey = outcome(halfHome, halfAway);
       state.leagueGoals[leagueKey].halfOutcomes[halfKey] = (state.leagueGoals[leagueKey].halfOutcomes[halfKey] || 0) + 1;
     }
+    const h2hKey = pairKey(result.homeId, result.awayId);
+    state.headToHead[h2hKey] ||= { matches: [] };
+    state.headToHead[h2hKey].matches.push({
+      id: result.id,
+      matchDate: result.matchDate,
+      leagueId: result.leagueId,
+      homeId: result.homeId,
+      awayId: result.awayId,
+      homeGoals,
+      awayGoals
+    });
+    state.headToHead[h2hKey].matches = state.headToHead[h2hKey].matches
+      .sort((a, b) => String(a.matchDate).localeCompare(String(b.matchDate)))
+      .slice(-12);
     processed.add(result.id);
   }
-  state.processedResults = [...processed].slice(-10000);
-  state.schemaVersion = 2;
+  state.processedResults = [...processed].slice(-20000);
+  state.schemaVersion = 3;
   state.updatedAt = new Date().toISOString();
   return state;
 }
@@ -411,8 +550,8 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.1.3",
-  name: "Coherent Market-Elo Score Path",
+  version: "2.2.0",
+  name: "Coherent Multi-signal Market-Elo Score Path",
   simulations: 20_000,
   metrics: METRIC_KEYS
 };

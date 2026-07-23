@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actualFromResult, calibrate, predictMatch, scoreRecord, verificationSummary } from "./lib/model.mjs";
+import { actualFromResult, calibrate, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
+import { mergeContexts } from "./lib/context-feed.mjs";
 
 const match = {
   id:"demo-1", matchNumber:"周三001", league:"测试联赛", leagueId:999,
@@ -46,6 +47,63 @@ test("开放型比赛不会退化成固定小比分模板", () => {
   const total = predicted.score.split(":").map(Number).reduce((a, b) => a + b, 0);
   assert.ok(total >= 4, `开放型比赛应保留大比分路径，实际得到 ${predicted.score}`);
   assert.equal(predicted.totalGoals, String(total));
+});
+
+test("只开让球胜平负时以让球盘反推实力差", () => {
+  const handicapOnlyMatch = {
+    ...match,
+    id: "handicap-only",
+    handicap: -2,
+    odds: { result: null, handicapResult: { home: 1.82, draw: 4.1, away: 2.95 } }
+  };
+  const generated = predictMatch(handicapOnlyMatch, state, learning);
+  assert.equal(generated.diagnostics.handicapOnly, true);
+  assert.ok(generated.prediction.reasoning.context.includes("普通胜平负未开售"));
+  const [home, away] = generated.prediction.score.split(":").map(Number);
+  assert.equal(generated.prediction.handicapResult, home - 2 > away ? "胜" : home - 2 < away ? "负" : "平");
+});
+
+test("场外盘、教练与球员情报以受限权重进入模型", () => {
+  const adjustment = {
+    externalMarket: {
+      source: "测试赔率源",
+      confidence: 0.8,
+      openingResult: { home: 2.1, draw: 3.2, away: 3.4 },
+      result: { home: 1.85, draw: 3.4, away: 4.2 }
+    },
+    teamNews: [{ label: "主队前锋缺阵", source: "俱乐部公告", confidence: 0.9, homeGoalsDelta: -0.2, awayGoalsDelta: 0 }],
+    coachNews: [{ label: "客队新帅", source: "俱乐部公告", confidence: 0.7, homeGoalsDelta: 0, awayGoalsDelta: 0.1 }]
+  };
+  const generated = predictMatch(match, state, learning, adjustment);
+  assert.ok(generated.diagnostics.externalMarketProbabilities);
+  assert.ok(Math.abs(generated.diagnostics.situational.homeGoalsDelta + 0.18) < 1e-10);
+  assert.ok(Math.abs(generated.diagnostics.situational.awayGoalsDelta - 0.07) < 1e-10);
+  assert.ok(generated.prediction.reasoning.context.includes("测试赔率源"));
+  assert.ok(generated.prediction.reasoning.context.includes("主队前锋缺阵"));
+});
+
+test("历史交锋按当前主队视角记录并仅作弱辅助", () => {
+  const h2hState = { teamRatings: {}, teamForm: {}, leagueGoals: {}, headToHead: {}, processedResults: [] };
+  updateRatings(h2hState, [
+    { id: "h1", matchDate: "2026-01-01", leagueId: 999, homeId: 1, awayId: 2, fullScore: "2:0", halfScore: "1:0" },
+    { id: "h2", matchDate: "2026-03-01", leagueId: 999, homeId: 2, awayId: 1, fullScore: "1:1", halfScore: "0:0" }
+  ]);
+  assert.equal(h2hState.headToHead["1|2"].matches.length, 2);
+  const generated = predictMatch(match, h2hState, learning);
+  assert.equal(generated.diagnostics.headToHead.count, 2);
+  assert.ok(generated.diagnostics.headToHead.weight <= 0.1);
+  assert.ok(generated.prediction.reasoning.context.includes("近 2 次交锋"));
+});
+
+test("联网情报与本地核验信息按比赛合并，本地值优先", () => {
+  const merged = mergeContexts(
+    { matches: { "demo-1": { externalMarket: { source: "远程", confidence: 0.6 }, teamNews: [{ label: "远程伤停" }] } } },
+    { matches: { "demo-1": { externalMarket: { confidence: 0.9 }, reason: "本地复核" } } }
+  );
+  assert.equal(merged.matches["demo-1"].externalMarket.source, "远程");
+  assert.equal(merged.matches["demo-1"].externalMarket.confidence, 0.9);
+  assert.equal(merged.matches["demo-1"].teamNews[0].label, "远程伤停");
+  assert.equal(merged.matches["demo-1"].reason, "本地复核");
 });
 
 test("官方比分可推导五项真实赛果", () => {

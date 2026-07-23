@@ -27,7 +27,7 @@
     <section class="hero">
       <div class="eyebrow">两日窗口 · 赛前锁定 · 赛后验真</div>
       <h1>每一次预测，<br><em>都接受赛果检验。</em></h1>
-      <p class="hero-copy">以体彩网竞彩足球赛程与官方赔率为入口，用 Elo、赔率去水、双泊松与蒙特卡洛生成五项预测；完赛后自动对账，并仅用赛前已锁定样本校准后续模型。</p>
+      <p class="hero-copy">以体彩网竞彩足球赛程与官方赔率为入口，辅助参考可核验场外盘、教练球员情报和时间衰减交锋记录，用 Elo、赔率去水、双泊松与蒙特卡洛生成五项自洽预测。</p>
       <div class="status-line">
         <span id="windowLabel">正在读取预测窗口…</span>
         <span id="updatedLabel">数据加载中</span>
@@ -86,12 +86,12 @@
         <article class="learning-card">
           <span class="card-kicker">OBJECTIVE SIGNALS</span>
           <h3>客观层</h3>
-          <ul><li>体彩网官方胜平负 / 让球赔率去水概率</li><li>球队滚动 Elo 与主场优势</li><li>双泊松进球分布 + 20,000 次蒙特卡洛</li><li>近期待验真样本的 Brier 分数与进球残差</li></ul>
+          <ul><li>体彩网官方赔率 + 可核验场外盘赔率去水共识</li><li>球队滚动 Elo、近期攻防与主场优势</li><li>两年历史赛果中的同队交锋（最高 10% 弱权重）</li><li>双泊松进球分布 + 20,000 次蒙特卡洛</li><li>近期待验真样本的 Brier 分数与进球残差</li></ul>
         </article>
         <article class="learning-card">
           <span class="card-kicker">AUDITABLE CONTEXT</span>
           <h3>主观层</h3>
-          <ul><li>伤停、轮换、赛程动机、天气等人工赛前修正</li><li>每条修正必须写明理由和失效时间</li><li>修正随预测一并冻结，赛后可单独复盘其贡献</li><li>无可靠信息时不做主观臆测</li></ul>
+          <ul><li>教练变动、伤停、停赛、轮换、动机与天气修正</li><li>每条情报必须写明来源、可信度和失效时间</li><li>人员与教练修正设置幅度上限，避免消息过度拟合</li><li>修正随预测一并冻结，赛后可单独复盘其贡献</li><li>无可靠信息时不做主观臆测</li></ul>
         </article>
       </div>
     </section>

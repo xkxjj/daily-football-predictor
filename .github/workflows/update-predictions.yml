@@ -30,6 +30,9 @@ jobs:
 
       - name: Fetch, settle and predict
         run: npm run update
+        env:
+          FOOTBALL_CONTEXT_FEED_URL: ${{ vars.FOOTBALL_CONTEXT_FEED_URL }}
+          FOOTBALL_CONTEXT_FEED_TOKEN: ${{ secrets.FOOTBALL_CONTEXT_FEED_TOKEN }}
 
       - name: Commit auditable data
         run: |

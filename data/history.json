@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-22T09:34:19.570Z",
+  "updatedAt": "2026-07-23T03:11:29.039Z",
   "records": [
     {
       "id": "2040584",
@@ -20,7 +20,7 @@
       "kickoff": "2026-07-22T18:30:00+08:00",
       "kickoffDate": "2026-07-22",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -582,7 +582,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "胜",
+        "score": "3:1",
+        "totalGoals": "4",
+        "halfFull": "胜/胜",
+        "halfScore": "1:0",
+        "homeGoals": 3,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 1,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040585",
@@ -602,7 +621,7 @@
       "kickoff": "2026-07-22T18:30:00+08:00",
       "kickoffDate": "2026-07-22",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": 1,
       "odds": {
@@ -1164,7 +1183,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "2:3",
+        "totalGoals": "5",
+        "halfFull": "平/负",
+        "halfScore": "1:1",
+        "homeGoals": 2,
+        "awayGoals": 3
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 2,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040586",
@@ -1184,7 +1222,7 @@
       "kickoff": "2026-07-22T18:30:00+08:00",
       "kickoffDate": "2026-07-22",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": 1,
       "odds": {
@@ -1746,7 +1784,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "平",
+        "handicapResult": "胜",
+        "score": "1:1",
+        "totalGoals": "2",
+        "halfFull": "平/平",
+        "halfScore": "1:1",
+        "homeGoals": 1,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 0,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040587",
@@ -1766,7 +1823,7 @@
       "kickoff": "2026-07-23T01:00:00+08:00",
       "kickoffDate": "2026-07-23",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -2,
       "odds": {
@@ -2278,7 +2335,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "胜",
+        "score": "3:0",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "halfScore": "1:0",
+        "homeGoals": 3,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": true,
+        "halfFull": true
+      },
+      "hitCount": 3,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040588",
@@ -2298,7 +2374,7 @@
       "kickoff": "2026-07-23T01:00:00+08:00",
       "kickoffDate": "2026-07-23",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": 1,
       "odds": {
@@ -2860,7 +2936,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "1:2",
+        "totalGoals": "3",
+        "halfFull": "负/负",
+        "halfScore": "0:1",
+        "homeGoals": 1,
+        "awayGoals": 2
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": true,
+        "totalGoals": true,
+        "halfFull": true
+      },
+      "hitCount": 5,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040596",
@@ -2880,7 +2975,7 @@
       "kickoff": "2026-07-23T01:00:00+08:00",
       "kickoffDate": "2026-07-23",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -3442,7 +3537,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "1:0",
+        "totalGoals": "1",
+        "halfFull": "胜/胜",
+        "halfScore": "1:0",
+        "homeGoals": 1,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": true
+      },
+      "hitCount": 3,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040589",
@@ -3462,7 +3576,7 @@
       "kickoff": "2026-07-23T07:30:00+08:00",
       "kickoffDate": "2026-07-23",
       "businessDate": "2026-07-22",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -4024,7 +4138,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "3:2",
+        "totalGoals": "5",
+        "halfFull": "平/胜",
+        "halfScore": "1:1",
+        "homeGoals": 3,
+        "awayGoals": 2
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": true,
+        "totalGoals": true,
+        "halfFull": false
+      },
+      "hitCount": 4,
+      "settledAt": "2026-07-23T02:56:19.613Z"
     },
     {
       "id": "2040590",
@@ -5771,6 +5904,1594 @@
           }
         }
       ]
+    },
+    {
+      "id": "2040594",
+      "matchNumber": "周四201",
+      "matchNumberDate": "260723",
+      "league": "巴甲",
+      "leagueFull": "巴西甲级联赛",
+      "leagueId": 6,
+      "home": "科林蒂安",
+      "homeFull": "科林蒂安",
+      "homeId": 567,
+      "away": "里莫",
+      "awayFull": "里莫",
+      "awayId": 1035930,
+      "homeRank": 12,
+      "awayRank": 19,
+      "kickoff": "2026-07-24T06:30:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.35,
+          "draw": 4.05,
+          "away": 7.05,
+          "updatedAt": "2026-07-22T09:33:27"
+        },
+        "handicapResult": {
+          "home": 2.28,
+          "draw": 3.2,
+          "away": 2.65,
+          "updatedAt": "2026-07-22T09:33:27"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T02:56:19.435Z",
+      "republishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "confidence": 0.6312,
+        "probabilities": {
+          "result": 0.6312,
+          "handicapResult": 0.23745,
+          "score": 0.0887,
+          "totalGoals": 0.20045,
+          "halfFull": 0.4101
+        },
+        "resultDistribution": {
+          "胜": 0.6312,
+          "平": 0.20985,
+          "负": 0.15895
+        },
+        "halfFullDistribution": {
+          "平/平": 0.1265,
+          "负/平": 0.04145,
+          "平/胜": 0.1885,
+          "平/负": 0.06325,
+          "负/负": 0.0839,
+          "胜/胜": 0.4101,
+          "胜/平": 0.0419,
+          "负/胜": 0.0326,
+          "胜/负": 0.0118
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.4101
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.1885
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.0326
+          }
+        ],
+        "topScores": [
+          {
+            "score": "2:1",
+            "probability": 0.0887
+          },
+          {
+            "score": "1:0",
+            "probability": 0.1054
+          },
+          {
+            "score": "2:0",
+            "probability": 0.1009
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 2.132594936708861,
+          "away": 0.9773575949367086
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜63% / 平21% / 负16%；胜的综合概率最高。",
+          "score": "该联赛近 19 场平均 3.00 球；双方近期攻防推得进球基线 1.79:1.16，结合官方让球 -1 后得到 xG 2.13:0.98。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
+          "draw": "平局概率为 21.0%，与最高方向相差 42.1 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 39% / 28% / 33%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 41.0%、平/胜 18.9%、负/胜 3.3%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.6558139534883721,
+          0.21860465116279074,
+          0.12558139534883722
+        ],
+        "officialMarketProbabilities": [
+          0.6558139534883721,
+          0.21860465116279074,
+          0.12558139534883722
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.38866990558254655,
+          0.2769273077275644,
+          0.3344027866898891
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.5128360915982291,
+          0.2408490687054341,
+          0.24631483969633686
+        ],
+        "targetProbabilities": [
+          0.6131756178938943,
+          0.23485456668976862,
+          0.15196981541633717
+        ],
+        "fittedLoss": 0.014297327528577937,
+        "statPrior": {
+          "home": 1.792347629173169,
+          "away": 1.1578947368421053,
+          "homeRecentScored": 1.625,
+          "homeRecentConceded": 0.875,
+          "awayRecentScored": 1.1578947368421053,
+          "awayRecentConceded": 1.8421052631578947,
+          "homeSamples": 8,
+          "awaySamples": 0
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 66% / 22% / 13%",
+          "官方让球盘去水概率 39% / 28% / 33%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1531 : 1500",
+          "联赛排名 12 : 19",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 36.8%，模型期望进球 2.13 : 0.98"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.35,
+          "draw": 4.05,
+          "away": 7.05,
+          "updatedAt": "2026-07-22T09:33:27"
+        },
+        "handicapResult": {
+          "home": 2.28,
+          "draw": 3.2,
+          "away": 2.65,
+          "updatedAt": "2026-07-22T09:33:27"
+        }
+      },
+      "revisions": [
+        {
+          "modelVersion": "2.1.3",
+          "publishedAt": "2026-07-23T02:56:19.435Z",
+          "prediction": {
+            "result": "胜",
+            "handicapResult": "平",
+            "score": "1:0",
+            "totalGoals": "1",
+            "halfFull": "胜/胜",
+            "confidence": 0.6454,
+            "probabilities": {
+              "result": 0.6454,
+              "handicapResult": 0.27415,
+              "score": 0.17905,
+              "totalGoals": 0.23525,
+              "halfFull": 0.39735
+            },
+            "resultDistribution": {
+              "胜": 0.6454,
+              "平": 0.2431,
+              "负": 0.1115
+            },
+            "halfFullDistribution": {
+              "胜/胜": 0.39735,
+              "平/胜": 0.22745,
+              "胜/平": 0.03145,
+              "负/负": 0.05755,
+              "平/平": 0.17915,
+              "胜/负": 0.0054,
+              "负/胜": 0.0206,
+              "负/平": 0.0325,
+              "平/负": 0.04855
+            },
+            "topHalfFull": [
+              {
+                "pick": "胜/胜",
+                "probability": 0.39735
+              },
+              {
+                "pick": "平/胜",
+                "probability": 0.22745
+              },
+              {
+                "pick": "负/胜",
+                "probability": 0.0206
+              }
+            ],
+            "topScores": [
+              {
+                "score": "1:0",
+                "probability": 0.17905
+              },
+              {
+                "score": "2:0",
+                "probability": 0.1413
+              },
+              {
+                "score": "0:0",
+                "probability": 0.121
+              }
+            ],
+            "simulations": 20000,
+            "expectedGoals": {
+              "home": 1.7210759493670889,
+              "away": 0.5658386075949366
+            },
+            "reasoning": {
+              "direction": "方向分布为 胜65% / 平24% / 负11%；胜的综合概率最高。",
+              "score": "该联赛近 6 场平均 2.17 球；双方近期攻防推得进球基线 1.47:0.67，结合官方让球 -1 后得到 xG 1.72:0.57。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:0。",
+              "draw": "平局概率为 24.3%，与最高方向相差 40.2 个百分点，已纳入但未列为主选。",
+              "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 39.7%、平/胜 22.7%、负/胜 2.1%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+            }
+          },
+          "diagnostics": {
+            "marketProbabilities": [
+              0.6558139534883721,
+              0.21860465116279074,
+              0.12558139534883722
+            ],
+            "eloProbabilities": [
+              0.5017376065653477,
+              0.24413746184443874,
+              0.2541249315902135
+            ],
+            "targetProbabilities": [
+              0.6172696116341871,
+              0.22725522339644363,
+              0.15547516496936914
+            ],
+            "fittedLoss": 0.00792999529885957,
+            "statPrior": {
+              "home": 1.4714045207910318,
+              "away": 0.6666666666666666,
+              "homeRecentScored": 1.3333333333333333,
+              "homeRecentConceded": 0.6666666666666666,
+              "awayRecentScored": 0.6666666666666666,
+              "awayRecentConceded": 1.5,
+              "homeSamples": 6,
+              "awaySamples": 0
+            }
+          },
+          "factors": {
+            "objective": [
+              "官方胜平负去水概率 66% / 22% / 13%",
+              "滚动 Elo 1522 : 1500",
+              "联赛排名 12 : 19",
+              "联赛平局率 33.3%，模型期望进球 1.72 : 0.57"
+            ],
+            "subjective": [
+              "暂无经核验的人工赛前修正，保持客观基线"
+            ]
+          },
+          "oddsSnapshot": {
+            "result": {
+              "home": 1.35,
+              "draw": 4.05,
+              "away": 7.05,
+              "updatedAt": "2026-07-22T09:33:27"
+            },
+            "handicapResult": {
+              "home": 2.28,
+              "draw": 3.2,
+              "away": 2.65,
+              "updatedAt": "2026-07-22T09:33:27"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "2040593",
+      "matchNumber": "周四202",
+      "matchNumberDate": "260723",
+      "league": "巴甲",
+      "leagueFull": "巴西甲级联赛",
+      "leagueId": 6,
+      "home": "博塔弗戈",
+      "homeFull": "博塔弗戈",
+      "homeId": 566,
+      "away": "维多利亚",
+      "awayFull": "维多利亚",
+      "awayId": 1097,
+      "homeRank": 9,
+      "awayRank": 11,
+      "kickoff": "2026-07-24T06:30:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.58,
+          "draw": 3.65,
+          "away": 4.5,
+          "updatedAt": "2026-07-22T09:33:27"
+        },
+        "handicapResult": {
+          "home": 2.88,
+          "draw": 3.3,
+          "away": 2.09,
+          "updatedAt": "2026-07-22T09:33:27"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T02:56:19.435Z",
+      "republishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "1:0",
+        "totalGoals": "1",
+        "halfFull": "胜/胜",
+        "confidence": 0.5447,
+        "probabilities": {
+          "result": 0.5447,
+          "handicapResult": 0.26485,
+          "score": 0.15775,
+          "totalGoals": 0.23585,
+          "halfFull": 0.3242
+        },
+        "resultDistribution": {
+          "胜": 0.5447,
+          "平": 0.2699,
+          "负": 0.1854
+        },
+        "halfFullDistribution": {
+          "负/负": 0.0957,
+          "平/负": 0.07985,
+          "平/平": 0.1905,
+          "胜/胜": 0.3242,
+          "平/胜": 0.19905,
+          "胜/负": 0.00985,
+          "负/胜": 0.02145,
+          "负/平": 0.0388,
+          "胜/平": 0.0406
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.3242
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.19905
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.02145
+          }
+        ],
+        "topScores": [
+          {
+            "score": "1:0",
+            "probability": 0.15775
+          },
+          {
+            "score": "0:0",
+            "probability": 0.12285
+          },
+          {
+            "score": "2:0",
+            "probability": 0.10735
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.5153164556962024,
+          "away": 0.7715981012658226
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜54% / 平27% / 负19%；胜的综合概率最高。",
+          "score": "该联赛近 19 场平均 3.00 球；双方近期攻防推得进球基线 0.92:1.11，结合官方让球 -1 后得到 xG 1.52:0.77。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:0。",
+          "draw": "平局概率为 27.0%，与最高方向相差 27.5 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 31% / 27% / 42%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 32.4%、平/胜 19.9%、负/胜 2.1%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.5605419425295202,
+          0.2426455532045594,
+          0.19681250426592042
+        ],
+        "officialMarketProbabilities": [
+          0.5605419425295202,
+          0.2426455532045594,
+          0.19681250426592042
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.30762437444804236,
+          0.2684721813364733,
+          0.42390344421548426
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.5097505447375303,
+          0.24176099851501193,
+          0.24848845674745765
+        ],
+        "targetProbabilities": [
+          0.5415898704389236,
+          0.25201107822319946,
+          0.206399051337877
+        ],
+        "fittedLoss": 0.045249203772031635,
+        "statPrior": {
+          "home": 0.91943004930281,
+          "away": 1.1105647721609158,
+          "homeRecentScored": 1.5714285714285714,
+          "homeRecentConceded": 1.0714285714285714,
+          "awayRecentScored": 0.5,
+          "awayRecentConceded": 0,
+          "homeSamples": 14,
+          "awaySamples": 2
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 56% / 24% / 20%",
+          "官方让球盘去水概率 31% / 27% / 42%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1562 : 1514",
+          "联赛排名 9 : 11",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 36.8%，模型期望进球 1.52 : 0.77"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.58,
+          "draw": 3.65,
+          "away": 4.5,
+          "updatedAt": "2026-07-22T09:33:27"
+        },
+        "handicapResult": {
+          "home": 2.88,
+          "draw": 3.3,
+          "away": 2.09,
+          "updatedAt": "2026-07-22T09:33:27"
+        }
+      },
+      "revisions": [
+        {
+          "modelVersion": "2.1.3",
+          "publishedAt": "2026-07-23T02:56:19.435Z",
+          "prediction": {
+            "result": "胜",
+            "handicapResult": "平",
+            "score": "1:0",
+            "totalGoals": "1",
+            "halfFull": "胜/胜",
+            "confidence": 0.56985,
+            "probabilities": {
+              "result": 0.56985,
+              "handicapResult": 0.2607,
+              "score": 0.15205,
+              "totalGoals": 0.2213,
+              "halfFull": 0.34365
+            },
+            "resultDistribution": {
+              "胜": 0.56985,
+              "平": 0.25735,
+              "负": 0.1728
+            },
+            "halfFullDistribution": {
+              "平/负": 0.07405,
+              "负/胜": 0.0239,
+              "平/胜": 0.2023,
+              "平/平": 0.1799,
+              "胜/胜": 0.34365,
+              "负/负": 0.0889,
+              "负/平": 0.04115,
+              "胜/平": 0.0363,
+              "胜/负": 0.00985
+            },
+            "topHalfFull": [
+              {
+                "pick": "胜/胜",
+                "probability": 0.34365
+              },
+              {
+                "pick": "平/胜",
+                "probability": 0.2023
+              },
+              {
+                "pick": "负/胜",
+                "probability": 0.0239
+              }
+            ],
+            "topScores": [
+              {
+                "score": "1:0",
+                "probability": 0.15205
+              },
+              {
+                "score": "2:0",
+                "probability": 0.11115
+              },
+              {
+                "score": "0:0",
+                "probability": 0.10865
+              }
+            ],
+            "simulations": 20000,
+            "expectedGoals": {
+              "home": 1.6181962025316456,
+              "away": 0.7715981012658226
+            },
+            "reasoning": {
+              "direction": "方向分布为 胜57% / 平26% / 负17%；胜的综合概率最高。",
+              "score": "该联赛近 6 场平均 2.17 球；双方近期攻防推得进球基线 1.45:0.69，结合官方让球 -1 后得到 xG 1.62:0.77。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:0。",
+              "draw": "平局概率为 25.7%，与最高方向相差 31.2 个百分点，已纳入但未列为主选。",
+              "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 34.4%、平/胜 20.2%、负/胜 2.4%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+            }
+          },
+          "diagnostics": {
+            "marketProbabilities": [
+              0.5605419425295202,
+              0.2426455532045594,
+              0.19681250426592042
+            ],
+            "eloProbabilities": [
+              0.4497573578318942,
+              0.25985490204449047,
+              0.29038774012361535
+            ],
+            "targetProbabilities": [
+              0.5328513022083634,
+              0.2487967485969572,
+              0.21835194919467946
+            ],
+            "fittedLoss": 0.004163989954147152,
+            "statPrior": {
+              "home": 1.451803085112982,
+              "away": 0.6851851851851851,
+              "homeRecentScored": 2,
+              "homeRecentConceded": 1,
+              "awayRecentScored": 1,
+              "awayRecentConceded": 0,
+              "homeSamples": 1,
+              "awaySamples": 1
+            }
+          },
+          "factors": {
+            "objective": [
+              "官方胜平负去水概率 56% / 24% / 20%",
+              "滚动 Elo 1512 : 1512",
+              "联赛排名 9 : 11",
+              "联赛平局率 33.3%，模型期望进球 1.62 : 0.77"
+            ],
+            "subjective": [
+              "暂无经核验的人工赛前修正，保持客观基线"
+            ]
+          },
+          "oddsSnapshot": {
+            "result": {
+              "home": 1.58,
+              "draw": 3.65,
+              "away": 4.5,
+              "updatedAt": "2026-07-22T09:33:27"
+            },
+            "handicapResult": {
+              "home": 2.88,
+              "draw": 3.3,
+              "away": 2.09,
+              "updatedAt": "2026-07-22T09:33:27"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "2040597",
+      "matchNumber": "周四203",
+      "matchNumberDate": "260723",
+      "league": "欧罗巴",
+      "leagueFull": "欧罗巴联赛",
+      "leagueId": 70,
+      "home": "哈马比",
+      "homeFull": "哈马比",
+      "homeId": 352,
+      "away": "安德莱",
+      "awayFull": "安德莱赫特",
+      "awayId": 223,
+      "homeRank": null,
+      "awayRank": null,
+      "kickoff": "2026-07-24T01:00:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.93,
+          "draw": 3.35,
+          "away": 3.2,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 4.02,
+          "draw": 3.6,
+          "away": 1.66,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "confidence": 0.49475,
+        "probabilities": {
+          "result": 0.49475,
+          "handicapResult": 0.23865,
+          "score": 0.09065,
+          "totalGoals": 0.2044,
+          "halfFull": 0.29005
+        },
+        "resultDistribution": {
+          "胜": 0.49475,
+          "平": 0.25265,
+          "负": 0.2526
+        },
+        "halfFullDistribution": {
+          "平/平": 0.1593,
+          "胜/胜": 0.29005,
+          "平/胜": 0.17785,
+          "平/负": 0.09885,
+          "负/胜": 0.02685,
+          "负/负": 0.1366,
+          "负/平": 0.0465,
+          "胜/负": 0.01715,
+          "胜/平": 0.04685
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.29005
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.17785
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.02685
+          }
+        ],
+        "topScores": [
+          {
+            "score": "2:1",
+            "probability": 0.09065
+          },
+          {
+            "score": "1:0",
+            "probability": 0.11385
+          },
+          {
+            "score": "1:1",
+            "probability": 0.11065
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.6181962025316456,
+          "away": 1.0802373417721516
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜49% / 平25% / 负25%；胜的综合概率最高。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.45:1.14，结合官方让球 -1 后得到 xG 1.62:1.08。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
+          "draw": "平局概率为 25.3%，与最高方向相差 24.2 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 22% / 25% / 53%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 29.0%、平/胜 17.8%、负/胜 2.7%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.45887464417952617,
+          0.2643665860496971,
+          0.2767587697707767
+        ],
+        "officialMarketProbabilities": [
+          0.45887464417952617,
+          0.2643665860496971,
+          0.2767587697707767
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.22034423255608157,
+          0.2460510596876244,
+          0.5336047077562939
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.5504730031166825,
+          0.22986348223137115,
+          0.2196635146519463
+        ],
+        "targetProbabilities": [
+          0.48732559055899966,
+          0.24571526598906387,
+          0.26695914345193655
+        ],
+        "fittedLoss": 0.002067634886146439,
+        "statPrior": {
+          "home": 1.4528275610003418,
+          "away": 1.1393745408786113,
+          "homeRecentScored": 2.05,
+          "homeRecentConceded": 1.3,
+          "awayRecentScored": 1.25,
+          "awayRecentConceded": 1,
+          "homeSamples": 20,
+          "awaySamples": 4
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 46% / 26% / 28%",
+          "官方让球盘去水概率 22% / 25% / 53%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1603 : 1511",
+          "官方页面暂无双方联赛排名",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 21.9%，模型期望进球 1.62 : 1.08"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.93,
+          "draw": 3.35,
+          "away": 3.2,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 4.02,
+          "draw": 3.6,
+          "away": 1.66,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040603",
+      "matchNumber": "周四204",
+      "matchNumberDate": "260723",
+      "league": "欧罗巴",
+      "leagueFull": "欧罗巴联赛",
+      "leagueId": 70,
+      "home": "圣加仑",
+      "homeFull": "圣加仑",
+      "homeId": 1255,
+      "away": "本菲卡",
+      "awayFull": "本菲卡",
+      "awayId": 267,
+      "homeRank": null,
+      "awayRank": null,
+      "kickoff": "2026-07-24T02:00:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": 1,
+      "odds": {
+        "result": {
+          "home": 6.4,
+          "draw": 4.4,
+          "away": 1.34,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 2.73,
+          "draw": 3.4,
+          "away": 2.13,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "1:2",
+        "totalGoals": "3",
+        "halfFull": "负/负",
+        "confidence": 0.5941,
+        "probabilities": {
+          "result": 0.5941,
+          "handicapResult": 0.227,
+          "score": 0.08825,
+          "totalGoals": 0.19655,
+          "halfFull": 0.37775
+        },
+        "resultDistribution": {
+          "胜": 0.20185,
+          "平": 0.20405,
+          "负": 0.5941
+        },
+        "halfFullDistribution": {
+          "胜/胜": 0.11195,
+          "负/平": 0.0446,
+          "负/负": 0.37775,
+          "胜/平": 0.0438,
+          "平/负": 0.1781,
+          "胜/负": 0.03825,
+          "平/胜": 0.07325,
+          "平/平": 0.11565,
+          "负/胜": 0.01665
+        },
+        "topHalfFull": [
+          {
+            "pick": "负/负",
+            "probability": 0.37775
+          },
+          {
+            "pick": "平/负",
+            "probability": 0.1781
+          },
+          {
+            "pick": "胜/负",
+            "probability": 0.03825
+          }
+        ],
+        "topScores": [
+          {
+            "score": "1:2",
+            "probability": 0.08825
+          },
+          {
+            "score": "1:1",
+            "probability": 0.0847
+          },
+          {
+            "score": "0:1",
+            "probability": 0.0845
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.2066772151898733,
+          "away": 2.211914556962026
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜20% / 平20% / 负59%；负的综合概率最高。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.46:1.98，结合官方让球 +1 后得到 xG 1.21:2.21。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:2。",
+          "draw": "平局概率为 20.4%，与最高方向相差 39.0 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 32% / 26% / 42%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 37.8%、平/负 17.8%、胜/负 3.8%，其中包含“半场平”的真实权重，最终主选 负/负。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.13829986864327268,
+          0.2011634452993057,
+          0.6605366860574217
+        ],
+        "officialMarketProbabilities": [
+          0.13829986864327268,
+          0.2011634452993057,
+          0.6605366860574217
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.3241878516847293,
+          0.26030377502920915,
+          0.41550837328606155
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.19661199443742766,
+          0.22063628634195587,
+          0.5827517192206165
+        ],
+        "targetProbabilities": [
+          0.1514029467874511,
+          0.2094054842323546,
+          0.6391915689801942
+        ],
+        "fittedLoss": 0.025465294332556246,
+        "statPrior": {
+          "home": 1.458659565003546,
+          "away": 1.977445773633671,
+          "homeRecentScored": 1,
+          "homeRecentConceded": 2.5,
+          "awayRecentScored": 2.15,
+          "awayRecentConceded": 1.15,
+          "homeSamples": 2,
+          "awaySamples": 20
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 14% / 20% / 66%",
+          "官方让球盘去水概率 32% / 26% / 42%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1482 : 1738",
+          "官方页面暂无双方联赛排名",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 21.9%，模型期望进球 1.21 : 2.21"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 6.4,
+          "draw": 4.4,
+          "away": 1.34,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 2.73,
+          "draw": 3.4,
+          "away": 2.13,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040598",
+      "matchNumber": "周四205",
+      "matchNumberDate": "260723",
+      "league": "欧罗巴",
+      "leagueFull": "欧罗巴联赛",
+      "leagueId": 70,
+      "home": "贝西克塔",
+      "homeFull": "贝西克塔斯",
+      "homeId": 279,
+      "away": "中日德兰",
+      "awayFull": "中日德兰",
+      "awayId": 709,
+      "homeRank": null,
+      "awayRank": null,
+      "kickoff": "2026-07-24T02:00:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.82,
+          "draw": 3.4,
+          "away": 3.5,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 3.65,
+          "draw": 3.52,
+          "away": 1.75,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "confidence": 0.4406,
+        "probabilities": {
+          "result": 0.4406,
+          "handicapResult": 0.2024,
+          "score": 0.0793,
+          "totalGoals": 0.20275,
+          "halfFull": 0.2662
+        },
+        "resultDistribution": {
+          "胜": 0.4406,
+          "平": 0.2371,
+          "负": 0.3223
+        },
+        "halfFullDistribution": {
+          "胜/胜": 0.2662,
+          "负/负": 0.18585,
+          "平/胜": 0.14345,
+          "胜/平": 0.05335,
+          "负/平": 0.0511,
+          "平/平": 0.13265,
+          "负/胜": 0.03095,
+          "平/负": 0.11195,
+          "胜/负": 0.0245
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.2662
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.14345
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.03095
+          }
+        ],
+        "topScores": [
+          {
+            "score": "2:1",
+            "probability": 0.0793
+          },
+          {
+            "score": "1:1",
+            "probability": 0.0977
+          },
+          {
+            "score": "1:0",
+            "probability": 0.0719
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.8239556962025318,
+          "away": 1.4917563291139242
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜44% / 平24% / 负32%；胜的综合概率最高。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.47:1.79，结合官方让球 -1 后得到 xG 1.82:1.49。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
+          "draw": "平局概率为 23.7%，与最高方向相差 20.3 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 24% / 25% / 51%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 26.6%、平/胜 14.3%、负/胜 3.1%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.4865483686319404,
+          0.2604464796794505,
+          0.25300515168860904
+        ],
+        "officialMarketProbabilities": [
+          0.4865483686319404,
+          0.2604464796794505,
+          0.25300515168860904
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.2425626587387529,
+          0.25152093874899095,
+          0.5059164025122561
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.3716317296954428,
+          0.2845561775158993,
+          0.3438120927886579
+        ],
+        "targetProbabilities": [
+          0.4676624156754345,
+          0.252879301637566,
+          0.27945828268699946
+        ],
+        "fittedLoss": 0.029886664114297804,
+        "statPrior": {
+          "home": 1.4675281714257116,
+          "away": 1.7948083999256847,
+          "homeRecentScored": 1.3333333333333333,
+          "homeRecentConceded": 3,
+          "awayRecentScored": 1.4210526315789473,
+          "awayRecentConceded": 1.2105263157894737,
+          "homeSamples": 3,
+          "awaySamples": 19
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 49% / 26% / 25%",
+          "官方让球盘去水概率 24% / 25% / 51%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1481 : 1535",
+          "官方页面暂无双方联赛排名",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 21.9%，模型期望进球 1.82 : 1.49"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.82,
+          "draw": 3.4,
+          "away": 3.5,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 3.65,
+          "draw": 3.52,
+          "away": 1.75,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040599",
+      "matchNumber": "周四206",
+      "matchNumberDate": "260723",
+      "league": "欧罗巴",
+      "leagueFull": "欧罗巴联赛",
+      "leagueId": 70,
+      "home": "特温特",
+      "homeFull": "特温特",
+      "homeId": 254,
+      "away": "费伦茨",
+      "awayFull": "费伦茨瓦罗斯",
+      "awayId": 295,
+      "homeRank": null,
+      "awayRank": null,
+      "kickoff": "2026-07-24T02:00:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.4,
+          "draw": 4,
+          "away": 6.05,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 2.41,
+          "draw": 3.25,
+          "away": 2.46,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "1:0",
+        "totalGoals": "1",
+        "halfFull": "胜/胜",
+        "confidence": 0.58685,
+        "probabilities": {
+          "result": 0.58685,
+          "handicapResult": 0.24795,
+          "score": 0.12855,
+          "totalGoals": 0.1903,
+          "halfFull": 0.36195
+        },
+        "resultDistribution": {
+          "胜": 0.58685,
+          "平": 0.239,
+          "负": 0.17415
+        },
+        "halfFullDistribution": {
+          "负/平": 0.0394,
+          "胜/胜": 0.36195,
+          "负/负": 0.0921,
+          "平/平": 0.1594,
+          "平/胜": 0.199,
+          "负/胜": 0.0259,
+          "平/负": 0.073,
+          "胜/平": 0.0402,
+          "胜/负": 0.00905
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.36195
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.199
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.0259
+          }
+        ],
+        "topScores": [
+          {
+            "score": "1:0",
+            "probability": 0.12855
+          },
+          {
+            "score": "2:0",
+            "probability": 0.10755
+          },
+          {
+            "score": "1:1",
+            "probability": 0.10145
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.8239556962025318,
+          "away": 0.8744778481012656
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜59% / 平24% / 负17%；胜的综合概率最高。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.44:1.22，结合官方让球 -1 后得到 xG 1.82:0.87。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:0。",
+          "draw": "平局概率为 23.9%，与最高方向相差 34.8 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 37% / 27% / 36%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 36.2%、平/胜 19.9%、负/胜 2.6%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.6323490985105827,
+          0.22132218447870394,
+          0.14632871701071334
+        ],
+        "officialMarketProbabilities": [
+          0.6323490985105827,
+          0.22132218447870394,
+          0.14632871701071334
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.3674831426588405,
+          0.2725028842485556,
+          0.36001397309260397
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.47269662229169856,
+          0.25285277860656175,
+          0.2744505991017397
+        ],
+        "targetProbabilities": [
+          0.5967347860733856,
+          0.2259741893907987,
+          0.17729102453581572
+        ],
+        "fittedLoss": 0.02956090604131121,
+        "statPrior": {
+          "home": 1.4401782093530728,
+          "away": 1.2247711958278027,
+          "homeRecentScored": 1.7,
+          "homeRecentConceded": 0.95,
+          "awayRecentScored": 1.7058823529411764,
+          "awayRecentConceded": 1.1764705882352942,
+          "homeSamples": 20,
+          "awaySamples": 17
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 63% / 22% / 15%",
+          "官方让球盘去水概率 37% / 27% / 36%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1593 : 1566",
+          "官方页面暂无双方联赛排名",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 21.9%，模型期望进球 1.82 : 0.87"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.4,
+          "draw": 4,
+          "away": 6.05,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 2.41,
+          "draw": 3.25,
+          "away": 2.46,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040600",
+      "matchNumber": "周四207",
+      "matchNumberDate": "260723",
+      "league": "欧罗巴",
+      "leagueFull": "欧罗巴联赛",
+      "leagueId": 70,
+      "home": "斯海杜克",
+      "homeFull": "斯普利特海杜克",
+      "homeId": 326,
+      "away": "帕福斯",
+      "awayFull": "帕福斯",
+      "awayId": 1055702,
+      "homeRank": null,
+      "awayRank": null,
+      "kickoff": "2026-07-24T03:00:00+08:00",
+      "kickoffDate": "2026-07-24",
+      "businessDate": "2026-07-23",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.85,
+          "draw": 3.15,
+          "away": 3.7,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 3.85,
+          "draw": 3.45,
+          "away": 1.73,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-23 09:21:07",
+      "publishedAt": "2026-07-23T03:11:29.039Z",
+      "modelVersion": "2.2.0",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "confidence": 0.49585,
+        "probabilities": {
+          "result": 0.49585,
+          "handicapResult": 0.2369,
+          "score": 0.08745,
+          "totalGoals": 0.1995,
+          "halfFull": 0.29955
+        },
+        "resultDistribution": {
+          "胜": 0.49585,
+          "平": 0.259,
+          "负": 0.24515
+        },
+        "halfFullDistribution": {
+          "平/负": 0.0959,
+          "平/胜": 0.1696,
+          "胜/胜": 0.29955,
+          "负/负": 0.13395,
+          "平/平": 0.1651,
+          "胜/负": 0.0153,
+          "胜/平": 0.0474,
+          "负/胜": 0.0267,
+          "负/平": 0.0465
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.29955
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.1696
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.0267
+          }
+        ],
+        "topScores": [
+          {
+            "score": "2:1",
+            "probability": 0.08745
+          },
+          {
+            "score": "1:0",
+            "probability": 0.1154
+          },
+          {
+            "score": "1:1",
+            "probability": 0.11395
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.6181962025316456,
+          "away": 1.0802373417721516
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜50% / 平26% / 负25%；胜的综合概率最高。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.51:1.04，结合官方让球 -1 后得到 xG 1.62:1.08。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
+          "draw": "平局概率为 25.9%，与最高方向相差 23.7 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 23% / 26% / 51%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。暂无可匹配的历史交锋样本，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 30.0%、平/胜 17.0%、负/胜 2.7%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.4790874524714829,
+          0.2813688212927757,
+          0.23954372623574144
+        ],
+        "officialMarketProbabilities": [
+          0.4790874524714829,
+          0.2813688212927757,
+          0.23954372623574144
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.23034174015398567,
+          0.2570480288674913,
+          0.5126102309785231
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.43724016729350124,
+          0.26372154179245344,
+          0.2990382909140453
+        ],
+        "targetProbabilities": [
+          0.4798067881020017,
+          0.26082878885450794,
+          0.25936442304349033
+        ],
+        "fittedLoss": 0.0006072786064768206,
+        "statPrior": {
+          "home": 1.5086792458136902,
+          "away": 1.039158950617284,
+          "homeRecentScored": 1.5,
+          "homeRecentConceded": 1,
+          "awayRecentScored": 1,
+          "awayRecentConceded": 1.5454545454545454,
+          "homeSamples": 2,
+          "awaySamples": 11
+        },
+        "headToHead": {
+          "count": 0,
+          "weight": 0,
+          "probabilities": null,
+          "summary": "暂无可匹配的历史交锋样本"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 48% / 28% / 24%",
+          "官方让球盘去水概率 23% / 26% / 51%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1501 : 1503",
+          "官方页面暂无双方联赛排名",
+          "暂无可匹配的历史交锋样本",
+          "联赛平局率 21.9%，模型期望进球 1.62 : 1.08"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.85,
+          "draw": 3.15,
+          "away": 3.7,
+          "updatedAt": "2026-07-23T09:21:07"
+        },
+        "handicapResult": {
+          "home": 3.85,
+          "draw": 3.45,
+          "away": 1.73,
+          "updatedAt": "2026-07-23T09:21:07"
+        }
+      },
+      "revisions": []
     }
   ]
 }
