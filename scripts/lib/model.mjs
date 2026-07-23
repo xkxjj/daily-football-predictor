@@ -292,19 +292,26 @@ function scoreOutcome(score) {
   return outcome(home, away);
 }
 
-function chooseCoherentScore(scores, resultPick, handicapPick, handicap, lambdaHome, lambdaAway, context, simulations) {
+function chooseCoherentScore(scores, resultPick, handicap, lambdaHome, lambdaAway, context, simulations, handicapSoftPrior) {
   const empiricalTotal = Object.values(context.scoreCounts).reduce((a, b) => a + b, 0) || 1;
   const candidates = [...scores.entries()].filter(([score]) => {
     const [home, away] = score.split(":").map(Number);
-    return scoreOutcome(score) === resultPick && outcome(home + handicap, away) === handicapPick;
+    return scoreOutcome(score) === resultPick;
   });
   const ranked = candidates.map(([score, count]) => {
     const [home, away] = score.split(":").map(Number);
+    const handicapKey = outcome(home + handicap, away);
+    const handicapSupport = handicapSoftPrior?.[handicapKey] || 1 / 3;
     const empiricalRate = (context.scoreCounts[score] || 0) / empiricalTotal;
     const distance = (home - lambdaHome) ** 2 + (away - lambdaAway) ** 2;
     const totalDistance = Math.abs(home + away - (lambdaHome + lambdaAway));
-    const utility = Math.log(Math.max(count / simulations, 1e-8)) - 0.15 * distance - 0.07 * totalDistance + 0.45 * Math.sqrt(empiricalRate);
-    return { score, count, utility };
+    // 让球盘只作为软证据，不能把比分候选硬裁成“必须净胜两球”或“必须一球小胜”。
+    const utility = Math.log(Math.max(count / simulations, 1e-8))
+      + 0.65 * Math.log(Math.max(handicapSupport, 1e-8))
+      - 0.15 * distance
+      - 0.07 * totalDistance
+      + 0.45 * Math.sqrt(empiricalRate);
+    return { score, count, handicapKey, handicapSupport, utility };
   }).sort((a, b) => b.utility - a.utility);
   // 高节奏比赛用接近期望进球的代表路径，避免即使 xG 超过 4 球仍机械输出 1:0/1:1。
   if (lambdaHome + lambdaAway >= 3.6) {
@@ -314,9 +321,10 @@ function chooseCoherentScore(scores, resultPick, handicapPick, handicap, lambdaH
     if (resultPick === "负" && away <= home) away = home + 1;
     if (resultPick === "平") home = away = Math.max(1, Math.round((lambdaHome + lambdaAway) / 2));
     const highTempo = ranked.find(candidate => candidate.score === `${home}:${away}` && candidate.count / simulations >= 0.01);
-    if (highTempo) return highTempo;
+    if (highTempo) return { ...highTempo, ranked };
   }
-  return ranked[0] || [...scores.entries()].map(([score, count]) => ({ score, count, utility: 0 })).sort((a, b) => b.count - a.count)[0];
+  const selected = ranked[0] || [...scores.entries()].map(([score, count]) => ({ score, count, utility: 0 })).sort((a, b) => b.count - a.count)[0];
+  return { ...selected, ranked };
 }
 
 function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTarget, handicapDirectionTarget, simulations = 20_000) {
@@ -357,8 +365,8 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     return { resultKey, handicapKey, count, pairProbability };
   }).sort((a, b) => b.pairProbability - a.pairProbability);
 
-  // 再只在主方向可实现的路径内选让球结果。模拟概率反映比分差分布，
-  // 官方让球盘去水概率在可实现集合中重新归一，避免盘口概率被不可能路径稀释。
+  // 在主方向可实现的路径内形成让球条件分布。它用于软评分与风险标记，
+  // 不再先选让球结果、再用硬条件裁剪比分。
   const conditionalRows = jointCandidates.filter(item => item.resultKey === resultPick && item.count > 0);
   const conditionalTotal = conditionalRows.reduce((sum, item) => sum + item.count, 0);
   const marketConditionalTotal = conditionalRows.reduce((sum, item) => {
@@ -373,10 +381,11 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
       : simulated;
     return { ...item, simulated, market, adjusted: 0.55 * simulated + 0.45 * market };
   }).sort((a, b) => b.adjusted - a.adjusted);
-  const handicapPick = handicapCandidates[0].handicapKey;
   const resultCount = result.get(resultPick);
-  const chosenScore = chooseCoherentScore(scores, resultPick, handicapPick, handicap, lambdaHome, lambdaAway, context, simulations);
+  const handicapSoftPrior = Object.fromEntries(handicapCandidates.map(item => [item.handicapKey, item.adjusted]));
+  const chosenScore = chooseCoherentScore(scores, resultPick, handicap, lambdaHome, lambdaAway, context, simulations, handicapSoftPrior);
   const [scoreHome, scoreAway] = chosenScore.score.split(":").map(Number);
+  const handicapPick = outcome(scoreHome + handicap, scoreAway);
   const handicapCount = handicapResult.get(handicapPick);
   const totalPick = scoreHome + scoreAway >= 7 ? "7+" : String(scoreHome + scoreAway);
   const totalCount = totals.get(totalPick);
@@ -403,8 +412,9 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
   const halfFullPick = halfCandidates[0].key;
   const halfFullCount = halfCandidates[0].count;
   const topHalfFull = [[halfFullPick, halfFullCount], ...compatibleHalfRows.filter(([key]) => key !== halfFullPick).sort((a, b) => b[1] - a[1])].slice(0, 3);
-  const rawTopScores = [...scores.entries()].sort((a, b) => b[1] - a[1]);
-  const topScores = [[chosenScore.score, chosenScore.count], ...rawTopScores.filter(([score]) => score !== chosenScore.score)].slice(0, 3);
+  const coherentRankedScores = chosenScore.ranked || [];
+  const topScores = [chosenScore, ...coherentRankedScores.filter(item => item.score !== chosenScore.score)].slice(0, 3);
+  const handicapGap = handicapCandidates.length > 1 ? handicapCandidates[0].adjusted - handicapCandidates[1].adjusted : 1;
   return {
     result: resultPick,
     handicapResult: handicapPick,
@@ -422,10 +432,16 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     resultDistribution: Object.fromEntries([...result].map(([k, v]) => [k, v / simulations])),
     handicapResultDistribution: Object.fromEntries([...handicapResult].map(([k, v]) => [k, v / simulations])),
     handicapConditionalDistribution: Object.fromEntries(handicapCandidates.map(item => [item.handicapKey, item.adjusted])),
+    handicapDecision: {
+      selected: handicapPick,
+      conditionalTop: handicapCandidates[0]?.handicapKey || handicapPick,
+      gap: handicapGap,
+      level: handicapGap < 0.05 ? "临界" : handicapGap < 0.10 ? "偏弱" : "明确"
+    },
     jointOutcomeDistribution: Object.fromEntries(jointCandidates.map(item => [`${item.resultKey}/${item.handicapKey}`, item.pairProbability])),
     halfFullDistribution: Object.fromEntries([...halfFull].map(([k, v]) => [k, v / simulations])),
     topHalfFull: topHalfFull.map(([pick, count]) => ({ pick, probability: count / simulations })),
-    topScores: topScores.map(([score, count]) => ({ score, probability: count / simulations })),
+    topScores: topScores.map(item => ({ score: item.score, probability: item.count / simulations, handicapResult: item.handicapKey || outcome(Number(item.score.split(":")[0]) + handicap, Number(item.score.split(":")[1])) })),
     simulations
   };
 }
@@ -456,7 +472,8 @@ export function predictMatch(match, state, learning, adjustment = null) {
   lambdaAway = clamp(lambdaAway + situational.awayGoalsDelta, 0.1, 5);
   const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
   const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
-  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:v2.4.0`, context, directionTarget, handicapMarket);
+  // 随机流只绑定比赛，不绑定模型版本；相同输入不会仅因发布补丁而漂移。
+  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:stable-score-path`, context, directionTarget, handicapMarket);
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
   const drawGap = Math.max(prediction.resultDistribution.胜, prediction.resultDistribution.负) - prediction.resultDistribution.平;
@@ -487,7 +504,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
       ? `官方让球盘去水概率 ${handicapMarket.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，与普通胜平负共同约束比分。`
       : "本场官方让球盘尚未开售。";
   prediction.reasoning = {
-    direction: `方向分布为 ${resultPct}；${scoreDirection}。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（${handicapConditionalText}），最终选择“让球${prediction.handicapResult}”；不是按一球差模板或人为配额分配。`,
+    direction: `方向分布为 ${resultPct}；${scoreDirection}。让球条件分布为 ${handicapConditionalText}（前两项差 ${(prediction.handicapDecision.gap * 100).toFixed(1)} 个百分点，判断为“${prediction.handicapDecision.level}”）；该分布只作为比分路径的软证据，最终由代表比分 ${prediction.score} 自洽推导为“让球${prediction.handicapResult}”，不再先锁死让球结果。`,
     score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。在“${prediction.result}”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 ${prediction.score}。`,
     draw: drawReason,
     context: `${handicapOnlyText}${externalMarketText}${movementText}。${officialForm.summary}。${headToHead.summary}，交锋权重为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
@@ -662,8 +679,8 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.4.0",
-  name: "Official Preview + Coherent Market-Elo Score Path",
+  version: "2.4.1",
+  name: "Soft Joint Score + Official Preview Market-Elo Path",
   simulations: 20_000,
   metrics: METRIC_KEYS
 };

@@ -84,7 +84,10 @@ function renderMatches(matches) {
     node.querySelector(".expected-goals").textContent = `xG ${match.prediction.expectedGoals.home.toFixed(2)} : ${match.prediction.expectedGoals.away.toFixed(2)}`;
     Object.entries(METRIC_LABELS).forEach(([key]) => {
       node.querySelector(`[data-pred="${key}"]`).textContent = match.prediction[key];
-      node.querySelector(`[data-prob="${key}"]`).textContent = percent(match.prediction.probabilities[key]);
+      const probability = percent(match.prediction.probabilities[key]);
+      node.querySelector(`[data-prob="${key}"]`).textContent = key === "handicapResult" && match.prediction.handicapDecision
+        ? `${probability} · ${match.prediction.handicapDecision.level}`
+        : probability;
     });
     const reasoning = match.prediction.reasoning || {};
     node.querySelector(".reason-copy").innerHTML = [
@@ -96,7 +99,7 @@ function renderMatches(matches) {
     ].filter(Boolean).join("");
     const objective = match.factors.objective.map(x => `<div><b>客观</b> · ${escapeHtml(x)}</div>`).join("");
     const subjective = match.factors.subjective.map(x => `<div><b>赛前情境</b> · ${escapeHtml(x)}</div>`).join("");
-    const alternatives = match.prediction.topScores.map(x => `${x.score} ${percent(x.probability)}`).join(" / ");
+    const alternatives = match.prediction.topScores.map(x => `${x.score} ${percent(x.probability)}（让球${x.handicapResult}）`).join(" / ");
     node.querySelector(".factor-content").innerHTML = `${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div><div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
     list.appendChild(node);
   });

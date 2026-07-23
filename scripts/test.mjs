@@ -25,6 +25,8 @@ test("模型稳定生成五项预测", () => {
   assert.equal(first.prediction.handicapResult, handicapResult, "比分必须与让球胜平负自洽");
   assert.equal(first.prediction.totalGoals, String(home + away), "比分必须与总进球自洽");
   assert.equal(first.prediction.halfFull.split("/")[1], result, "半全场的全场方向必须自洽");
+  assert.ok(["临界", "偏弱", "明确"].includes(first.prediction.handicapDecision.level));
+  assert.ok(first.prediction.topScores.every(item => item.handicapResult));
   assert.ok(first.prediction.reasoning.score.includes(first.prediction.score));
 });
 
