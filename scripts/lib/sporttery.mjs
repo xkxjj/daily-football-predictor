@@ -2,10 +2,12 @@ const API_ROOT = "https://webapi.sporttery.cn/gateway/uniform/football";
 const REQUEST_HEADERS = {
   "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138 Safari/537.36",
   "referer": "https://www.lottery.gov.cn/",
-  "accept": "application/json, text/plain, */*"
+  "origin": "https://www.lottery.gov.cn",
+  "accept": "application/json, text/plain, */*",
+  "accept-language": "zh-CN,zh;q=0.9,en;q=0.6"
 };
 
-async function fetchJson(url, attempts = 3) {
+async function fetchJson(url, attempts = 5) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const controller = new AbortController();
@@ -22,7 +24,10 @@ async function fetchJson(url, attempts = 3) {
       return payload;
     } catch (error) {
       lastError = error;
-      if (attempt < attempts) await new Promise(resolve => setTimeout(resolve, attempt * 900));
+      if (attempt < attempts) {
+        const backoff = Math.min(12_000, 1_500 * 2 ** (attempt - 1));
+        await new Promise(resolve => setTimeout(resolve, backoff));
+      }
     } finally {
       clearTimeout(timer);
     }
@@ -119,6 +124,7 @@ async function fetchResultRange(startDate, endDate) {
     })));
     pages = Number(value.pages || Math.ceil(Number(value.total || 0) / 100) || 1);
     pageNo += 1;
+    if (pageNo <= pages) await new Promise(resolve => setTimeout(resolve, 450));
   } while (pageNo <= pages && pageNo <= 20);
   return rows.filter(row => /^\d+:\d+$/.test(row.fullScore || "") && /^\d+:\d+$/.test(row.halfScore || ""));
 }
@@ -130,6 +136,7 @@ export async function fetchResults(startDate, endDate) {
     const chunkEnd = addDays(cursor, 29) < endDate ? addDays(cursor, 29) : endDate;
     rows.push(...await fetchResultRange(cursor, chunkEnd));
     cursor = addDays(chunkEnd, 1);
+    if (cursor <= endDate) await new Promise(resolve => setTimeout(resolve, 650));
   }
   return [...new Map(rows.map(row => [row.id, row])).values()];
 }

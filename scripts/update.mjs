@@ -81,7 +81,17 @@ if (needsBackfill) {
 const historyStart = addDays(today, needsBackfill ? -730 : -45);
 
 console.log(`同步体彩网：赛程 ${today}—${windowEnd}，赛果 ${historyStart}—${today}`);
-const [schedule, results] = await Promise.all([fetchSchedule(), fetchResults(historyStart, today)]);
+// 官方接口对境外机房偶尔返回 567。赛程优先串行获取，避免并发触发风控；
+// 赛果同步失败时保留既有历史与验真，未来预测仍可继续更新。
+const schedule = await fetchSchedule();
+let results = [];
+let resultSync = { ok: true, error: null };
+try {
+  results = await fetchResults(historyStart, today);
+} catch (error) {
+  resultSync = { ok: false, error: error.message };
+  console.warn(`赛果同步暂不可用，本轮保留既有验真数据：${error.message}`);
+}
 const resultMap = new Map(results.map(result => [result.id, result]));
 
 let records = historyFile.records || [];
@@ -145,7 +155,8 @@ const dashboard = {
       updatedAt: contextFeed.updatedAt,
       availableMatches: Object.keys(contextFeed.matches || {}).length,
       error: contextFeed.error || null
-    }
+    },
+    resultSync
   },
   model: modelInfo,
   matches: dashboardMatches,
