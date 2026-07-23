@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
+import { fetchOfficialContext, fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
 import { fetchContextFeed, mergeContexts } from "./lib/context-feed.mjs";
 import { calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 
@@ -68,7 +68,7 @@ const [historyFile, state, localAdjustments, contextFeed] = await Promise.all([
 ]);
 const adjustments = mergeContexts(contextFeed, localAdjustments);
 
-// 2.3 首次升级时回填两年，用于交锋与条件半全场样本；日常仅复查 45 天。
+// schema 4 首次升级时回填两年，用于交锋与条件半全场样本；日常仅复查 45 天。
 const needsBackfill = state.schemaVersion !== 4;
 if (needsBackfill) {
   state.teamRatings = {};
@@ -107,11 +107,26 @@ updateRatings(state, results);
 const learning = calibrate(records);
 const recordIndex = new Map(records.map((record, index) => [record.id, index]));
 
-const futureMatches = schedule
+const scheduledFutureMatches = schedule
   .filter(match => match.kickoffDate >= today && match.kickoffDate <= windowEnd)
   .filter(match => new Date(match.kickoff) > now)
   .filter(match => match.odds.result || match.odds.handicapResult)
   .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+
+// 单场“赛事前瞻”补充近况胜率、跨年份交锋、射手贡献和伤停；单场失败不阻断主赛程。
+const futureMatches = [];
+const detailSync = { requested: scheduledFutureMatches.length, available: 0, errors: [] };
+for (const match of scheduledFutureMatches) {
+  try {
+    const officialContext = await fetchOfficialContext(match.id);
+    if (officialContext.available) detailSync.available += 1;
+    if (officialContext.errors.length) detailSync.errors.push({ id: match.id, errors: officialContext.errors });
+    futureMatches.push({ ...match, officialContext });
+  } catch (error) {
+    detailSync.errors.push({ id: match.id, errors: [error.message] });
+    futureMatches.push(match);
+  }
+}
 
 const dashboardMatches = [];
 for (const match of futureMatches) {
@@ -163,7 +178,8 @@ const dashboard = {
       availableMatches: Object.keys(contextFeed.matches || {}).length,
       error: contextFeed.error || null
     },
-    resultSync
+    resultSync,
+    detailSync
   },
   model: modelInfo,
   matches: dashboardMatches,

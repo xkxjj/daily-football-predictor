@@ -114,12 +114,26 @@ function teamGoalPrior(match, state, context) {
 }
 
 function headToHeadContext(match, state) {
-  const rows = state.headToHead?.[pairKey(match.homeId, match.awayId)]?.matches || [];
-  const relevant = [...rows]
-    .filter(row => [String(row.homeId), String(row.awayId)].includes(String(match.homeId)))
-    .sort((a, b) => String(b.matchDate).localeCompare(String(a.matchDate)))
-    .slice(0, 8);
-  if (!relevant.length) return { count: 0, weight: 0, probabilities: null, summary: "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手" };
+  const officialRows = match.officialContext?.headToHead?.matches || [];
+  const stateRows = state.headToHead?.[pairKey(match.homeId, match.awayId)]?.matches || [];
+  const usingDetail = officialRows.length > 0;
+  const relevant = usingDetail
+    ? [...officialRows].sort((a, b) => String(b.matchDate).localeCompare(String(a.matchDate))).slice(0, 8)
+    : [...stateRows]
+      .filter(row => [String(row.homeId), String(row.awayId)].includes(String(match.homeId)))
+      .sort((a, b) => String(b.matchDate).localeCompare(String(a.matchDate)))
+      .slice(0, 8);
+  if (!relevant.length) {
+    const checkedDetail = match.officialContext?.source;
+    return {
+      count: 0,
+      weight: 0,
+      probabilities: null,
+      summary: checkedDetail
+        ? "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手"
+        : "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手"
+    };
+  }
 
   const now = Date.now();
   let weightedWins = 0, weightedDraws = 0, weightedLosses = 0, weightedFor = 0, weightedAgainst = 0, totalWeight = 0;
@@ -127,8 +141,8 @@ function headToHeadContext(match, state) {
     const ageDays = Math.max(0, (now - new Date(`${row.matchDate}T12:00:00Z`).getTime()) / 86_400_000);
     const recency = Math.exp(-ageDays / 540);
     const currentHomeWasHome = String(row.homeId) === String(match.homeId);
-    const goalsFor = currentHomeWasHome ? row.homeGoals : row.awayGoals;
-    const goalsAgainst = currentHomeWasHome ? row.awayGoals : row.homeGoals;
+    const goalsFor = usingDetail ? row.goalsFor : currentHomeWasHome ? row.homeGoals : row.awayGoals;
+    const goalsAgainst = usingDetail ? row.goalsAgainst : currentHomeWasHome ? row.awayGoals : row.homeGoals;
     weightedFor += goalsFor * recency;
     weightedAgainst += goalsAgainst * recency;
     totalWeight += recency;
@@ -149,7 +163,48 @@ function headToHeadContext(match, state) {
     probabilities,
     averageFor,
     averageAgainst,
-    summary: `近 ${relevant.length} 次交锋按时间衰减后，当前主队视角为胜 ${(probabilities[0] * 100).toFixed(0)}% / 平 ${(probabilities[1] * 100).toFixed(0)}% / 负 ${(probabilities[2] * 100).toFixed(0)}%，场均进球 ${averageFor.toFixed(2)}:${averageAgainst.toFixed(2)}`
+    summary: `${usingDetail ? "体彩网赛事前瞻" : "官方赛果库"}近 ${relevant.length} 次交锋按时间衰减后，当前主队视角为胜 ${(probabilities[0] * 100).toFixed(0)}% / 平 ${(probabilities[1] * 100).toFixed(0)}% / 负 ${(probabilities[2] * 100).toFixed(0)}%，场均进球 ${averageFor.toFixed(2)}:${averageAgainst.toFixed(2)}`
+  };
+}
+
+function officialFormContext(match, context) {
+  const recent = match.officialContext?.recent;
+  const home = recent?.home;
+  const away = recent?.away;
+  const sample = Math.min(Number(home?.samples || 0), Number(away?.samples || 0));
+  if (!sample) return { weight: 0, probabilities: null, prior: null, summary: "体彩网赛事前瞻暂无双方近期战况样本" };
+  const homePoints = (home.wins + 0.5 * home.draws + 1) / (home.samples + 2);
+  const awayPoints = (away.wins + 0.5 * away.draws + 1) / (away.samples + 2);
+  const difference = homePoints - awayPoints;
+  const homeShare = 1 / (1 + Math.exp(-(difference * 3 + 0.16)));
+  const draw = clamp(0.29 - Math.abs(difference) * 0.18, 0.18, 0.30);
+  const probabilities = [(1 - draw) * homeShare, draw, (1 - draw) * (1 - homeShare)];
+  const homeExpected = average([home.goalsForAverage, away.goalsAgainstAverage].filter(value => value > 0), context.homeAverage);
+  const awayExpected = average([away.goalsForAverage, home.goalsAgainstAverage].filter(value => value > 0), context.awayAverage);
+  return {
+    weight: Math.min(0.12, sample / 100),
+    probabilities,
+    prior: { home: homeExpected, away: awayExpected, weight: Math.min(0.24, sample / 40) },
+    summary: `体彩网赛事前瞻近期战况：${home.team}近 ${home.samples} 场 ${home.wins}胜${home.draws}平${home.losses}负，${away.team}近 ${away.samples} 场 ${away.wins}胜${away.draws}平${away.losses}负；以 ${(Math.min(0.12, sample / 100) * 100).toFixed(1)}% 受限权重并入方向判断`
+  };
+}
+
+function blendOfficialPrior(statPrior, form) {
+  if (!form.prior) return statPrior;
+  const weight = form.prior.weight;
+  return {
+    ...statPrior,
+    home: clamp(statPrior.home * (1 - weight) + form.prior.home * weight, 0.35, 3.5),
+    away: clamp(statPrior.away * (1 - weight) + form.prior.away * weight, 0.3, 3.3),
+    officialFormWeight: weight
+  };
+}
+
+function mergeOfficialNews(adjustment, officialContext) {
+  return {
+    ...(adjustment || {}),
+    teamNews: [...(officialContext?.teamNews || []), ...(adjustment?.teamNews || [])],
+    coachNews: [...(adjustment?.coachNews || [])]
   };
 }
 
@@ -376,7 +431,8 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
 }
 
 export function predictMatch(match, state, learning, adjustment = null) {
-  const marketSignals = marketContext(match, adjustment);
+  const combinedAdjustment = mergeOfficialNews(adjustment, match.officialContext);
+  const marketSignals = marketContext(match, combinedAdjustment);
   const market = marketSignals.consensus;
   const handicapMarket = normalizeOdds(match.odds.handicapResult);
   const elo = eloProbabilities(match, state);
@@ -386,20 +442,21 @@ export function predictMatch(match, state, learning, adjustment = null) {
   const context = leagueContext(match, state);
   const headToHead = headToHeadContext(match, state);
   const h2hTarget = blendProbabilities(rawTarget, headToHead.probabilities, headToHead.weight);
-  const target = preserveDrawSignal(h2hTarget, context);
-  const statPrior = teamGoalPrior(match, state, context);
+  const officialForm = officialFormContext(match, context);
+  const formTarget = blendProbabilities(h2hTarget, officialForm.probabilities, officialForm.weight);
+  const target = preserveDrawSignal(formTarget, context);
+  const statPrior = blendOfficialPrior(teamGoalPrior(match, state, context), officialForm);
   const handicapOnly = !market && Boolean(handicapMarket);
   const fitWeights = handicapOnly ? { result: 0.72, handicap: 2.15 } : { result: 1.7, handicap: 0.82 };
   const fit = fitExpectedGoals(target, handicapMarket, match.handicap, statPrior, fitWeights);
   let lambdaHome = clamp(fit.home * learning.goalScale + learning.homeBias, 0.15, 4.5);
   let lambdaAway = clamp(fit.away * learning.goalScale, 0.15, 4.2);
-  const situational = situationalContext(adjustment);
+  const situational = situationalContext(combinedAdjustment);
   lambdaHome = clamp(lambdaHome + situational.homeGoalsDelta, 0.1, 5);
   lambdaAway = clamp(lambdaAway + situational.awayGoalsDelta, 0.1, 5);
   const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
   const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
-  // 补丁版本仅修正文案与审计字段，保留 2.3 核心随机种子，避免无数据变化时预测因版本号漂移。
-  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:v2.3.0`, context, directionTarget, handicapMarket);
+  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:v2.4.0`, context, directionTarget, handicapMarket);
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
   const drawGap = Math.max(prediction.resultDistribution.胜, prediction.resultDistribution.负) - prediction.resultDistribution.平;
@@ -416,7 +473,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
     .map(([key, value]) => `${key}${(value * 100).toFixed(1)}%`)
     .join(" / ");
   const externalMarketText = marketSignals.external
-    ? `场外盘“${adjustment.externalMarket.source || "已配置数据源"}”去水概率 ${marketSignals.external.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，以 ${(marketSignals.externalWeight * 100).toFixed(0)}% 的受限权重并入官方市场`
+      ? `场外盘“${combinedAdjustment.externalMarket.source || "已配置数据源"}”去水概率 ${marketSignals.external.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，以 ${(marketSignals.externalWeight * 100).toFixed(0)}% 的受限权重并入官方市场`
     : "未配置可核验的场外盘数据，本场不凭空补值";
   const movementText = marketSignals.movement
     ? `；相对开盘，胜/平/负概率变化 ${marketSignals.movement.map(value => `${value >= 0 ? "+" : ""}${(value * 100).toFixed(1)}`).join(" / ")} 个百分点`
@@ -433,7 +490,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
     direction: `方向分布为 ${resultPct}；${scoreDirection}。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（${handicapConditionalText}），最终选择“让球${prediction.handicapResult}”；不是按一球差模板或人为配额分配。`,
     score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。在“${prediction.result}”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 ${prediction.score}。`,
     draw: drawReason,
-    context: `${handicapOnlyText}${externalMarketText}${movementText}。${headToHead.summary}，交锋权重限制为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
+    context: `${handicapOnlyText}${externalMarketText}${movementText}。${officialForm.summary}。${headToHead.summary}，交锋权重为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
     halfFull: `半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“${prediction.result}”。候选为 ${halfFullCandidates}，其中包含“半场平”的真实权重，最终主选 ${prediction.halfFull}。`
   };
   const marketText = marketSignals.official ? `官方胜平负去水概率 ${marketSignals.official.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}` : "官方胜平负未开售，降低市场信号权重";
@@ -452,10 +509,11 @@ export function predictMatch(match, state, learning, adjustment = null) {
       fittedLoss: fit.loss,
       statPrior,
       headToHead,
+      officialForm,
       situational
     },
     factors: {
-      objective: [marketText, handicapOnlyText, externalMarketText + movementText, eloText, rankText, headToHead.summary, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`],
+      objective: [marketText, handicapOnlyText, externalMarketText + movementText, eloText, rankText, officialForm.summary, headToHead.summary, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`],
       subjective: adjustment?.reason || situational.applied.length
         ? [adjustment?.reason, ...situational.applied, `主/客总 xG 修正 ${situational.homeGoalsDelta.toFixed(2)} / ${situational.awayGoalsDelta.toFixed(2)}`].filter(Boolean)
         : ["暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"]
@@ -604,8 +662,8 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.3.2",
-  name: "Coherent Joint Market-Elo Score Path",
+  version: "2.4.0",
+  name: "Official Preview + Coherent Market-Elo Score Path",
   simulations: 20_000,
   metrics: METRIC_KEYS
 };

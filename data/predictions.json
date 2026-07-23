@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-23T05:41:50.585Z",
+  "generatedAt": "2026-07-23T06:13:13.405Z",
   "window": {
     "start": "2026-07-23",
     "end": "2026-07-24",
@@ -9,6 +9,7 @@
     "name": "中国体彩网竞彩足球公开数据",
     "scheduleUrl": "https://www.lottery.gov.cn/jc/zqszsc/",
     "resultUrl": "https://www.lottery.gov.cn/jc/zqsgkj/",
+    "detailUrl": "https://www.sporttery.cn/jc/zqdz/",
     "contextFeed": {
       "configured": false,
       "source": null,
@@ -19,11 +20,16 @@
     "resultSync": {
       "ok": true,
       "error": null
+    },
+    "detailSync": {
+      "requested": 7,
+      "available": 7,
+      "errors": []
     }
   },
   "model": {
-    "version": "2.3.2",
-    "name": "Coherent Joint Market-Elo Score Path",
+    "version": "2.4.0",
+    "name": "Official Preview + Coherent Market-Elo Score Path",
     "simulations": 20000,
     "metrics": [
       "result",
@@ -69,94 +75,176 @@
           "updatedAt": "2026-07-23T09:21:07"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040597",
+        "fetchedAt": "2026-07-23T06:13:17.608Z",
+        "recent": {
+          "home": {
+            "team": "哈马比",
+            "wins": 6,
+            "draws": 0,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 2.1,
+            "goalsAgainstAverage": 1.2
+          },
+          "away": {
+            "team": "安德莱",
+            "wins": 3,
+            "draws": 4,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.4,
+            "goalsAgainstAverage": 1.8
+          }
+        },
+        "headToHead": {
+          "matches": [],
+          "samples": 0
+        },
+        "injuries": {
+          "home": [],
+          "away": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 667912,
+              "personName": "M. Stroeykens",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "29"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 733068,
+              "personName": "Z. Keita",
+              "playerPositionCode": "Defender",
+              "playerPositionDesc": "后卫",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "2"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "客队M. Stroeykens伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.003,
+            "awayGoalsDelta": -0.019500000000000003,
+            "status": "伤缺",
+            "personId": 667912,
+            "importance": 0.025
+          },
+          {
+            "label": "客队Z. Keita伤缺（后卫，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.019500000000000003,
+            "awayGoalsDelta": -0.003,
+            "status": "伤缺",
+            "personId": 733068,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T03:11:29.039Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
-        "handicapResult": "平",
-        "score": "2:1",
-        "totalGoals": "3",
+        "handicapResult": "胜",
+        "score": "2:0",
+        "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.49575,
+        "confidence": 0.5041,
         "probabilities": {
-          "result": 0.49575,
-          "handicapResult": 0.23875,
-          "score": 0.089,
-          "totalGoals": 0.2028,
-          "halfFull": 0.29375
+          "result": 0.5041,
+          "handicapResult": 0.27375,
+          "score": 0.0775,
+          "totalGoals": 0.2144,
+          "halfFull": 0.3082
         },
         "resultDistribution": {
-          "胜": 0.49575,
-          "平": 0.2506,
-          "负": 0.25365
+          "胜": 0.5041,
+          "平": 0.24135,
+          "负": 0.25455
         },
         "handicapResultDistribution": {
-          "胜": 0.257,
-          "平": 0.23875,
-          "负": 0.50425
+          "胜": 0.27375,
+          "平": 0.23035,
+          "负": 0.4959
         },
         "handicapConditionalDistribution": {
-          "平": 0.5022780246266494,
-          "胜": 0.4977219753733507
+          "胜": 0.51127428316154,
+          "平": 0.4887257168384601
         },
         "jointOutcomeDistribution": {
-          "胜/胜": 0.257,
-          "负/负": 0.25365,
-          "平/负": 0.2506,
-          "胜/平": 0.23875
+          "胜/胜": 0.27375,
+          "负/负": 0.25455,
+          "平/负": 0.24135,
+          "胜/平": 0.23035
         },
         "halfFullDistribution": {
-          "平/负": 0.09735,
-          "负/负": 0.14005,
-          "平/胜": 0.17245,
-          "胜/平": 0.04815,
-          "负/胜": 0.02955,
-          "平/平": 0.1574,
-          "负/平": 0.04505,
-          "胜/胜": 0.29375,
-          "胜/负": 0.01625
+          "平/平": 0.14595,
+          "负/负": 0.1409,
+          "胜/胜": 0.3082,
+          "负/平": 0.04645,
+          "平/负": 0.0948,
+          "胜/平": 0.04895,
+          "平/胜": 0.1671,
+          "负/胜": 0.0288,
+          "胜/负": 0.01885
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.29375
+            "probability": 0.3082
           },
           {
             "pick": "平/胜",
-            "probability": 0.17245
+            "probability": 0.1671
           },
           {
             "pick": "负/胜",
-            "probability": 0.02955
+            "probability": 0.0288
           }
         ],
         "topScores": [
           {
-            "score": "2:1",
-            "probability": 0.089
-          },
-          {
-            "score": "1:0",
-            "probability": 0.11225
+            "score": "2:0",
+            "probability": 0.0775
           },
           {
             "score": "1:1",
-            "probability": 0.10765
+            "probability": 0.1022
+          },
+          {
+            "score": "1:0",
+            "probability": 0.10055
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.65528880866426,
-          "away": 1.1097021660649817
+          "home": 1.7776247292418776,
+          "away": 1.198738086642599
         },
         "reasoning": {
-          "direction": "方向分布为 胜50% / 平25% / 负25%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（平50.2% / 胜49.8%），最终选择“让球平”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.45:1.14，结合官方让球 -1 后得到 xG 1.66:1.11。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
-          "draw": "平局概率为 25.1%，与最高方向相差 24.5 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 22% / 25% / 53%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 29.4%、平/胜 17.2%、负/胜 3.0%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜50% / 平24% / 负25%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜51.1% / 平48.9%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.57:1.18，结合官方让球 -1 后得到 xG 1.78:1.20。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 24.1%，与最高方向相差 26.3 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 22% / 25% / 53%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：哈马比近 10 场 6胜0平4负，安德莱近 10 场 3胜4平3负；以 10.0% 受限权重并入方向判断。体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手，交锋权重为 0.0%。教练/球员情报：客队M. Stroeykens伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）；客队Z. Keita伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.01 / -0.00）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 30.8%、平/胜 16.7%、负/胜 2.9%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
@@ -166,11 +254,14 @@
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1603 : 1511",
           "官方页面暂无双方联赛排名",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 21.9%，模型期望进球 1.66 : 1.11"
+          "体彩网赛事前瞻近期战况：哈马比近 10 场 6胜0平4负，安德莱近 10 场 3胜4平3负；以 10.0% 受限权重并入方向判断",
+          "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手",
+          "联赛平局率 21.9%，模型期望进球 1.78 : 1.20"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "客队M. Stroeykens伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "客队Z. Keita伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.01 / -0.00）",
+          "主/客总 xG 修正 0.02 / -0.02"
         ]
       },
       "oddsSnapshot": {
@@ -211,134 +302,335 @@
       "handicap": 1,
       "odds": {
         "result": {
-          "home": 7,
-          "draw": 4.75,
-          "away": 1.29,
-          "updatedAt": "2026-07-23T13:08:39"
+          "home": 7.35,
+          "draw": 4.85,
+          "away": 1.27,
+          "updatedAt": "2026-07-23T14:06:35"
         },
         "handicapResult": {
-          "home": 2.95,
-          "draw": 3.45,
-          "away": 2,
-          "updatedAt": "2026-07-23T13:08:32"
+          "home": 3.05,
+          "draw": 3.5,
+          "away": 1.94,
+          "updatedAt": "2026-07-23T14:06:46"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040603",
+        "fetchedAt": "2026-07-23T06:13:18.463Z",
+        "recent": {
+          "home": {
+            "team": "圣加仑",
+            "wins": 6,
+            "draws": 1,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.8,
+            "goalsAgainstAverage": 1.8
+          },
+          "away": {
+            "team": "本菲卡",
+            "wins": 5,
+            "draws": 4,
+            "losses": 1,
+            "samples": 10,
+            "goalsForAverage": 2.1,
+            "goalsAgainstAverage": 1.2
+          }
+        },
+        "headToHead": {
+          "matches": [],
+          "samples": 0
+        },
+        "injuries": {
+          "home": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 414466,
+              "personName": "S.安布罗修斯",
+              "playerPositionCode": "Defender",
+              "playerPositionDesc": "后卫",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": ""
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 598824,
+              "personName": "B. Neziri",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "6"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 606398,
+              "personName": "A.巴尔德",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "14"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 613667,
+              "personName": "C. Kleine-Bekel",
+              "playerPositionCode": "Defender",
+              "playerPositionDesc": "后卫",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "3"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 693174,
+              "personName": "M. Efekele",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "21"
+            }
+          ],
+          "away": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 159042,
+              "personName": "Bruma",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "7"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 571998,
+              "personName": "苏达科夫",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "10"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "主队S.安布罗修斯伤缺（后卫，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.003,
+            "awayGoalsDelta": 0.019500000000000003,
+            "status": "伤缺",
+            "personId": 414466,
+            "importance": 0.025
+          },
+          {
+            "label": "主队B. Neziri伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.019500000000000003,
+            "awayGoalsDelta": 0.003,
+            "status": "伤缺",
+            "personId": 598824,
+            "importance": 0.025
+          },
+          {
+            "label": "主队A.巴尔德伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.013750000000000002,
+            "awayGoalsDelta": 0.00625,
+            "status": "伤缺",
+            "personId": 606398,
+            "importance": 0.025
+          },
+          {
+            "label": "主队C. Kleine-Bekel伤缺（后卫，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.003,
+            "awayGoalsDelta": 0.019500000000000003,
+            "status": "伤缺",
+            "personId": 613667,
+            "importance": 0.025
+          },
+          {
+            "label": "主队M. Efekele伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.013750000000000002,
+            "awayGoalsDelta": 0.00625,
+            "status": "伤缺",
+            "personId": 693174,
+            "importance": 0.025
+          },
+          {
+            "label": "客队Bruma伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.00625,
+            "awayGoalsDelta": -0.013750000000000002,
+            "status": "伤缺",
+            "personId": 159042,
+            "importance": 0.025
+          },
+          {
+            "label": "客队苏达科夫伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.003,
+            "awayGoalsDelta": -0.019500000000000003,
+            "status": "伤缺",
+            "personId": 571998,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T03:11:29.039Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "负",
         "handicapResult": "负",
         "score": "1:3",
         "totalGoals": "4",
         "halfFull": "负/负",
-        "confidence": 0.6213,
+        "confidence": 0.62715,
         "probabilities": {
-          "result": 0.6213,
-          "handicapResult": 0.4018,
-          "score": 0.0665,
-          "totalGoals": 0.16735,
-          "halfFull": 0.4048
+          "result": 0.62715,
+          "handicapResult": 0.4105,
+          "score": 0.069,
+          "totalGoals": 0.1766,
+          "halfFull": 0.40735
         },
         "resultDistribution": {
-          "胜": 0.1829,
-          "平": 0.1958,
-          "负": 0.6213
+          "胜": 0.17935,
+          "平": 0.1935,
+          "负": 0.62715
         },
         "handicapResultDistribution": {
-          "胜": 0.3787,
-          "平": 0.2195,
-          "负": 0.4018
+          "胜": 0.37285,
+          "平": 0.21665,
+          "负": 0.4105
         },
         "handicapConditionalDistribution": {
-          "负": 0.6405520682440045,
-          "平": 0.35944793175599554
+          "负": 0.6495236533383983,
+          "平": 0.35047634666160177
         },
         "jointOutcomeDistribution": {
-          "负/负": 0.4018,
-          "负/平": 0.2195,
-          "平/胜": 0.1958,
-          "胜/胜": 0.1829
+          "负/负": 0.4105,
+          "负/平": 0.21665,
+          "平/胜": 0.1935,
+          "胜/胜": 0.17935
         },
         "halfFullDistribution": {
-          "负/负": 0.4048,
-          "负/平": 0.04535,
-          "平/平": 0.10825,
-          "胜/负": 0.0394,
-          "平/胜": 0.0683,
-          "胜/胜": 0.0993,
-          "平/负": 0.1771,
-          "负/胜": 0.0153,
-          "胜/平": 0.0422
+          "平/负": 0.1812,
+          "胜/胜": 0.09875,
+          "负/负": 0.40735,
+          "平/平": 0.10725,
+          "胜/平": 0.0431,
+          "负/平": 0.04315,
+          "平/胜": 0.0658,
+          "胜/负": 0.0386,
+          "负/胜": 0.0148
         },
         "topHalfFull": [
           {
             "pick": "负/负",
-            "probability": 0.4048
+            "probability": 0.40735
           },
           {
             "pick": "平/负",
-            "probability": 0.1771
+            "probability": 0.1812
           },
           {
             "pick": "胜/负",
-            "probability": 0.0394
+            "probability": 0.0386
           }
         ],
         "topScores": [
           {
             "score": "1:3",
-            "probability": 0.0665
+            "probability": 0.069
           },
           {
             "score": "1:2",
-            "probability": 0.08595
+            "probability": 0.08345
           },
           {
-            "score": "1:1",
-            "probability": 0.08245
+            "score": "0:2",
+            "probability": 0.0795
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.2325451263537905,
-          "away": 2.377933212996391
+          "home": 1.2001701263537905,
+          "away": 2.393658212996391
         },
         "reasoning": {
-          "direction": "方向分布为 胜18% / 平20% / 负62%；负的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（负64.1% / 平35.9%），最终选择“让球负”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.46:1.98，结合官方让球 +1 后得到 xG 1.23:2.38。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:3。",
-          "draw": "平局概率为 19.6%，与最高方向相差 42.5 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 30% / 26% / 44%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 40.5%、平/负 17.7%、胜/负 3.9%，其中包含“半场平”的真实权重，最终主选 负/负。"
+          "direction": "方向分布为 胜18% / 平19% / 负63%；负的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（负65.0% / 平35.0%），最终选择“让球负”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.47:1.97，结合官方让球 +1 后得到 xG 1.20:2.39。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:3。",
+          "draw": "平局概率为 19.4%，与最高方向相差 43.4 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 29% / 25% / 46%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：圣加仑近 10 场 6胜1平3负，本菲卡近 10 场 5胜4平1负；以 10.0% 受限权重并入方向判断。体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手，交锋权重为 0.0%。教练/球员情报：主队S.安布罗修斯伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）；主队B. Neziri伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；主队A.巴尔德伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；主队C. Kleine-Bekel伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）；主队M. Efekele伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；客队Bruma伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）；客队苏达科夫伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 40.7%、平/负 18.1%、胜/负 3.9%，其中包含“半场平”的真实权重，最终主选 负/负。"
         }
       },
       "factors": {
         "objective": [
-          "官方胜平负去水概率 13% / 19% / 69%",
-          "官方让球盘去水概率 30% / 26% / 44%，与普通胜平负共同约束比分。",
+          "官方胜平负去水概率 12% / 18% / 70%",
+          "官方让球盘去水概率 29% / 25% / 46%，与普通胜平负共同约束比分。",
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1482 : 1738",
           "官方页面暂无双方联赛排名",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 21.9%，模型期望进球 1.23 : 2.38"
+          "体彩网赛事前瞻近期战况：圣加仑近 10 场 6胜1平3负，本菲卡近 10 场 5胜4平1负；以 10.0% 受限权重并入方向判断",
+          "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手",
+          "联赛平局率 21.9%，模型期望进球 1.20 : 2.39"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "主队S.安布罗修斯伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）",
+          "主队B. Neziri伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "主队A.巴尔德伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "主队C. Kleine-Bekel伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）",
+          "主队M. Efekele伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "客队Bruma伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "客队苏达科夫伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "主/客总 xG 修正 -0.03 / 0.02"
         ]
       },
       "oddsSnapshot": {
         "result": {
-          "home": 7,
-          "draw": 4.75,
-          "away": 1.29,
-          "updatedAt": "2026-07-23T13:08:39"
+          "home": 7.35,
+          "draw": 4.85,
+          "away": 1.27,
+          "updatedAt": "2026-07-23T14:06:35"
         },
         "handicapResult": {
-          "home": 2.95,
-          "draw": 3.45,
-          "away": 2,
-          "updatedAt": "2026-07-23T13:08:32"
+          "home": 3.05,
+          "draw": 3.5,
+          "away": 1.94,
+          "updatedAt": "2026-07-23T14:06:46"
         }
       }
     },
@@ -365,134 +657,266 @@
       "handicap": -1,
       "odds": {
         "result": {
-          "home": 1.86,
+          "home": 1.89,
           "draw": 3.36,
-          "away": 3.4,
-          "updatedAt": "2026-07-23T13:00:22"
+          "away": 3.3,
+          "updatedAt": "2026-07-23T14:08:24"
         },
         "handicapResult": {
-          "home": 3.75,
-          "draw": 3.55,
-          "away": 1.72,
-          "updatedAt": "2026-07-23T13:00:29"
+          "home": 3.85,
+          "draw": 3.6,
+          "away": 1.69,
+          "updatedAt": "2026-07-23T14:08:27"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040598",
+        "fetchedAt": "2026-07-23T06:13:19.319Z",
+        "recent": {
+          "home": {
+            "team": "贝西克塔",
+            "wins": 3,
+            "draws": 3,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 1.3,
+            "goalsAgainstAverage": 1.1
+          },
+          "away": {
+            "team": "中日德兰",
+            "wins": 5,
+            "draws": 4,
+            "losses": 1,
+            "samples": 10,
+            "goalsForAverage": 2.3,
+            "goalsAgainstAverage": 1.1
+          }
+        },
+        "headToHead": {
+          "matches": [],
+          "samples": 0
+        },
+        "injuries": {
+          "home": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 273845,
+              "personName": "M. Rashica",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "7"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 460358,
+              "personName": "K. Yılmaz",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "8"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 693629,
+              "personName": "K. Ouattara",
+              "playerPositionCode": "Defender",
+              "playerPositionDesc": "后卫",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "11"
+            }
+          ],
+          "away": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 290506,
+              "personName": "乌赫尔",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "17"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "主队M. Rashica伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.019500000000000003,
+            "awayGoalsDelta": 0.003,
+            "status": "伤缺",
+            "personId": 273845,
+            "importance": 0.025
+          },
+          {
+            "label": "主队K. Yılmaz伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.019500000000000003,
+            "awayGoalsDelta": 0.003,
+            "status": "伤缺",
+            "personId": 460358,
+            "importance": 0.025
+          },
+          {
+            "label": "主队K. Ouattara伤缺（后卫，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.003,
+            "awayGoalsDelta": 0.019500000000000003,
+            "status": "伤缺",
+            "personId": 693629,
+            "importance": 0.025
+          },
+          {
+            "label": "客队乌赫尔伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.00625,
+            "awayGoalsDelta": -0.013750000000000002,
+            "status": "伤缺",
+            "personId": 290506,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T03:11:29.039Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
         "handicapResult": "胜",
         "score": "2:0",
         "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.4527,
+        "confidence": 0.4155,
         "probabilities": {
-          "result": 0.4527,
-          "handicapResult": 0.2472,
-          "score": 0.059,
-          "totalGoals": 0.19145,
-          "halfFull": 0.2723
+          "result": 0.4155,
+          "handicapResult": 0.21705,
+          "score": 0.05565,
+          "totalGoals": 0.20275,
+          "halfFull": 0.249
         },
         "resultDistribution": {
-          "胜": 0.4527,
-          "平": 0.23285,
-          "负": 0.31445
+          "胜": 0.4155,
+          "平": 0.24105,
+          "负": 0.34345
         },
         "handicapResultDistribution": {
-          "胜": 0.2472,
-          "平": 0.2055,
-          "负": 0.5473
+          "胜": 0.21705,
+          "平": 0.19845,
+          "负": 0.5845
         },
         "handicapConditionalDistribution": {
-          "胜": 0.5191669617001189,
-          "平": 0.4808330382998811
+          "胜": 0.5047601337436096,
+          "平": 0.4952398662563904
         },
         "jointOutcomeDistribution": {
-          "负/负": 0.31445,
-          "胜/胜": 0.2472,
-          "平/负": 0.23285,
-          "胜/平": 0.2055
+          "负/负": 0.34345,
+          "平/负": 0.24105,
+          "胜/胜": 0.21705,
+          "胜/平": 0.19845
         },
         "halfFullDistribution": {
-          "胜/胜": 0.2723,
-          "胜/平": 0.0518,
-          "平/胜": 0.1477,
-          "负/负": 0.18185,
-          "平/负": 0.1078,
-          "胜/负": 0.0248,
-          "负/胜": 0.0327,
-          "负/平": 0.05235,
-          "平/平": 0.1287
+          "平/胜": 0.1373,
+          "胜/平": 0.0527,
+          "平/平": 0.13615,
+          "负/平": 0.0522,
+          "平/负": 0.1213,
+          "胜/胜": 0.249,
+          "负/负": 0.19505,
+          "胜/负": 0.0271,
+          "负/胜": 0.0292
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.2723
+            "probability": 0.249
           },
           {
             "pick": "平/胜",
-            "probability": 0.1477
+            "probability": 0.1373
           },
           {
             "pick": "负/胜",
-            "probability": 0.0327
+            "probability": 0.0292
           }
         ],
         "topScores": [
           {
             "score": "2:0",
-            "probability": 0.059
+            "probability": 0.05565
           },
           {
             "score": "1:1",
-            "probability": 0.09415
+            "probability": 0.1031
           },
           {
             "score": "2:1",
-            "probability": 0.08375
+            "probability": 0.0771
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.8666606498194946,
-          "away": 1.5324458483754513
+          "home": 1.7345197292418777,
+          "away": 1.5411408483754512
         },
         "reasoning": {
-          "direction": "方向分布为 胜45% / 平23% / 负31%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜51.9% / 平48.1%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.47:1.79，结合官方让球 -1 后得到 xG 1.87:1.53。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
-          "draw": "平局概率为 23.3%，与最高方向相差 22.0 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 24% / 25% / 51%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 27.2%、平/胜 14.8%、负/胜 3.3%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜42% / 平24% / 负34%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜50.5% / 平49.5%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.40:1.77，结合官方让球 -1 后得到 xG 1.73:1.54。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 24.1%，与最高方向相差 17.4 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 23% / 25% / 52%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：贝西克塔近 10 场 3胜3平4负，中日德兰近 10 场 5胜4平1负；以 10.0% 受限权重并入方向判断。体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手，交锋权重为 0.0%。教练/球员情报：主队M. Rashica伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；主队K. Yılmaz伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；主队K. Ouattara伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）；客队乌赫尔伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 24.9%、平/胜 13.7%、负/胜 2.9%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
         "objective": [
-          "官方胜平负去水概率 48% / 26% / 26%",
-          "官方让球盘去水概率 24% / 25% / 51%，与普通胜平负共同约束比分。",
+          "官方胜平负去水概率 47% / 26% / 27%",
+          "官方让球盘去水概率 23% / 25% / 52%，与普通胜平负共同约束比分。",
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1481 : 1535",
           "官方页面暂无双方联赛排名",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 21.9%，模型期望进球 1.87 : 1.53"
+          "体彩网赛事前瞻近期战况：贝西克塔近 10 场 3胜3平4负，中日德兰近 10 场 5胜4平1负；以 10.0% 受限权重并入方向判断",
+          "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手",
+          "联赛平局率 21.9%，模型期望进球 1.73 : 1.54"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "主队M. Rashica伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "主队K. Yılmaz伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "主队K. Ouattara伤缺（后卫，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.01）",
+          "客队乌赫尔伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "主/客总 xG 修正 -0.03 / 0.01"
         ]
       },
       "oddsSnapshot": {
         "result": {
-          "home": 1.86,
+          "home": 1.89,
           "draw": 3.36,
-          "away": 3.4,
-          "updatedAt": "2026-07-23T13:00:22"
+          "away": 3.3,
+          "updatedAt": "2026-07-23T14:08:24"
         },
         "handicapResult": {
-          "home": 3.75,
-          "draw": 3.55,
-          "away": 1.72,
-          "updatedAt": "2026-07-23T13:00:29"
+          "home": 3.85,
+          "draw": 3.6,
+          "away": 1.69,
+          "updatedAt": "2026-07-23T14:08:27"
         }
       }
     },
@@ -531,94 +955,221 @@
           "updatedAt": "2026-07-23T09:21:07"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040599",
+        "fetchedAt": "2026-07-23T06:13:20.222Z",
+        "recent": {
+          "home": {
+            "team": "特温特",
+            "wins": 5,
+            "draws": 3,
+            "losses": 2,
+            "samples": 10,
+            "goalsForAverage": 1.9,
+            "goalsAgainstAverage": 1.6
+          },
+          "away": {
+            "team": "费伦茨",
+            "wins": 7,
+            "draws": 2,
+            "losses": 1,
+            "samples": 10,
+            "goalsForAverage": 2,
+            "goalsAgainstAverage": 0.5
+          }
+        },
+        "headToHead": {
+          "matches": [],
+          "samples": 0
+        },
+        "injuries": {
+          "home": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 81320,
+              "personName": "苏锦克",
+              "playerPositionCode": "Goalkeeper",
+              "playerPositionDesc": "守门员",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "1"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 572118,
+              "personName": "N. Ünüvar",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "37"
+            }
+          ],
+          "away": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 424432,
+              "personName": "D. Arzani",
+              "playerPositionCode": "Forward",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "15"
+            },
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 427544,
+              "personName": "B. Ötvös",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "23"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "主队苏锦克伤缺（守门员，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0,
+            "awayGoalsDelta": 0.025,
+            "status": "伤缺",
+            "personId": 81320,
+            "importance": 0.025
+          },
+          {
+            "label": "主队N. Ünüvar伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.013750000000000002,
+            "awayGoalsDelta": 0.00625,
+            "status": "伤缺",
+            "personId": 572118,
+            "importance": 0.025
+          },
+          {
+            "label": "客队D. Arzani伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0,
+            "awayGoalsDelta": -0.025,
+            "status": "伤缺",
+            "personId": 424432,
+            "importance": 0.025
+          },
+          {
+            "label": "客队B. Ötvös伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.003,
+            "awayGoalsDelta": -0.019500000000000003,
+            "status": "伤缺",
+            "personId": 427544,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T03:11:29.039Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
         "handicapResult": "胜",
         "score": "2:0",
         "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.5925,
+        "confidence": 0.56865,
         "probabilities": {
-          "result": 0.5925,
-          "handicapResult": 0.3431,
-          "score": 0.1075,
-          "totalGoals": 0.23585,
-          "halfFull": 0.36535
+          "result": 0.56865,
+          "handicapResult": 0.3237,
+          "score": 0.0947,
+          "totalGoals": 0.21995,
+          "halfFull": 0.35105
         },
         "resultDistribution": {
-          "胜": 0.5925,
-          "平": 0.2333,
-          "负": 0.1742
+          "胜": 0.56865,
+          "平": 0.2334,
+          "负": 0.19795
         },
         "handicapResultDistribution": {
-          "胜": 0.3431,
-          "平": 0.2494,
-          "负": 0.4075
+          "胜": 0.3237,
+          "平": 0.24495,
+          "负": 0.43135
         },
         "handicapConditionalDistribution": {
-          "胜": 0.5768816776252031,
-          "平": 0.42311832237479685
+          "胜": 0.5714758452462733,
+          "平": 0.42852415475372674
         },
         "jointOutcomeDistribution": {
-          "胜/胜": 0.3431,
-          "胜/平": 0.2494,
-          "平/负": 0.2333,
-          "负/负": 0.1742
+          "胜/胜": 0.3237,
+          "胜/平": 0.24495,
+          "平/负": 0.2334,
+          "负/负": 0.19795
         },
         "halfFullDistribution": {
-          "负/平": 0.0407,
-          "平/胜": 0.19875,
-          "胜/胜": 0.36535,
-          "平/平": 0.1516,
-          "平/负": 0.0728,
-          "负/负": 0.09105,
-          "胜/平": 0.041,
-          "负/胜": 0.0284,
-          "胜/负": 0.01035
+          "负/负": 0.10495,
+          "平/胜": 0.1862,
+          "平/平": 0.1462,
+          "胜/胜": 0.35105,
+          "负/平": 0.0435,
+          "平/负": 0.0788,
+          "胜/平": 0.0437,
+          "负/胜": 0.0314,
+          "胜/负": 0.0142
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.36535
+            "probability": 0.35105
           },
           {
             "pick": "平/胜",
-            "probability": 0.19875
+            "probability": 0.1862
           },
           {
             "pick": "负/胜",
-            "probability": 0.0284
+            "probability": 0.0314
           }
         ],
         "topScores": [
           {
             "score": "2:0",
-            "probability": 0.1075
+            "probability": 0.0947
           },
           {
             "score": "1:0",
-            "probability": 0.1269
+            "probability": 0.11345
           },
           {
             "score": "1:1",
-            "probability": 0.1018
+            "probability": 0.09945
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.8666606498194946,
-          "away": 0.8983303249097471
+          "home": 1.8587056498194947,
+          "away": 0.9942112454873645
         },
         "reasoning": {
-          "direction": "方向分布为 胜59% / 平23% / 负17%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜57.7% / 平42.3%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.44:1.22，结合官方让球 -1 后得到 xG 1.87:0.90。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
-          "draw": "平局概率为 23.3%，与最高方向相差 35.9 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 37% / 27% / 36%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 36.5%、平/胜 19.9%、负/胜 2.8%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜57% / 平23% / 负20%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜57.1% / 平42.9%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.38:1.36，结合官方让球 -1 后得到 xG 1.86:0.99。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 23.3%，与最高方向相差 33.5 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 37% / 27% / 36%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：特温特近 10 场 5胜3平2负，费伦茨近 10 场 7胜2平1负；以 10.0% 受限权重并入方向判断。体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手，交锋权重为 0.0%。教练/球员情报：主队苏锦克伤缺（守门员，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / +0.02）；主队N. Ünüvar伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）；客队D. Arzani伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.02）；客队B. Ötvös伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 35.1%、平/胜 18.6%、负/胜 3.1%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
@@ -628,11 +1179,16 @@
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1593 : 1566",
           "官方页面暂无双方联赛排名",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 21.9%，模型期望进球 1.87 : 0.90"
+          "体彩网赛事前瞻近期战况：特温特近 10 场 5胜3平2负，费伦茨近 10 场 7胜2平1负；以 10.0% 受限权重并入方向判断",
+          "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手",
+          "联赛平局率 21.9%，模型期望进球 1.86 : 0.99"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "主队苏锦克伤缺（守门员，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / +0.02）",
+          "主队N. Ünüvar伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.01 / +0.00）",
+          "客队D. Arzani伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.02）",
+          "客队B. Ötvös伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "主/客总 xG 修正 -0.01 / -0.01"
         ]
       },
       "oddsSnapshot": {
@@ -685,94 +1241,154 @@
           "updatedAt": "2026-07-23T09:21:07"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040600",
+        "fetchedAt": "2026-07-23T06:13:21.188Z",
+        "recent": {
+          "home": {
+            "team": "斯海杜克",
+            "wins": 6,
+            "draws": 2,
+            "losses": 2,
+            "samples": 10,
+            "goalsForAverage": 1.9,
+            "goalsAgainstAverage": 0.9
+          },
+          "away": {
+            "team": "帕福斯",
+            "wins": 4,
+            "draws": 2,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 1.3,
+            "goalsAgainstAverage": 1.1
+          }
+        },
+        "headToHead": {
+          "matches": [],
+          "samples": 0
+        },
+        "injuries": {
+          "home": [],
+          "away": [
+            {
+              "appearanceCnt": 0,
+              "injuryFlag": 1,
+              "personId": 685880,
+              "personName": "Lelê",
+              "playerPositionCode": "Attacker",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 0,
+              "suspensionFlag": 0,
+              "uniformNo": "18"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "客队Lelê伤缺（前锋，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.00625,
+            "awayGoalsDelta": -0.013750000000000002,
+            "status": "伤缺",
+            "personId": 685880,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T03:11:29.039Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
-        "handicapResult": "平",
-        "score": "2:1",
-        "totalGoals": "3",
+        "handicapResult": "胜",
+        "score": "2:0",
+        "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.49885,
+        "confidence": 0.4998,
         "probabilities": {
-          "result": 0.49885,
-          "handicapResult": 0.23945,
-          "score": 0.0877,
-          "totalGoals": 0.20255,
-          "halfFull": 0.2942
+          "result": 0.4998,
+          "handicapResult": 0.2652,
+          "score": 0.0824,
+          "totalGoals": 0.2298,
+          "halfFull": 0.30255
         },
         "resultDistribution": {
-          "胜": 0.49885,
-          "平": 0.25025,
-          "负": 0.2509
+          "胜": 0.4998,
+          "平": 0.2505,
+          "负": 0.2497
         },
         "handicapResultDistribution": {
-          "胜": 0.2594,
-          "平": 0.23945,
-          "负": 0.50115
+          "胜": 0.2652,
+          "平": 0.2346,
+          "负": 0.5002
         },
         "handicapConditionalDistribution": {
-          "平": 0.5013309721949525,
-          "胜": 0.4986690278050475
+          "胜": 0.5045079675705899,
+          "平": 0.4954920324294102
         },
         "jointOutcomeDistribution": {
-          "胜/胜": 0.2594,
-          "负/负": 0.2509,
-          "平/负": 0.25025,
-          "胜/平": 0.23945
+          "胜/胜": 0.2652,
+          "平/负": 0.2505,
+          "负/负": 0.2497,
+          "胜/平": 0.2346
         },
         "halfFullDistribution": {
-          "平/胜": 0.1765,
-          "胜/胜": 0.2942,
-          "平/负": 0.0999,
-          "负/负": 0.1343,
-          "胜/平": 0.04715,
-          "负/平": 0.04655,
-          "胜/负": 0.0167,
-          "负/胜": 0.02815,
-          "平/平": 0.15655
+          "胜/胜": 0.30255,
+          "胜/负": 0.0161,
+          "胜/平": 0.0466,
+          "平/胜": 0.17075,
+          "平/平": 0.1567,
+          "平/负": 0.0991,
+          "负/负": 0.1345,
+          "负/胜": 0.0265,
+          "负/平": 0.0472
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.2942
+            "probability": 0.30255
           },
           {
             "pick": "平/胜",
-            "probability": 0.1765
+            "probability": 0.17075
           },
           {
             "pick": "负/胜",
-            "probability": 0.02815
+            "probability": 0.0265
           }
         ],
         "topScores": [
           {
-            "score": "2:1",
-            "probability": 0.0877
+            "score": "2:0",
+            "probability": 0.0824
           },
           {
             "score": "1:0",
-            "probability": 0.11385
+            "probability": 0.11245
           },
           {
             "score": "1:1",
-            "probability": 0.1097
+            "probability": 0.11005
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.65528880866426,
-          "away": 1.1097021660649817
+          "home": 1.6599138086642602,
+          "away": 1.0995271660649817
         },
         "reasoning": {
-          "direction": "方向分布为 胜50% / 平25% / 负25%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（平50.1% / 胜49.9%），最终选择“让球平”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.51:1.04，结合官方让球 -1 后得到 xG 1.66:1.11。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
-          "draw": "平局概率为 25.0%，与最高方向相差 24.9 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 23% / 26% / 51%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 29.4%、平/胜 17.6%、负/胜 2.8%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜50% / 平25% / 负25%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜50.5% / 平49.5%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 288 场平均 2.61 球；双方近期攻防推得进球基线 1.51:1.05，结合官方让球 -1 后得到 xG 1.66:1.10。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 25.1%，与最高方向相差 24.9 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 23% / 26% / 51%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：斯海杜克近 10 场 6胜2平2负，帕福斯近 10 场 4胜2平4负；以 10.0% 受限权重并入方向判断。体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手，交锋权重为 0.0%。教练/球员情报：客队Lelê伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 30.3%、平/胜 17.1%、负/胜 2.6%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
@@ -782,11 +1398,13 @@
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1501 : 1503",
           "官方页面暂无双方联赛排名",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 21.9%，模型期望进球 1.66 : 1.11"
+          "体彩网赛事前瞻近期战况：斯海杜克近 10 场 6胜2平2负，帕福斯近 10 场 4胜2平4负；以 10.0% 受限权重并入方向判断",
+          "体彩网本场赛事前瞻未返回可匹配交锋；这不等于两队从未交手",
+          "联赛平局率 21.9%，模型期望进球 1.66 : 1.10"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "客队Lelê伤缺（前锋，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "主/客总 xG 修正 0.00 / -0.01"
         ]
       },
       "oddsSnapshot": {
@@ -839,94 +1457,167 @@
           "updatedAt": "2026-07-23T12:56:08"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040594",
+        "fetchedAt": "2026-07-23T06:13:22.016Z",
+        "recent": {
+          "home": {
+            "team": "科林蒂安",
+            "wins": 4,
+            "draws": 3,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.3,
+            "goalsAgainstAverage": 1.3
+          },
+          "away": {
+            "team": "里莫",
+            "wins": 5,
+            "draws": 2,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.6,
+            "goalsAgainstAverage": 1.4
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2023-04-27",
+              "goalsFor": 2,
+              "goalsAgainst": 0,
+              "tournament": "巴西杯"
+            },
+            {
+              "matchDate": "2023-04-13",
+              "goalsFor": 0,
+              "goalsAgainst": 2,
+              "tournament": "巴西杯"
+            }
+          ],
+          "samples": 2
+        },
+        "injuries": {
+          "home": [
+            {
+              "appearanceCnt": 18,
+              "injuryFlag": 0,
+              "personId": 534453,
+              "personName": "R. Garro",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 14,
+              "substituteMatchCnt": 4,
+              "suspensionFlag": 1,
+              "uniformNo": "8"
+            }
+          ],
+          "away": []
+        },
+        "teamNews": [
+          {
+            "label": "主队R. Garro停赛（中场，14次首发，进球占比11%，助攻占比43%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.09167600000000001,
+            "awayGoalsDelta": 0.014104,
+            "status": "停赛",
+            "personId": 534453,
+            "importance": 0.11753333333333334
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T02:56:19.435Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
         "handicapResult": "胜",
         "score": "2:0",
         "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.6155,
+        "confidence": 0.59695,
         "probabilities": {
-          "result": 0.6155,
-          "handicapResult": 0.381,
-          "score": 0.09555,
-          "totalGoals": 0.2122,
-          "halfFull": 0.3904
+          "result": 0.59695,
+          "handicapResult": 0.35885,
+          "score": 0.0938,
+          "totalGoals": 0.2179,
+          "halfFull": 0.3764
         },
         "resultDistribution": {
-          "胜": 0.6155,
-          "平": 0.2099,
-          "负": 0.1746
+          "胜": 0.59695,
+          "平": 0.22015,
+          "负": 0.1829
         },
         "handicapResultDistribution": {
-          "胜": 0.381,
-          "平": 0.2345,
-          "负": 0.3845
+          "胜": 0.35885,
+          "平": 0.2381,
+          "负": 0.40305
         },
         "handicapConditionalDistribution": {
-          "胜": 0.6029549147034932,
-          "平": 0.39704508529650695
+          "胜": 0.5931265181338471,
+          "平": 0.40687348186615296
         },
         "jointOutcomeDistribution": {
-          "胜/胜": 0.381,
-          "胜/平": 0.2345,
-          "平/负": 0.2099,
-          "负/负": 0.1746
+          "胜/胜": 0.35885,
+          "胜/平": 0.2381,
+          "平/负": 0.22015,
+          "负/负": 0.1829
         },
         "halfFullDistribution": {
-          "平/胜": 0.19225,
-          "平/平": 0.12735,
-          "负/平": 0.0423,
-          "胜/胜": 0.3904,
-          "平/负": 0.07075,
-          "负/负": 0.09185,
-          "胜/平": 0.04025,
-          "负/胜": 0.03285,
-          "胜/负": 0.012
+          "胜/胜": 0.3764,
+          "平/负": 0.0724,
+          "负/负": 0.0982,
+          "平/胜": 0.189,
+          "平/平": 0.13555,
+          "负/平": 0.04215,
+          "胜/平": 0.04245,
+          "胜/负": 0.0123,
+          "负/胜": 0.03155
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.3904
+            "probability": 0.3764
           },
           {
             "pick": "平/胜",
-            "probability": 0.19225
+            "probability": 0.189
           },
           {
             "pick": "负/胜",
-            "probability": 0.03285
+            "probability": 0.03155
           }
         ],
         "topScores": [
           {
             "score": "2:0",
-            "probability": 0.09555
+            "probability": 0.0938
           },
           {
             "score": "1:0",
-            "probability": 0.1045
+            "probability": 0.106
           },
           {
             "score": "1:1",
-            "probability": 0.0936
+            "probability": 0.09885
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 2.0780324909747296,
-          "away": 1.0040162454873645
+          "home": 2.0101922509747294,
+          "away": 1.0144532054873645
         },
         "reasoning": {
-          "direction": "方向分布为 胜62% / 平21% / 负17%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜60.3% / 平39.7%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 21 场平均 3.05 球；双方近期攻防推得进球基线 1.69:1.33，结合官方让球 -1 后得到 xG 2.08:1.00。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
-          "draw": "平局概率为 21.0%，与最高方向相差 40.6 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 39% / 28% / 33%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 39.0%、平/胜 19.2%、负/胜 3.3%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜60% / 平22% / 负18%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜59.3% / 平40.7%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 21 场平均 3.05 球；双方近期攻防推得进球基线 1.61:1.36，结合官方让球 -1 后得到 xG 2.01:1.01。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 22.0%，与最高方向相差 37.7 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 39% / 28% / 33%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：科林蒂安近 10 场 4胜3平3负，里莫近 10 场 5胜2平3负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 2 次交锋按时间衰减后，当前主队视角为胜 51% / 平 0% / 负 49%，场均进球 1.01:0.99，交锋权重为 0.6%。教练/球员情报：主队R. Garro停赛（中场，14次首发，进球占比11%，助攻占比43%）（可信度 74%，xG -0.07 / +0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 37.6%、平/胜 18.9%、负/胜 3.2%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
@@ -936,11 +1627,13 @@
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1531 : 1500",
           "联赛排名 13 : 19",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 33.3%，模型期望进球 2.08 : 1.00"
+          "体彩网赛事前瞻近期战况：科林蒂安近 10 场 4胜3平3负，里莫近 10 场 5胜2平3负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 2 次交锋按时间衰减后，当前主队视角为胜 51% / 平 0% / 负 49%，场均进球 1.01:0.99",
+          "联赛平局率 33.3%，模型期望进球 2.01 : 1.01"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "主队R. Garro停赛（中场，14次首发，进球占比11%，助攻占比43%）（可信度 74%，xG -0.07 / +0.01）",
+          "主/客总 xG 修正 -0.07 / 0.01"
         ]
       },
       "oddsSnapshot": {
@@ -987,114 +1680,237 @@
           "updatedAt": "2026-07-22T09:33:27"
         },
         "handicapResult": {
-          "home": 2.88,
-          "draw": 3.3,
+          "home": 2.96,
+          "draw": 3.2,
           "away": 2.09,
-          "updatedAt": "2026-07-22T09:33:27"
+          "updatedAt": "2026-07-23T13:41:34"
         }
       },
-      "sourceUpdatedAt": "2026-07-23 13:22:39",
+      "sourceUpdatedAt": "2026-07-23 14:08:27",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040593",
+        "fetchedAt": "2026-07-23T06:13:22.903Z",
+        "recent": {
+          "home": {
+            "team": "博塔弗戈",
+            "wins": 5,
+            "draws": 2,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.7,
+            "goalsAgainstAverage": 1.2
+          },
+          "away": {
+            "team": "维多利亚",
+            "wins": 7,
+            "draws": 1,
+            "losses": 2,
+            "samples": 10,
+            "goalsForAverage": 2.2,
+            "goalsAgainstAverage": 1.4
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2025-11-10",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "巴甲"
+            },
+            {
+              "matchDate": "2025-07-17",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "巴甲"
+            },
+            {
+              "matchDate": "2024-11-24",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "巴甲"
+            },
+            {
+              "matchDate": "2024-07-12",
+              "goalsFor": 1,
+              "goalsAgainst": 0,
+              "tournament": "巴甲"
+            },
+            {
+              "matchDate": "2024-05-23",
+              "goalsFor": 2,
+              "goalsAgainst": 1,
+              "tournament": "巴西杯"
+            },
+            {
+              "matchDate": "2024-05-03",
+              "goalsFor": 1,
+              "goalsAgainst": 0,
+              "tournament": "巴西杯"
+            },
+            {
+              "matchDate": "2021-09-30",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "巴乙"
+            },
+            {
+              "matchDate": "2021-07-01",
+              "goalsFor": 1,
+              "goalsAgainst": 0,
+              "tournament": "巴乙"
+            },
+            {
+              "matchDate": "2018-09-24",
+              "goalsFor": 4,
+              "goalsAgainst": 3,
+              "tournament": "巴甲"
+            },
+            {
+              "matchDate": "2018-05-28",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "巴甲"
+            }
+          ],
+          "samples": 10
+        },
+        "injuries": {
+          "home": [
+            {
+              "appearanceCnt": 15,
+              "injuryFlag": 0,
+              "personId": 471712,
+              "personName": "费拉雷西",
+              "playerPositionCode": "Defender",
+              "playerPositionDesc": "后卫",
+              "startedMatchCnt": 11,
+              "substituteMatchCnt": 4,
+              "suspensionFlag": 1,
+              "uniformNo": "5"
+            }
+          ],
+          "away": []
+        },
+        "teamNews": [
+          {
+            "label": "主队费拉雷西停赛（后卫，11次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": -0.00564,
+            "awayGoalsDelta": 0.03666,
+            "status": "停赛",
+            "personId": 471712,
+            "importance": 0.047
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
       "publishedAt": "2026-07-23T02:56:19.435Z",
-      "republishedAt": "2026-07-23T05:41:50.585Z",
-      "modelVersion": "2.3.2",
+      "republishedAt": "2026-07-23T06:13:13.405Z",
+      "modelVersion": "2.4.0",
       "prediction": {
         "result": "胜",
         "handicapResult": "胜",
         "score": "2:0",
         "totalGoals": "2",
         "halfFull": "胜/胜",
-        "confidence": 0.5143,
+        "confidence": 0.5135,
         "probabilities": {
-          "result": 0.5143,
-          "handicapResult": 0.2667,
-          "score": 0.09575,
-          "totalGoals": 0.24145,
-          "halfFull": 0.30635
+          "result": 0.5135,
+          "handicapResult": 0.271,
+          "score": 0.08915,
+          "totalGoals": 0.23125,
+          "halfFull": 0.30535
         },
         "resultDistribution": {
-          "胜": 0.5143,
-          "平": 0.2671,
-          "负": 0.2186
+          "胜": 0.5135,
+          "平": 0.25375,
+          "负": 0.23275
         },
         "handicapResultDistribution": {
-          "胜": 0.2667,
-          "平": 0.2476,
-          "负": 0.4857
+          "胜": 0.271,
+          "平": 0.2425,
+          "负": 0.4865
         },
         "handicapConditionalDistribution": {
-          "胜": 0.5255041728884015,
-          "平": 0.4744958271115986
+          "胜": 0.5240291354215405,
+          "平": 0.47597086457845955
         },
         "jointOutcomeDistribution": {
-          "平/负": 0.2671,
-          "胜/胜": 0.2667,
-          "胜/平": 0.2476,
-          "负/负": 0.2186
+          "胜/胜": 0.271,
+          "平/负": 0.25375,
+          "胜/平": 0.2425,
+          "负/负": 0.23275
         },
         "halfFullDistribution": {
-          "平/平": 0.17995,
-          "负/平": 0.0435,
-          "胜/胜": 0.30635,
-          "负/负": 0.1142,
-          "负/胜": 0.02375,
-          "胜/平": 0.04365,
-          "平/胜": 0.1842,
-          "胜/负": 0.01265,
-          "平/负": 0.09175
+          "平/胜": 0.1833,
+          "平/平": 0.16285,
+          "负/胜": 0.02485,
+          "胜/胜": 0.30535,
+          "平/负": 0.0911,
+          "负/平": 0.04625,
+          "胜/平": 0.04465,
+          "负/负": 0.12565,
+          "胜/负": 0.016
         },
         "topHalfFull": [
           {
             "pick": "胜/胜",
-            "probability": 0.30635
+            "probability": 0.30535
           },
           {
             "pick": "平/胜",
-            "probability": 0.1842
+            "probability": 0.1833
           },
           {
             "pick": "负/胜",
-            "probability": 0.02375
+            "probability": 0.02485
           }
         ],
         "topScores": [
           {
             "score": "2:0",
-            "probability": 0.09575
+            "probability": 0.08915
           },
           {
             "score": "1:0",
-            "probability": 0.13855
+            "probability": 0.1209
           },
           {
             "score": "1:1",
-            "probability": 0.11515
+            "probability": 0.11
           }
         ],
         "simulations": 20000,
         "expectedGoals": {
-          "home": 1.5496028880866426,
-          "away": 0.8983303249097471
+          "home": 1.65111520866426,
+          "away": 1.0311446454873645
         },
         "reasoning": {
-          "direction": "方向分布为 胜51% / 平27% / 负22%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜52.6% / 平47.4%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
-          "score": "该联赛近 21 场平均 3.05 球；双方近期攻防推得进球基线 0.88:1.27，结合官方让球 -1 后得到 xG 1.55:0.90。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
-          "draw": "平局概率为 26.7%，与最高方向相差 24.7 个百分点，已纳入但未列为主选。",
-          "context": "官方让球盘去水概率 31% / 27% / 42%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手，交锋权重限制为 0.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
-          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 30.6%、平/胜 18.4%、负/胜 2.4%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+          "direction": "方向分布为 胜51% / 平25% / 负23%；胜的边际概率最高。先锁定普通胜平负主方向，再只在该方向可实现的让球路径中，以 55% 模拟分布和 45% 官方让球盘计算条件概率（胜52.4% / 平47.6%），最终选择“让球胜”；不是按一球差模板或人为配额分配。",
+          "score": "该联赛近 21 场平均 3.05 球；双方近期攻防推得进球基线 1.04:1.37，结合官方让球 -1 后得到 xG 1.65:1.03。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:0。",
+          "draw": "平局概率为 25.4%，与最高方向相差 26.0 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 30% / 28% / 42%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：博塔弗戈近 10 场 5胜2平3负，维多利亚近 10 场 7胜1平2负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 33% / 平 67% / 负 0%，场均进球 0.58:0.25，交锋权重为 5.6%。教练/球员情报：主队费拉雷西停赛（后卫，11次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.03）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 30.5%、平/胜 18.3%、负/胜 2.5%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
         }
       },
       "factors": {
         "objective": [
           "官方胜平负去水概率 56% / 24% / 20%",
-          "官方让球盘去水概率 31% / 27% / 42%，与普通胜平负共同约束比分。",
+          "官方让球盘去水概率 30% / 28% / 42%，与普通胜平负共同约束比分。",
           "未配置可核验的场外盘数据，本场不凭空补值",
           "滚动 Elo 1562 : 1514",
           "联赛排名 10 : 12",
-          "体彩网近两年已收录赛果中暂无可匹配交锋；这不等于两队从未交手",
-          "联赛平局率 33.3%，模型期望进球 1.55 : 0.90"
+          "体彩网赛事前瞻近期战况：博塔弗戈近 10 场 5胜2平3负，维多利亚近 10 场 7胜1平2负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 33% / 平 67% / 负 0%，场均进球 0.58:0.25",
+          "联赛平局率 33.3%，模型期望进球 1.65 : 1.03"
         ],
         "subjective": [
-          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+          "主队费拉雷西停赛（后卫，11次首发，进球占比0%，助攻占比0%）（可信度 74%，xG -0.00 / +0.03）",
+          "主/客总 xG 修正 -0.00 / 0.03"
         ]
       },
       "oddsSnapshot": {
@@ -1105,10 +1921,10 @@
           "updatedAt": "2026-07-22T09:33:27"
         },
         "handicapResult": {
-          "home": 2.88,
-          "draw": 3.3,
+          "home": 2.96,
+          "draw": 3.2,
           "away": 2.09,
-          "updatedAt": "2026-07-22T09:33:27"
+          "updatedAt": "2026-07-23T13:41:34"
         }
       }
     }

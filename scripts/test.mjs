@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { actualFromResult, calibrate, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 import { mergeContexts } from "./lib/context-feed.mjs";
+import { buildOfficialContext } from "./lib/sporttery.mjs";
 
 const match = {
   id:"demo-1", matchNumber:"周三001", league:"测试联赛", leagueId:999,
@@ -121,6 +122,28 @@ test("场外盘、教练与球员情报以受限权重进入模型", () => {
   assert.ok(Math.abs(generated.diagnostics.situational.awayGoalsDelta - 0.07) < 1e-10);
   assert.ok(generated.prediction.reasoning.context.includes("测试赔率源"));
   assert.ok(generated.prediction.reasoning.context.includes("主队前锋缺阵"));
+});
+
+test("体彩网赛事前瞻的近期胜率、交锋和伤停进入受限权重", () => {
+  const officialContext = buildOfficialContext("demo-1", {
+    feature: {
+      homeTeamShortName: "主队", awayTeamShortName: "客队", uniformHomeTeamId: 101,
+      eachHomeAway: { homeWinGoalMatchCnt: 4, homeDrawMatchCnt: 3, homeLossGoalMatchCnt: 3, awayWinGoalMatchCnt: 5, awayDrawMatchCnt: 2, awayLossGoalMatchCnt: 3, totalLegCnt: 10 },
+      goalAvg: { homeGoalAvgCnt: "1.3", awayGoalAvgCnt: "1.6" },
+      lossGoalAvg: { homeLossGoalAvgCnt: "1.3", awayLossGoalAvgCnt: "1.4" }
+    },
+    history: { matchList: [{ matchDate: "2025-04-27", uniformHomeTeamId: 101, homeTeamShortName: "主队", homeTeamFullCourtGoalCnt: "2", awayTeamFullCourtGoalCnt: "0", tournamentShortName: "杯赛" }] },
+    injuries: { home: { injuriesAndSuspensionsList: [{ personId: 8, personName: "核心中场", playerPositionCode: "Midfielder", playerPositionDesc: "中场", appearanceCnt: 18, startedMatchCnt: 14, suspensionFlag: 1 }] } },
+    players: { home: { playerList: [{ personId: 8, personName: "核心中场", playerPositionCode: "Midfielder", playerPositionDesc: "中场", appearanceCnt: 18, startedMatchCnt: 14, goalProbability: "11%", assistProbability: "43%" }] } }
+  }, "2026-07-23T00:00:00.000Z");
+  assert.equal(officialContext.recent.home.wins, 4);
+  assert.equal(officialContext.headToHead.samples, 1);
+  assert.ok(officialContext.teamNews[0].label.includes("停赛"));
+  const generated = predictMatch({ ...match, officialContext }, state, learning);
+  assert.equal(generated.diagnostics.officialForm.weight, 0.1);
+  assert.equal(generated.diagnostics.headToHead.count, 1);
+  assert.ok(generated.diagnostics.situational.homeGoalsDelta < 0);
+  assert.ok(generated.prediction.reasoning.context.includes("核心中场停赛"));
 });
 
 test("历史交锋按当前主队视角记录并仅作弱辅助", () => {
