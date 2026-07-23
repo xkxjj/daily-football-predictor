@@ -83,7 +83,14 @@ const historyStart = addDays(today, needsBackfill ? -730 : -45);
 console.log(`同步体彩网：赛程 ${today}—${windowEnd}，赛果 ${historyStart}—${today}`);
 // 官方接口对境外机房偶尔返回 567。赛程优先串行获取，避免并发触发风控；
 // 赛果同步失败时保留既有历史与验真，未来预测仍可继续更新。
-const schedule = await fetchSchedule();
+let schedule;
+try {
+  schedule = await fetchSchedule();
+} catch (error) {
+  console.warn(`赛程同步暂不可用，本轮不改写任何预测数据：${error.message}`);
+  console.log("保留仓库中的最后一次有效快照，等待下一轮自动重试。");
+  process.exit(0);
+}
 let results = [];
 let resultSync = { ok: true, error: null };
 try {
