@@ -68,15 +68,15 @@ const [historyFile, state, localAdjustments, contextFeed] = await Promise.all([
 ]);
 const adjustments = mergeContexts(contextFeed, localAdjustments);
 
-// 2.2 首次升级时回填两年用于交锋样本；日常仅复查 45 天，且通过 matchId 去重。
-const needsBackfill = state.schemaVersion !== 3;
+// 2.3 首次升级时回填两年，用于交锋与条件半全场样本；日常仅复查 45 天。
+const needsBackfill = state.schemaVersion !== 4;
 if (needsBackfill) {
   state.teamRatings = {};
   state.teamForm = {};
   state.leagueGoals = {};
   state.headToHead = {};
   state.processedResults = [];
-  state.schemaVersion = 3;
+  state.schemaVersion = 4;
 }
 const historyStart = addDays(today, needsBackfill ? -730 : -45);
 

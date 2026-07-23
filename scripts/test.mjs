@@ -63,6 +63,47 @@ test("只开让球胜平负时以让球盘反推实力差", () => {
   assert.equal(generated.prediction.handicapResult, home - 2 > away ? "胜" : home - 2 < away ? "负" : "平");
 });
 
+test("让球方向按已选胜平负的条件概率计算而非固定一球差", () => {
+  const strongFavorite = {
+    ...match, id: "strong-favorite", handicap: -1, homeRank: 1, awayRank: 16,
+    odds: { result: { home: 1.24, draw: 5.8, away: 9.5 }, handicapResult: { home: 1.64, draw: 4.05, away: 4.25 } }
+  };
+  const narrowFavorite = {
+    ...match, id: "narrow-favorite", handicap: -1, homeRank: 4, awayRank: 9,
+    odds: { result: { home: 1.76, draw: 3.55, away: 4.45 }, handicapResult: { home: 4.2, draw: 3.2, away: 1.75 } }
+  };
+  const strongVisitor = {
+    ...match, id: "strong-visitor", handicap: 1, homeRank: 15, awayRank: 2,
+    odds: { result: { home: 5.7, draw: 4.2, away: 1.48 }, handicapResult: { home: 2.95, draw: 3.55, away: 1.98 } }
+  };
+  const outcomes = [strongFavorite, narrowFavorite, strongVisitor]
+    .map(item => predictMatch(item, state, learning).prediction);
+  assert.equal(outcomes[0].result, "胜");
+  assert.equal(outcomes[0].handicapResult, "胜", "强势让一球应保留净胜两球以上路径");
+  assert.equal(outcomes[1].result, "胜");
+  assert.equal(outcomes[1].handicapResult, "平", "中等让一球热门应允许一球小胜路径");
+  assert.equal(outcomes[2].result, "负");
+  assert.equal(outcomes[2].handicapResult, "负", "主队受让一球时，强势客胜应允许穿盘路径");
+  assert.ok(new Set(outcomes.map(item => item.handicapResult)).size >= 2, "代表性样本不应机械输出同一让球方向");
+});
+
+test("条件半全场历史能识别平局半场后取胜", () => {
+  const conditionalState = {
+    ...state,
+    leagueGoals: {
+      "999": {
+        homeGoals: 150, awayGoals: 110, draws: 24, count: 100,
+        scoreCounts: { "2:0": 12, "2:1": 10, "1:0": 9 },
+        halfOutcomes: { "胜": 35, "平": 48, "负": 17 },
+        halfFullOutcomes: { "平/胜": 80, "胜/胜": 4, "负/胜": 1 }
+      }
+    }
+  };
+  const predicted = predictMatch({ ...match, id: "half-full-conditional" }, conditionalState, learning).prediction;
+  assert.equal(predicted.result, "胜");
+  assert.equal(predicted.halfFull, "平/胜");
+});
+
 test("场外盘、教练与球员情报以受限权重进入模型", () => {
   const adjustment = {
     externalMarket: {
