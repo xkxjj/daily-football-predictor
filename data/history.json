@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-23T06:51:54.245Z",
+  "updatedAt": "2026-07-24T07:27:22.248Z",
   "records": [
     {
       "id": "2040584",
@@ -5980,7 +5980,7 @@
       "kickoff": "2026-07-24T06:30:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -7252,7 +7252,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "胜",
+        "score": "3:0",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "halfScore": "3:0",
+        "homeGoals": 3,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": true
+      },
+      "hitCount": 3,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040593",
@@ -7272,7 +7291,7 @@
       "kickoff": "2026-07-24T06:30:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -8592,7 +8611,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "平",
+        "handicapResult": "负",
+        "score": "0:0",
+        "totalGoals": "0",
+        "halfFull": "平/平",
+        "halfScore": "0:0",
+        "homeGoals": 0,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 0,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040597",
@@ -8612,7 +8650,7 @@
       "kickoff": "2026-07-24T01:00:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -9758,7 +9796,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "平",
+        "handicapResult": "负",
+        "score": "1:1",
+        "totalGoals": "2",
+        "halfFull": "负/平",
+        "halfScore": "0:1",
+        "homeGoals": 1,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 0,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040603",
@@ -9778,7 +9835,7 @@
       "kickoff": "2026-07-24T02:00:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": 1,
       "odds": {
@@ -11055,7 +11112,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "胜",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "平/胜",
+        "halfScore": "1:1",
+        "homeGoals": 2,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 0,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040598",
@@ -11075,7 +11151,7 @@
       "kickoff": "2026-07-24T02:00:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -12274,7 +12350,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "1:0",
+        "totalGoals": "1",
+        "halfFull": "胜/胜",
+        "halfScore": "1:0",
+        "homeGoals": 1,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": true
+      },
+      "hitCount": 3,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040599",
@@ -12294,7 +12389,7 @@
       "kickoff": "2026-07-24T02:00:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -13493,7 +13588,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "负",
+        "handicapResult": "负",
+        "score": "1:2",
+        "totalGoals": "3",
+        "halfFull": "平/负",
+        "halfScore": "1:1",
+        "homeGoals": 1,
+        "awayGoals": 2
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 0,
+      "settledAt": "2026-07-24T07:27:25.395Z"
     },
     {
       "id": "2040600",
@@ -13513,7 +13627,7 @@
       "kickoff": "2026-07-24T03:00:00+08:00",
       "kickoffDate": "2026-07-24",
       "businessDate": "2026-07-23",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -14633,7 +14747,1436 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "胜",
+        "score": "2:0",
+        "totalGoals": "2",
+        "halfFull": "平/胜",
+        "halfScore": "0:0",
+        "homeGoals": 2,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 1,
+      "settledAt": "2026-07-24T07:27:25.395Z"
+    },
+    {
+      "id": "2040610",
+      "matchNumber": "周五201",
+      "matchNumberDate": "260724",
+      "league": "芬超",
+      "leagueFull": "芬兰超级联赛",
+      "leagueId": 2064839,
+      "home": "雅罗",
+      "homeFull": "雅罗",
+      "homeId": 597,
+      "away": "塞伊奈",
+      "awayFull": "塞伊奈约基",
+      "awayId": 2348,
+      "homeRank": 11,
+      "awayRank": 10,
+      "kickoff": "2026-07-25T00:00:00+08:00",
+      "kickoffDate": "2026-07-25",
+      "businessDate": "2026-07-24",
+      "status": "pending",
+      "remark": "",
+      "handicap": 1,
+      "odds": {
+        "result": {
+          "home": 3.22,
+          "draw": 3.55,
+          "away": 1.86,
+          "updatedAt": "2026-07-24T14:08:19"
+        },
+        "handicapResult": {
+          "home": 1.74,
+          "draw": 3.6,
+          "away": 3.62,
+          "updatedAt": "2026-07-24T14:27:14"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-24 14:27:14",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040610",
+        "fetchedAt": "2026-07-24T07:27:26.268Z",
+        "recent": {
+          "home": {
+            "team": "雅罗",
+            "wins": 2,
+            "draws": 2,
+            "losses": 6,
+            "samples": 10,
+            "goalsForAverage": 1.1,
+            "goalsAgainstAverage": 2.5
+          },
+          "away": {
+            "team": "塞伊奈",
+            "wins": 3,
+            "draws": 2,
+            "losses": 5,
+            "samples": 10,
+            "goalsForAverage": 1.8,
+            "goalsAgainstAverage": 1.6
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2026-04-25",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "芬超"
+            },
+            {
+              "matchDate": "2026-03-18",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "俱乐部赛"
+            },
+            {
+              "matchDate": "2026-01-24",
+              "goalsFor": 2,
+              "goalsAgainst": 1,
+              "tournament": "联赛杯"
+            },
+            {
+              "matchDate": "2025-08-19",
+              "goalsFor": 0,
+              "goalsAgainst": 4,
+              "tournament": "芬超"
+            },
+            {
+              "matchDate": "2025-06-15",
+              "goalsFor": 1,
+              "goalsAgainst": 3,
+              "tournament": "芬超"
+            },
+            {
+              "matchDate": "2025-03-29",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "俱乐部赛"
+            },
+            {
+              "matchDate": "2025-02-01",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "联赛杯"
+            },
+            {
+              "matchDate": "2024-01-20",
+              "goalsFor": 0,
+              "goalsAgainst": 2,
+              "tournament": "俱乐部赛"
+            },
+            {
+              "matchDate": "2020-01-18",
+              "goalsFor": 2,
+              "goalsAgainst": 5,
+              "tournament": "俱乐部赛"
+            },
+            {
+              "matchDate": "2019-12-21",
+              "goalsFor": 0,
+              "goalsAgainst": 1,
+              "tournament": "俱乐部赛"
+            }
+          ],
+          "samples": 10
+        },
+        "injuries": {
+          "home": [],
+          "away": []
+        },
+        "teamNews": [],
+        "available": true,
+        "errors": []
+      },
+      "publishedAt": "2026-07-24T07:27:22.248Z",
+      "modelVersion": "2.4.1",
+      "prediction": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "1:2",
+        "totalGoals": "3",
+        "halfFull": "负/负",
+        "confidence": 0.464,
+        "probabilities": {
+          "result": 0.464,
+          "handicapResult": 0.21115,
+          "score": 0.0808,
+          "totalGoals": 0.19775,
+          "halfFull": 0.28
+        },
+        "resultDistribution": {
+          "胜": 0.29575,
+          "平": 0.24025,
+          "负": 0.464
+        },
+        "handicapResultDistribution": {
+          "胜": 0.536,
+          "平": 0.21115,
+          "负": 0.25285
+        },
+        "handicapConditionalDistribution": {
+          "负": 0.5240911709571114,
+          "平": 0.47590882904288856
+        },
+        "handicapDecision": {
+          "selected": "平",
+          "conditionalTop": "负",
+          "gap": 0.04818234191422288,
+          "level": "临界"
+        },
+        "jointOutcomeDistribution": {
+          "胜/胜": 0.29575,
+          "负/负": 0.25285,
+          "平/胜": 0.24025,
+          "负/平": 0.21115
+        },
+        "halfFullDistribution": {
+          "负/负": 0.28,
+          "平/负": 0.1513,
+          "胜/胜": 0.16855,
+          "胜/平": 0.05195,
+          "平/平": 0.13615,
+          "平/胜": 0.10465,
+          "负/平": 0.05215,
+          "胜/负": 0.0327,
+          "负/胜": 0.02255
+        },
+        "topHalfFull": [
+          {
+            "pick": "负/负",
+            "probability": 0.28
+          },
+          {
+            "pick": "平/负",
+            "probability": 0.1513
+          },
+          {
+            "pick": "胜/负",
+            "probability": 0.0327
+          }
+        ],
+        "topScores": [
+          {
+            "score": "1:2",
+            "probability": 0.0808,
+            "handicapResult": "平"
+          },
+          {
+            "score": "0:1",
+            "probability": 0.081,
+            "handicapResult": "平"
+          },
+          {
+            "score": "0:2",
+            "probability": 0.06215,
+            "handicapResult": "负"
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.4121599981767583,
+          "away": 1.8360801186706548
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜30% / 平24% / 负46%；负的边际概率最高。让球条件分布为 负52.4% / 平47.6%（前两项差 4.8 个百分点，判断为“临界”）；该分布只作为比分路径的软证据，最终由代表比分 1:2 自洽推导为“让球平”，不再先锁死让球结果。",
+          "score": "该联赛近 142 场平均 3.12 球；双方近期攻防推得进球基线 1.40:1.86，结合官方让球 +1 后得到 xG 1.41:1.84。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 1:2。",
+          "draw": "平局概率为 24.0%，与最高方向相差 22.4 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 51% / 25% / 24%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：雅罗近 10 场 2胜2平6负，塞伊奈近 10 场 3胜2平5负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 17% / 平 29% / 负 54%，场均进球 1.00:1.90，交锋权重为 10.0%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 28.0%、平/负 15.1%、胜/负 3.3%，其中包含“半场平”的真实权重，最终主选 负/负。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.2748593026740817,
+          0.24930900129874456,
+          0.47583169602717373
+        ],
+        "officialMarketProbabilities": [
+          0.2748593026740817,
+          0.24930900129874456,
+          0.47583169602717373
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.5091659243283791,
+          0.24609686342538328,
+          0.2447372122462375
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.3374446896462349,
+          0.28150300359449293,
+          0.38105230675927204
+        ],
+        "targetProbabilities": [
+          0.2842287869067061,
+          0.2614201740192661,
+          0.4543510390740278
+        ],
+        "fittedLoss": 0.00476660098535638,
+        "statPrior": {
+          "home": 1.3955446478313165,
+          "away": 1.8602207773451616,
+          "homeRecentScored": 1.1,
+          "homeRecentConceded": 2.1,
+          "awayRecentScored": 1.75,
+          "awayRecentConceded": 1.5,
+          "homeSamples": 20,
+          "awaySamples": 20,
+          "officialFormWeight": 0.24
+        },
+        "headToHead": {
+          "count": 8,
+          "weight": 0.1,
+          "probabilities": [
+            0.16556197374984996,
+            0.29076689882868145,
+            0.5436711274214685
+          ],
+          "averageFor": 0.9995526690549531,
+          "averageAgainst": 1.900347755053443,
+          "summary": "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 17% / 平 29% / 负 54%，场均进球 1.00:1.90"
+        },
+        "officialForm": {
+          "weight": 0.1,
+          "probabilities": [
+            0.346198502025945,
+            0.27499999999999997,
+            0.37880149797405516
+          ],
+          "prior": {
+            "home": 1.35,
+            "away": 2.15,
+            "weight": 0.24
+          },
+          "summary": "体彩网赛事前瞻近期战况：雅罗近 10 场 2胜2平6负，塞伊奈近 10 场 3胜2平5负；以 10.0% 受限权重并入方向判断"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 27% / 25% / 48%",
+          "官方让球盘去水概率 51% / 25% / 24%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1432 : 1517",
+          "联赛排名 11 : 10",
+          "体彩网赛事前瞻近期战况：雅罗近 10 场 2胜2平6负，塞伊奈近 10 场 3胜2平5负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 17% / 平 29% / 负 54%，场均进球 1.00:1.90",
+          "联赛平局率 26.1%，模型期望进球 1.41 : 1.84"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 3.22,
+          "draw": 3.55,
+          "away": 1.86,
+          "updatedAt": "2026-07-24T14:08:19"
+        },
+        "handicapResult": {
+          "home": 1.74,
+          "draw": 3.6,
+          "away": 3.62,
+          "updatedAt": "2026-07-24T14:27:14"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040611",
+      "matchNumber": "周五202",
+      "matchNumberDate": "260724",
+      "league": "瑞超",
+      "leagueFull": "瑞典超级联赛",
+      "leagueId": 58,
+      "home": "韦斯特罗",
+      "homeFull": "韦斯特罗斯",
+      "homeId": 1026400,
+      "away": "厄格里特",
+      "awayFull": "厄尔格里特",
+      "awayId": 601,
+      "homeRank": 8,
+      "awayRank": 15,
+      "kickoff": "2026-07-25T01:00:00+08:00",
+      "kickoffDate": "2026-07-25",
+      "businessDate": "2026-07-24",
+      "status": "pending",
+      "remark": "",
+      "handicap": -1,
+      "odds": {
+        "result": {
+          "home": 1.49,
+          "draw": 3.95,
+          "away": 4.88,
+          "updatedAt": "2026-07-24T14:22:40"
+        },
+        "handicapResult": {
+          "home": 2.46,
+          "draw": 3.55,
+          "away": 2.27,
+          "updatedAt": "2026-07-23T13:22:39"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-24 14:27:14",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040611",
+        "fetchedAt": "2026-07-24T07:27:27.153Z",
+        "recent": {
+          "home": {
+            "team": "韦斯特罗",
+            "wins": 4,
+            "draws": 2,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 1.7,
+            "goalsAgainstAverage": 1.7
+          },
+          "away": {
+            "team": "厄格里特",
+            "wins": 1,
+            "draws": 3,
+            "losses": 6,
+            "samples": 10,
+            "goalsForAverage": 1,
+            "goalsAgainstAverage": 2.4
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2025-10-25",
+              "goalsFor": 2,
+              "goalsAgainst": 0,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2025-04-09",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2023-11-04",
+              "goalsFor": 0,
+              "goalsAgainst": 1,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2023-04-10",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2022-08-27",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2022-07-27",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2021-10-30",
+              "goalsFor": 2,
+              "goalsAgainst": 2,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2021-05-01",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2020-11-22",
+              "goalsFor": 0,
+              "goalsAgainst": 3,
+              "tournament": "瑞甲"
+            },
+            {
+              "matchDate": "2020-08-04",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "瑞甲"
+            }
+          ],
+          "samples": 10
+        },
+        "injuries": {
+          "home": [],
+          "away": [
+            {
+              "appearanceCnt": 2,
+              "injuryFlag": 1,
+              "personId": 313602,
+              "personName": "R. Alm",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 0,
+              "substituteMatchCnt": 2,
+              "suspensionFlag": 0,
+              "uniformNo": "10"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "客队R. Alm伤缺（中场，0次首发，进球占比0%，助攻占比0%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.003,
+            "awayGoalsDelta": -0.019500000000000003,
+            "status": "伤缺",
+            "personId": 313602,
+            "importance": 0.025
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
+      "publishedAt": "2026-07-24T07:27:22.248Z",
+      "modelVersion": "2.4.1",
+      "prediction": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "胜/胜",
+        "confidence": 0.5517,
+        "probabilities": {
+          "result": 0.5517,
+          "handicapResult": 0.2375,
+          "score": 0.0908,
+          "totalGoals": 0.20375,
+          "halfFull": 0.34325
+        },
+        "resultDistribution": {
+          "胜": 0.5517,
+          "平": 0.22995,
+          "负": 0.21835
+        },
+        "handicapResultDistribution": {
+          "胜": 0.3142,
+          "平": 0.2375,
+          "负": 0.4483
+        },
+        "handicapConditionalDistribution": {
+          "胜": 0.5790388172452595,
+          "平": 0.4209611827547406
+        },
+        "handicapDecision": {
+          "selected": "平",
+          "conditionalTop": "胜",
+          "gap": 0.15807763449051893,
+          "level": "明确"
+        },
+        "jointOutcomeDistribution": {
+          "胜/胜": 0.3142,
+          "胜/平": 0.2375,
+          "平/负": 0.22995,
+          "负/负": 0.21835
+        },
+        "halfFullDistribution": {
+          "平/胜": 0.1766,
+          "胜/胜": 0.34325,
+          "平/平": 0.14,
+          "负/胜": 0.03185,
+          "胜/负": 0.0156,
+          "胜/平": 0.04605,
+          "负/负": 0.1204,
+          "负/平": 0.0439,
+          "平/负": 0.08235
+        },
+        "topHalfFull": [
+          {
+            "pick": "胜/胜",
+            "probability": 0.34325
+          },
+          {
+            "pick": "平/胜",
+            "probability": 0.1766
+          },
+          {
+            "pick": "负/胜",
+            "probability": 0.03185
+          }
+        ],
+        "topScores": [
+          {
+            "score": "2:1",
+            "probability": 0.0908,
+            "handicapResult": "平"
+          },
+          {
+            "score": "2:0",
+            "probability": 0.08215,
+            "handicapResult": "胜"
+          },
+          {
+            "score": "1:0",
+            "probability": 0.10325,
+            "handicapResult": "平"
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.9106178680877464,
+          "away": 1.1269171007952714
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜55% / 平23% / 负22%；胜的边际概率最高。让球条件分布为 胜57.9% / 平42.1%（前两项差 15.8 个百分点，判断为“明确”）；该分布只作为比分路径的软证据，最终由代表比分 2:1 自洽推导为“让球平”，不再先锁死让球结果。",
+          "score": "该联赛近 289 场平均 2.88 球；双方近期攻防推得进球基线 1.71:1.46，结合官方让球 -1 后得到 xG 1.91:1.13。在“胜”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 2:1。",
+          "draw": "平局概率为 23.0%，与最高方向相差 32.2 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 36% / 25% / 39%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：韦斯特罗近 10 场 4胜2平4负，厄格里特近 10 场 1胜3平6负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 40% / 平 49% / 负 11%，场均进球 1.25:0.55，交锋权重为 3.7%。教练/球员情报：客队R. Alm伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“胜”。候选为 胜/胜 34.3%、平/胜 17.7%、负/胜 3.2%，其中包含“半场平”的真实权重，最终主选 胜/胜。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.5943384300412855,
+          0.22419348373709247,
+          0.181468086221622
+        ],
+        "officialMarketProbabilities": [
+          0.5943384300412855,
+          0.22419348373709247,
+          0.181468086221622
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.36014515746993386,
+          0.24956537672564433,
+          0.3902894658044217
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.504945116659976,
+          0.24318474731650178,
+          0.2518701360235223
+        ],
+        "targetProbabilities": [
+          0.5596438584576687,
+          0.24246653784734773,
+          0.19788960369498357
+        ],
+        "fittedLoss": 0.0215392658928052,
+        "statPrior": {
+          "home": 1.7081775399133763,
+          "away": 1.4552853096307796,
+          "homeRecentScored": 1.6666666666666667,
+          "homeRecentConceded": 2.2222222222222223,
+          "awayRecentScored": 1.2,
+          "awayRecentConceded": 1.6,
+          "homeSamples": 9,
+          "awaySamples": 10,
+          "officialFormWeight": 0.24
+        },
+        "headToHead": {
+          "count": 8,
+          "weight": 0.03745600280056717,
+          "probabilities": [
+            0.403473524911264,
+            0.49036877908124377,
+            0.10615769600749216
+          ],
+          "averageFor": 1.252310392386091,
+          "averageAgainst": 0.5515210385710552,
+          "summary": "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 40% / 平 49% / 负 11%，场均进球 1.25:0.55"
+        },
+        "officialForm": {
+          "weight": 0.1,
+          "probabilities": [
+            0.5133506531663167,
+            0.2525,
+            0.23414934683368338
+          ],
+          "prior": {
+            "home": 2.05,
+            "away": 1.35,
+            "weight": 0.24
+          },
+          "summary": "体彩网赛事前瞻近期战况：韦斯特罗近 10 场 4胜2平4负，厄格里特近 10 场 1胜3平6负；以 10.0% 受限权重并入方向判断"
+        },
+        "situational": {
+          "homeGoalsDelta": 0.00222,
+          "awayGoalsDelta": -0.014430000000000002,
+          "applied": [
+            "客队R. Alm伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）"
+          ]
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 59% / 22% / 18%",
+          "官方让球盘去水概率 36% / 25% / 39%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1485 : 1460",
+          "联赛排名 8 : 15",
+          "体彩网赛事前瞻近期战况：韦斯特罗近 10 场 4胜2平4负，厄格里特近 10 场 1胜3平6负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 40% / 平 49% / 负 11%，场均进球 1.25:0.55",
+          "联赛平局率 24.9%，模型期望进球 1.91 : 1.13"
+        ],
+        "subjective": [
+          "客队R. Alm伤缺（中场，0次首发，进球占比0%，助攻占比0%）（可信度 74%，xG +0.00 / -0.01）",
+          "主/客总 xG 修正 0.00 / -0.01"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 1.49,
+          "draw": 3.95,
+          "away": 4.88,
+          "updatedAt": "2026-07-24T14:22:40"
+        },
+        "handicapResult": {
+          "home": 2.46,
+          "draw": 3.55,
+          "away": 2.27,
+          "updatedAt": "2026-07-23T13:22:39"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040612",
+      "matchNumber": "周六201",
+      "matchNumberDate": "260725",
+      "league": "韩职",
+      "leagueFull": "韩国职业联赛",
+      "leagueId": 48,
+      "home": "金泉尚武",
+      "homeFull": "金泉尚武",
+      "homeId": 1084,
+      "away": "大田市民",
+      "awayFull": "大田市民",
+      "awayId": 1083,
+      "homeRank": 11,
+      "awayRank": 9,
+      "kickoff": "2026-07-25T18:30:00+08:00",
+      "kickoffDate": "2026-07-25",
+      "businessDate": "2026-07-25",
+      "status": "pending",
+      "remark": "",
+      "handicap": 1,
+      "odds": {
+        "result": {
+          "home": 2.82,
+          "draw": 3.1,
+          "away": 2.21,
+          "updatedAt": "2026-07-24T09:22:42"
+        },
+        "handicapResult": {
+          "home": 1.51,
+          "draw": 3.8,
+          "away": 4.9,
+          "updatedAt": "2026-07-24T09:22:42"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-24 14:27:14",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040612",
+        "fetchedAt": "2026-07-24T07:27:28.036Z",
+        "recent": {
+          "home": {
+            "team": "金泉尚武",
+            "wins": 2,
+            "draws": 4,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 1.1,
+            "goalsAgainstAverage": 1.5
+          },
+          "away": {
+            "team": "大田市民",
+            "wins": 2,
+            "draws": 5,
+            "losses": 3,
+            "samples": 10,
+            "goalsForAverage": 1.4,
+            "goalsAgainstAverage": 1.1
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2026-03-14",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-11-30",
+              "goalsFor": 0,
+              "goalsAgainst": 3,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-08-31",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-06-18",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-04-19",
+              "goalsFor": 0,
+              "goalsAgainst": 2,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-08-25",
+              "goalsFor": 2,
+              "goalsAgainst": 2,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-06-25",
+              "goalsFor": 2,
+              "goalsAgainst": 0,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-04-30",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2022-10-29",
+              "goalsFor": 0,
+              "goalsAgainst": 4,
+              "tournament": "Play-offs 1/2"
+            },
+            {
+              "matchDate": "2022-10-26",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "Play-offs 1/2"
+            }
+          ],
+          "samples": 10
+        },
+        "injuries": {
+          "home": [],
+          "away": [
+            {
+              "appearanceCnt": 8,
+              "injuryFlag": 1,
+              "personId": 465562,
+              "personName": "严元相",
+              "playerPositionCode": "Midfielder",
+              "playerPositionDesc": "中场",
+              "startedMatchCnt": 2,
+              "substituteMatchCnt": 6,
+              "suspensionFlag": 0,
+              "uniformNo": "11"
+            },
+            {
+              "appearanceCnt": 16,
+              "injuryFlag": 1,
+              "personId": 651137,
+              "personName": "迪奥戈",
+              "playerPositionCode": "Forward",
+              "playerPositionDesc": "前锋",
+              "startedMatchCnt": 8,
+              "substituteMatchCnt": 8,
+              "suspensionFlag": 0,
+              "uniformNo": "9"
+            }
+          ]
+        },
+        "teamNews": [
+          {
+            "label": "客队严元相伤缺（中场，2次首发，进球占比5%，助攻占比6%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0.005724,
+            "awayGoalsDelta": -0.037206,
+            "status": "伤缺",
+            "personId": 465562,
+            "importance": 0.0477
+          },
+          {
+            "label": "客队迪奥戈伤缺（前锋，8次首发，进球占比14%，助攻占比18%）",
+            "source": "体彩网赛事前瞻（页面注明部分数据来自第三方）",
+            "confidence": 0.74,
+            "homeGoalsDelta": 0,
+            "awayGoalsDelta": -0.084,
+            "status": "伤缺",
+            "personId": 651137,
+            "importance": 0.084
+          }
+        ],
+        "available": true,
+        "errors": []
+      },
+      "publishedAt": "2026-07-24T07:27:22.248Z",
+      "modelVersion": "2.4.1",
+      "prediction": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "0:1",
+        "totalGoals": "1",
+        "halfFull": "负/负",
+        "confidence": 0.3595,
+        "probabilities": {
+          "result": 0.3595,
+          "handicapResult": 0.2119,
+          "score": 0.12115,
+          "totalGoals": 0.2435,
+          "halfFull": 0.20105
+        },
+        "resultDistribution": {
+          "胜": 0.34555,
+          "平": 0.29495,
+          "负": 0.3595
+        },
+        "handicapResultDistribution": {
+          "胜": 0.6405,
+          "平": 0.2119,
+          "负": 0.1476
+        },
+        "handicapConditionalDistribution": {
+          "平": 0.5776346458203445,
+          "负": 0.4223653541796557
+        },
+        "handicapDecision": {
+          "selected": "平",
+          "conditionalTop": "平",
+          "gap": 0.1552692916406888,
+          "level": "明确"
+        },
+        "jointOutcomeDistribution": {
+          "胜/胜": 0.34555,
+          "平/胜": 0.29495,
+          "负/平": 0.2119,
+          "负/负": 0.1476
+        },
+        "halfFullDistribution": {
+          "胜/平": 0.0469,
+          "负/负": 0.20105,
+          "平/胜": 0.13345,
+          "胜/胜": 0.1944,
+          "平/平": 0.2018,
+          "平/负": 0.1397,
+          "负/平": 0.04625,
+          "胜/负": 0.01875,
+          "负/胜": 0.0177
+        },
+        "topHalfFull": [
+          {
+            "pick": "负/负",
+            "probability": 0.20105
+          },
+          {
+            "pick": "平/负",
+            "probability": 0.1397
+          },
+          {
+            "pick": "胜/负",
+            "probability": 0.01875
+          }
+        ],
+        "topScores": [
+          {
+            "score": "0:1",
+            "probability": 0.12115,
+            "handicapResult": "平"
+          },
+          {
+            "score": "1:2",
+            "probability": 0.0697,
+            "handicapResult": "平"
+          },
+          {
+            "score": "0:2",
+            "probability": 0.06365,
+            "handicapResult": "负"
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.1186530362301654,
+          "away": 1.150902234777469
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜35% / 平29% / 负36%；负的边际概率最高。让球条件分布为 平57.8% / 负42.2%（前两项差 15.5 个百分点，判断为“明确”）；该分布只作为比分路径的软证据，最终由代表比分 0:1 自洽推导为“让球平”，不再先锁死让球结果。",
+          "score": "该联赛近 261 场平均 2.53 球；双方近期攻防推得进球基线 1.07:1.31，结合官方让球 +1 后得到 xG 1.12:1.15。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 0:1。",
+          "draw": "平局概率为 29.5%，与最高方向相差 6.5 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 59% / 23% / 18%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：金泉尚武近 10 场 2胜4平4负，大田市民近 10 场 2胜5平3负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 7% / 平 49% / 负 45%，场均进球 0.65:1.44，交锋权重为 9.0%。教练/球员情报：客队严元相伤缺（中场，2次首发，进球占比5%，助攻占比6%）（可信度 74%，xG +0.00 / -0.03）；客队迪奥戈伤缺（前锋，8次首发，进球占比14%，助攻占比18%）（可信度 74%，xG +0.00 / -0.06）。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 20.1%、平/负 14.0%、胜/负 1.9%，其中包含“半场平”的真实权重，最终主选 负/负。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.31390319447244475,
+          0.28555064787493356,
+          0.40054615765262175
+        ],
+        "officialMarketProbabilities": [
+          0.31390319447244475,
+          0.28555064787493356,
+          0.40054615765262175
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.5863274238750512,
+          0.23298800264508612,
+          0.1806845734798627
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.3604608673433844,
+          0.28820491701971584,
+          0.35133421563689976
+        ],
+        "targetProbabilities": [
+          0.31355210562569674,
+          0.28931825806756784,
+          0.3971296363067354
+        ],
+        "fittedLoss": 0.0011391140770706265,
+        "statPrior": {
+          "home": 1.072560113720061,
+          "away": 1.30674191720617,
+          "homeRecentScored": 0.9,
+          "homeRecentConceded": 1.4,
+          "awayRecentScored": 1.2,
+          "awayRecentConceded": 1,
+          "homeSamples": 20,
+          "awaySamples": 20,
+          "officialFormWeight": 0.24
+        },
+        "headToHead": {
+          "count": 8,
+          "weight": 0.09046755024449979,
+          "probabilities": [
+            0.0677913617969329,
+            0.4850537018011175,
+            0.4471549364019495
+          ],
+          "averageFor": 0.6547426305993085,
+          "averageAgainst": 1.4411624398191598,
+          "summary": "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 7% / 平 49% / 负 45%，场均进球 0.65:1.44"
+        },
+        "officialForm": {
+          "weight": 0.1,
+          "probabilities": [
+            0.36502748418657255,
+            0.2825,
+            0.3524725158134275
+          ],
+          "prior": {
+            "home": 1.1,
+            "away": 1.45,
+            "weight": 0.24
+          },
+          "summary": "体彩网赛事前瞻近期战况：金泉尚武近 10 场 2胜4平4负，大田市民近 10 场 2胜5平3负；以 10.0% 受限权重并入方向判断"
+        },
+        "situational": {
+          "homeGoalsDelta": 0.00423576,
+          "awayGoalsDelta": -0.08969244,
+          "applied": [
+            "客队严元相伤缺（中场，2次首发，进球占比5%，助攻占比6%）（可信度 74%，xG +0.00 / -0.03）",
+            "客队迪奥戈伤缺（前锋，8次首发，进球占比14%，助攻占比18%）（可信度 74%，xG +0.00 / -0.06）"
+          ]
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 31% / 29% / 40%",
+          "官方让球盘去水概率 59% / 23% / 18%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1468 : 1523",
+          "联赛排名 11 : 9",
+          "体彩网赛事前瞻近期战况：金泉尚武近 10 场 2胜4平4负，大田市民近 10 场 2胜5平3负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 7% / 平 49% / 负 45%，场均进球 0.65:1.44",
+          "联赛平局率 25.7%，模型期望进球 1.12 : 1.15"
+        ],
+        "subjective": [
+          "客队严元相伤缺（中场，2次首发，进球占比5%，助攻占比6%）（可信度 74%，xG +0.00 / -0.03）",
+          "客队迪奥戈伤缺（前锋，8次首发，进球占比14%，助攻占比18%）（可信度 74%，xG +0.00 / -0.06）",
+          "主/客总 xG 修正 0.00 / -0.09"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 2.82,
+          "draw": 3.1,
+          "away": 2.21,
+          "updatedAt": "2026-07-24T09:22:42"
+        },
+        "handicapResult": {
+          "home": 1.51,
+          "draw": 3.8,
+          "away": 4.9,
+          "updatedAt": "2026-07-24T09:22:42"
+        }
+      },
+      "revisions": []
+    },
+    {
+      "id": "2040613",
+      "matchNumber": "周六202",
+      "matchNumberDate": "260725",
+      "league": "韩职",
+      "leagueFull": "韩国职业联赛",
+      "leagueId": 48,
+      "home": "浦项制铁",
+      "homeFull": "浦项制铁",
+      "homeId": 1088,
+      "away": "全北现代",
+      "awayFull": "全北现代",
+      "awayId": 860,
+      "homeRank": 5,
+      "awayRank": 3,
+      "kickoff": "2026-07-25T18:30:00+08:00",
+      "kickoffDate": "2026-07-25",
+      "businessDate": "2026-07-25",
+      "status": "pending",
+      "remark": "",
+      "handicap": 1,
+      "odds": {
+        "result": {
+          "home": 3.06,
+          "draw": 3,
+          "away": 2.13,
+          "updatedAt": "2026-07-24T09:22:42"
+        },
+        "handicapResult": {
+          "home": 1.54,
+          "draw": 3.6,
+          "away": 4.95,
+          "updatedAt": "2026-07-24T09:22:42"
+        }
+      },
+      "sourceUpdatedAt": "2026-07-24 14:27:14",
+      "officialContext": {
+        "source": "中国体彩网赛事前瞻",
+        "sourceUrl": "https://www.sporttery.cn/jc/zqdz/index.html?showType=2&mid=2040613",
+        "fetchedAt": "2026-07-24T07:27:29.034Z",
+        "recent": {
+          "home": {
+            "team": "浦项制铁",
+            "wins": 5,
+            "draws": 1,
+            "losses": 4,
+            "samples": 10,
+            "goalsForAverage": 1.5,
+            "goalsAgainstAverage": 1.3
+          },
+          "away": {
+            "team": "全北现代",
+            "wins": 5,
+            "draws": 3,
+            "losses": 2,
+            "samples": 10,
+            "goalsForAverage": 1.5,
+            "goalsAgainstAverage": 0.7
+          }
+        },
+        "headToHead": {
+          "matches": [
+            {
+              "matchDate": "2026-04-26",
+              "goalsFor": 2,
+              "goalsAgainst": 3,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-11-22",
+              "goalsFor": 0,
+              "goalsAgainst": 0,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-08-24",
+              "goalsFor": 3,
+              "goalsAgainst": 1,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-07-19",
+              "goalsFor": 2,
+              "goalsAgainst": 3,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2025-03-16",
+              "goalsFor": 2,
+              "goalsAgainst": 2,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-08-17",
+              "goalsFor": 1,
+              "goalsAgainst": 2,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-06-26",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-05-04",
+              "goalsFor": 1,
+              "goalsAgainst": 0,
+              "tournament": "韩职"
+            },
+            {
+              "matchDate": "2024-02-20",
+              "goalsFor": 1,
+              "goalsAgainst": 1,
+              "tournament": "亚冠精英"
+            },
+            {
+              "matchDate": "2024-02-14",
+              "goalsFor": 0,
+              "goalsAgainst": 2,
+              "tournament": "亚冠精英"
+            }
+          ],
+          "samples": 10
+        },
+        "injuries": {
+          "home": [],
+          "away": []
+        },
+        "teamNews": [],
+        "available": true,
+        "errors": []
+      },
+      "publishedAt": "2026-07-24T07:27:22.248Z",
+      "modelVersion": "2.4.1",
+      "prediction": {
+        "result": "负",
+        "handicapResult": "平",
+        "score": "0:1",
+        "totalGoals": "1",
+        "halfFull": "负/负",
+        "confidence": 0.4044,
+        "probabilities": {
+          "result": 0.4044,
+          "handicapResult": 0.22505,
+          "score": 0.13005,
+          "totalGoals": 0.2381,
+          "halfFull": 0.2235
+        },
+        "resultDistribution": {
+          "胜": 0.2972,
+          "平": 0.2984,
+          "负": 0.4044
+        },
+        "handicapResultDistribution": {
+          "胜": 0.5956,
+          "平": 0.22505,
+          "负": 0.17935
+        },
+        "handicapConditionalDistribution": {
+          "平": 0.5666032198448645,
+          "负": 0.43339678015513566
+        },
+        "handicapDecision": {
+          "selected": "平",
+          "conditionalTop": "平",
+          "gap": 0.13320643968972884,
+          "level": "明确"
+        },
+        "jointOutcomeDistribution": {
+          "平/胜": 0.2984,
+          "胜/胜": 0.2972,
+          "负/平": 0.22505,
+          "负/负": 0.17935
+        },
+        "halfFullDistribution": {
+          "平/负": 0.16215,
+          "负/胜": 0.0159,
+          "平/平": 0.20725,
+          "胜/胜": 0.15985,
+          "负/负": 0.2235,
+          "负/平": 0.04595,
+          "胜/平": 0.0452,
+          "平/胜": 0.12145,
+          "胜/负": 0.01875
+        },
+        "topHalfFull": [
+          {
+            "pick": "负/负",
+            "probability": 0.2235
+          },
+          {
+            "pick": "平/负",
+            "probability": 0.16215
+          },
+          {
+            "pick": "胜/负",
+            "probability": 0.01875
+          }
+        ],
+        "topScores": [
+          {
+            "score": "0:1",
+            "probability": 0.13005,
+            "handicapResult": "平"
+          },
+          {
+            "score": "1:2",
+            "probability": 0.07395,
+            "handicapResult": "平"
+          },
+          {
+            "score": "0:2",
+            "probability": 0.07645,
+            "handicapResult": "负"
+          }
+        ],
+        "simulations": 20000,
+        "expectedGoals": {
+          "home": 1.0151697022479678,
+          "away": 1.240594674777469
+        },
+        "reasoning": {
+          "direction": "方向分布为 胜30% / 平30% / 负40%；负的边际概率最高。让球条件分布为 平56.7% / 负43.3%（前两项差 13.3 个百分点，判断为“明确”）；该分布只作为比分路径的软证据，最终由代表比分 0:1 自洽推导为“让球平”，不再先锁死让球结果。",
+          "score": "该联赛近 261 场平均 2.53 球；双方近期攻防推得进球基线 1.08:1.17，结合官方让球 +1 后得到 xG 1.02:1.24。在“负”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 0:1。",
+          "draw": "平局概率为 29.8%，与最高方向相差 10.6 个百分点，已纳入但未列为主选。",
+          "context": "官方让球盘去水概率 58% / 25% / 18%，与普通胜平负共同约束比分。未配置可核验的场外盘数据，本场不凭空补值。体彩网赛事前瞻近期战况：浦项制铁近 10 场 5胜1平4负，全北现代近 10 场 5胜3平2负；以 10.0% 受限权重并入方向判断。体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 21% / 平 35% / 负 44%，场均进球 1.60:1.69，交锋权重为 9.2%。暂无带来源与可信度的有效教练/球员情报，不做主观加减分。",
+          "halfFull": "半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“负”。候选为 负/负 22.4%、平/负 16.2%、胜/负 1.9%，其中包含“半场平”的真实权重，最终主选 负/负。"
+        }
+      },
+      "diagnostics": {
+        "marketProbabilities": [
+          0.28929997555211473,
+          0.29508597506315704,
+          0.41561404938472823
+        ],
+        "officialMarketProbabilities": [
+          0.28929997555211473,
+          0.29508597506315704,
+          0.41561404938472823
+        ],
+        "externalMarketProbabilities": null,
+        "handicapMarketProbabilities": [
+          0.5750798722044728,
+          0.24600638977635783,
+          0.17891373801916932
+        ],
+        "handicapOnly": false,
+        "eloProbabilities": [
+          0.33737659208999643,
+          0.28147052240907555,
+          0.38115288550092796
+        ],
+        "targetProbabilities": [
+          0.30203747286346466,
+          0.28424923658813817,
+          0.4137132905483971
+        ],
+        "fittedLoss": 0.0017251567822344788,
+        "statPrior": {
+          "home": 1.0782964149381637,
+          "away": 1.1697393771235671,
+          "homeRecentScored": 1.15,
+          "homeRecentConceded": 0.95,
+          "awayRecentScored": 1.2,
+          "awayRecentConceded": 0.8,
+          "homeSamples": 20,
+          "awaySamples": 20,
+          "officialFormWeight": 0.24
+        },
+        "headToHead": {
+          "count": 8,
+          "weight": 0.09168239707498885,
+          "probabilities": [
+            0.2077078727798677,
+            0.34969438958156646,
+            0.44259773763856586
+          ],
+          "averageFor": 1.5981795648802573,
+          "averageAgainst": 1.6861135148239477,
+          "summary": "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 21% / 平 35% / 负 44%，场均进球 1.60:1.69"
+        },
+        "officialForm": {
+          "weight": 0.1,
+          "probabilities": [
+            0.346198502025945,
+            0.27499999999999997,
+            0.37880149797405516
+          ],
+          "prior": {
+            "home": 1.1,
+            "away": 1.4,
+            "weight": 0.24
+          },
+          "summary": "体彩网赛事前瞻近期战况：浦项制铁近 10 场 5胜1平4负，全北现代近 10 场 5胜3平2负；以 10.0% 受限权重并入方向判断"
+        },
+        "situational": {
+          "homeGoalsDelta": 0,
+          "awayGoalsDelta": 0,
+          "applied": []
+        }
+      },
+      "factors": {
+        "objective": [
+          "官方胜平负去水概率 29% / 30% / 42%",
+          "官方让球盘去水概率 58% / 25% / 18%，与普通胜平负共同约束比分。",
+          "未配置可核验的场外盘数据，本场不凭空补值",
+          "滚动 Elo 1539 : 1620",
+          "联赛排名 5 : 3",
+          "体彩网赛事前瞻近期战况：浦项制铁近 10 场 5胜1平4负，全北现代近 10 场 5胜3平2负；以 10.0% 受限权重并入方向判断",
+          "体彩网赛事前瞻近 8 次交锋按时间衰减后，当前主队视角为胜 21% / 平 35% / 负 44%，场均进球 1.60:1.69",
+          "联赛平局率 25.7%，模型期望进球 1.02 : 1.24"
+        ],
+        "subjective": [
+          "暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"
+        ]
+      },
+      "oddsSnapshot": {
+        "result": {
+          "home": 3.06,
+          "draw": 3,
+          "away": 2.13,
+          "updatedAt": "2026-07-24T09:22:42"
+        },
+        "handicapResult": {
+          "home": 1.54,
+          "draw": 3.6,
+          "away": 4.95,
+          "updatedAt": "2026-07-24T09:22:42"
+        }
+      },
+      "revisions": []
     }
   ]
 }
