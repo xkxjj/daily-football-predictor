@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "update": "node scripts/update.mjs",
+    "check:freshness": "node scripts/check-freshness.mjs",
     "test": "node --test scripts/test.mjs",
     "serve": "node scripts/serve.mjs"
   },

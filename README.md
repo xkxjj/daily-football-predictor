@@ -44,13 +44,17 @@ npm run serve
 
 ## 自动更新
 
-`.github/workflows/update-predictions.yml` 每 30 分钟运行一次：
+由于体彩网公开接口会限制部分境外机房，数据更新应在能够正常访问接口的国内机器上每 30 分钟运行一次 `scripts/auto-update.ps1`：
 
 1. 拉取未来赛程与近 45 天赛果；
 2. 结算已冻结预测；
 3. 更新 Elo 和校准参数；
 4. 仅为未开赛且未发布过的比赛生成预测；
 5. 提交 `data/*.json`，GitHub Pages 随之更新。
+
+脚本会先同步 `main`、运行测试、生成数据、再次测试，然后只在 `data` 确有变化时提交并推送。它使用文件锁防止重叠运行，工作区存在未提交改动时会安全退出。
+
+`.github/workflows/update-predictions.yml` 不再从 GitHub 海外运行器抓取体彩网，而是每两小时检查一次公开数据是否在四小时内更新。数据过期时工作流会明确失败并触发 GitHub 通知，避免“绿色假成功”。
 
 若仓库启用了分支式 GitHub Pages，网页入口仍是：
 

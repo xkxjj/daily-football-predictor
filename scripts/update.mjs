@@ -89,7 +89,8 @@ try {
 } catch (error) {
   console.warn(`赛程同步暂不可用，本轮不改写任何预测数据：${error.message}`);
   console.log("保留仓库中的最后一次有效快照，等待下一轮自动重试。");
-  process.exit(0);
+  process.exitCode = 1;
+  throw error;
 }
 let results = [];
 let resultSync = { ok: true, error: null };
