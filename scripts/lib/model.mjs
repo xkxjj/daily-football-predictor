@@ -381,66 +381,74 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
       : simulated;
     return { ...item, simulated, market, adjusted: 0.55 * simulated + 0.45 * market };
   }).sort((a, b) => b.adjusted - a.adjusted);
-  const resultCount = result.get(resultPick);
+  const resultProbability = resultBlend[resultPick];
+  const handicapMarginal = Object.fromEntries(OUTCOMES.map((key, index) => {
+    const simulated = handicapResult.get(key) / simulations;
+    const market = handicapDirectionTarget?.[index] ?? simulated;
+    return [key, 0.68 * simulated + 0.32 * market];
+  }));
+  const handicapMarginalCandidates = Object.entries(handicapMarginal).sort((a, b) => b[1] - a[1]);
+  const handicapPick = handicapMarginalCandidates[0][0];
+  const handicapProbability = handicapMarginalCandidates[0][1];
   const handicapSoftPrior = Object.fromEntries(handicapCandidates.map(item => [item.handicapKey, item.adjusted]));
   const chosenScore = chooseCoherentScore(scores, resultPick, handicap, lambdaHome, lambdaAway, context, simulations, handicapSoftPrior);
   const [scoreHome, scoreAway] = chosenScore.score.split(":").map(Number);
-  const handicapPick = outcome(scoreHome + handicap, scoreAway);
-  const handicapCount = handicapResult.get(handicapPick);
+  const scoreHandicapResult = outcome(scoreHome + handicap, scoreAway);
   const totalPick = scoreHome + scoreAway >= 7 ? "7+" : String(scoreHome + scoreAway);
   const totalCount = totals.get(totalPick);
-  const compatibleHalfRows = [...halfFull.entries()].filter(([key]) => key.endsWith(`/${resultPick}`));
-  const maxHalfCount = Math.max(...compatibleHalfRows.map(([, count]) => count));
-  const conditionalHalfFullCounts = Object.fromEntries(OUTCOMES.map(halfKey => {
-    const key = `${halfKey}/${resultPick}`;
-    return [key, context.halfFullOutcomeCounts[key] || 0];
-  }));
-  const conditionalSample = Object.values(conditionalHalfFullCounts).reduce((sum, count) => sum + count, 0);
-  const conditionalMax = Math.max(...Object.values(conditionalHalfFullCounts), 1);
-  const maxHalfPrior = Math.max(...Object.values(context.halfOutcomeRates));
-  const historicalWeight = conditionalSample ? Math.min(0.56, 0.34 + conditionalSample / 500) : 0.36;
-  const halfCandidates = compatibleHalfRows
-    .map(([key, count]) => {
-      const halfKey = key.split("/")[0];
-      const likelihood = count / maxHalfCount;
-      const historical = conditionalSample
-        ? (conditionalHalfFullCounts[key] || 0) / conditionalMax
-        : (context.halfOutcomeRates[halfKey] || 0.28) / maxHalfPrior;
-      return { key, count, adjusted: (1 - historicalWeight) * likelihood + historicalWeight * historical };
-    })
+  const halfCandidates = OUTCOMES.flatMap(halfKey => OUTCOMES.map(fullKey => {
+    const key = `${halfKey}/${fullKey}`;
+    const count = halfFull.get(key) || 0;
+    const simulatedFullTotal = result.get(fullKey) || 1;
+    const simulatedConditional = count / simulatedFullTotal;
+    const historicalFullTotal = OUTCOMES.reduce(
+      (sum, candidateHalf) => sum + (context.halfFullOutcomeCounts[`${candidateHalf}/${fullKey}`] || 0),
+      0
+    );
+    const historicalConditional = historicalFullTotal
+      ? (context.halfFullOutcomeCounts[key] || 0) / historicalFullTotal
+      : context.halfOutcomeRates[halfKey] || 1 / 3;
+    const historicalWeight = historicalFullTotal ? Math.min(0.38, 0.18 + historicalFullTotal / 500) : 0.18;
+    const calibratedConditional = (1 - historicalWeight) * simulatedConditional + historicalWeight * historicalConditional;
+    return { key, count, adjusted: resultBlend[fullKey] * calibratedConditional };
+  }))
     .sort((a, b) => b.adjusted - a.adjusted);
   const halfFullPick = halfCandidates[0].key;
-  const halfFullCount = halfCandidates[0].count;
-  const topHalfFull = [[halfFullPick, halfFullCount], ...compatibleHalfRows.filter(([key]) => key !== halfFullPick).sort((a, b) => b[1] - a[1])].slice(0, 3);
+  const halfFullProbability = halfCandidates[0].adjusted;
+  const topHalfFull = halfCandidates.slice(0, 3);
   const coherentRankedScores = chosenScore.ranked || [];
   const topScores = [chosenScore, ...coherentRankedScores.filter(item => item.score !== chosenScore.score)].slice(0, 3);
-  const handicapGap = handicapCandidates.length > 1 ? handicapCandidates[0].adjusted - handicapCandidates[1].adjusted : 1;
+  const handicapGap = handicapMarginalCandidates.length > 1 ? handicapMarginalCandidates[0][1] - handicapMarginalCandidates[1][1] : 1;
   return {
     result: resultPick,
     handicapResult: handicapPick,
     score: chosenScore.score,
     totalGoals: totalPick,
     halfFull: halfFullPick,
-    confidence: resultCount / simulations,
+    confidence: resultProbability,
     probabilities: {
-      result: resultCount / simulations,
-      handicapResult: handicapCount / simulations,
+      result: resultProbability,
+      handicapResult: handicapProbability,
       score: chosenScore.count / simulations,
       totalGoals: totalCount / simulations,
-      halfFull: halfFullCount / simulations
+      halfFull: halfFullProbability
     },
-    resultDistribution: Object.fromEntries([...result].map(([k, v]) => [k, v / simulations])),
-    handicapResultDistribution: Object.fromEntries([...handicapResult].map(([k, v]) => [k, v / simulations])),
+    resultDistribution: resultBlend,
+    resultSimulationDistribution: Object.fromEntries([...result].map(([k, v]) => [k, v / simulations])),
+    handicapResultDistribution: handicapMarginal,
+    handicapSimulationDistribution: Object.fromEntries([...handicapResult].map(([k, v]) => [k, v / simulations])),
     handicapConditionalDistribution: Object.fromEntries(handicapCandidates.map(item => [item.handicapKey, item.adjusted])),
     handicapDecision: {
       selected: handicapPick,
-      conditionalTop: handicapCandidates[0]?.handicapKey || handicapPick,
+      marginalTop: handicapPick,
+      scoreImplied: scoreHandicapResult,
       gap: handicapGap,
       level: handicapGap < 0.05 ? "临界" : handicapGap < 0.10 ? "偏弱" : "明确"
     },
     jointOutcomeDistribution: Object.fromEntries(jointCandidates.map(item => [`${item.resultKey}/${item.handicapKey}`, item.pairProbability])),
-    halfFullDistribution: Object.fromEntries([...halfFull].map(([k, v]) => [k, v / simulations])),
-    topHalfFull: topHalfFull.map(([pick, count]) => ({ pick, probability: count / simulations })),
+    halfFullDistribution: Object.fromEntries(halfCandidates.map(item => [item.key, item.adjusted])),
+    halfFullSimulationDistribution: Object.fromEntries([...halfFull].map(([k, v]) => [k, v / simulations])),
+    topHalfFull: topHalfFull.map(item => ({ pick: item.key, probability: item.adjusted })),
     topScores: topScores.map(item => ({ score: item.score, probability: item.count / simulations, handicapResult: item.handicapKey || outcome(Number(item.score.split(":")[0]) + handicap, Number(item.score.split(":")[1])) })),
     simulations
   };
@@ -485,10 +493,13 @@ export function predictMatch(match, state, learning, adjustment = null) {
     ? `平局并非兜底项：市场、Elo 与该联赛历史平局率共同校准后，模型主动选择平。`
     : `平局概率为 ${(prediction.resultDistribution.平 * 100).toFixed(1)}%，与最高方向相差 ${(drawGap * 100).toFixed(1)} 个百分点，已纳入但未列为主选。`;
   const halfFullCandidates = prediction.topHalfFull.map(item => `${item.pick} ${(item.probability * 100).toFixed(1)}%`).join("、");
-  const handicapConditionalText = Object.entries(prediction.handicapConditionalDistribution)
+  const handicapMarginalText = Object.entries(prediction.handicapResultDistribution)
     .sort((a, b) => b[1] - a[1])
     .map(([key, value]) => `${key}${(value * 100).toFixed(1)}%`)
     .join(" / ");
+  const scoreHandicapText = prediction.handicapDecision.scoreImplied === prediction.handicapResult
+    ? `代表比分 ${prediction.score} 对应同一让球结果`
+    : `代表比分 ${prediction.score} 对应让球${prediction.handicapDecision.scoreImplied}；比分是独立的最高概率场景，不覆盖让球市场主选`;
   const externalMarketText = marketSignals.external
       ? `场外盘“${combinedAdjustment.externalMarket.source || "已配置数据源"}”去水概率 ${marketSignals.external.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，以 ${(marketSignals.externalWeight * 100).toFixed(0)}% 的受限权重并入官方市场`
     : "未配置可核验的场外盘数据，本场不凭空补值";
@@ -504,11 +515,11 @@ export function predictMatch(match, state, learning, adjustment = null) {
       ? `官方让球盘去水概率 ${handicapMarket.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}，与普通胜平负共同约束比分。`
       : "本场官方让球盘尚未开售。";
   prediction.reasoning = {
-    direction: `方向分布为 ${resultPct}；${scoreDirection}。让球条件分布为 ${handicapConditionalText}（前两项差 ${(prediction.handicapDecision.gap * 100).toFixed(1)} 个百分点，判断为“${prediction.handicapDecision.level}”）；该分布只作为比分路径的软证据，最终由代表比分 ${prediction.score} 自洽推导为“让球${prediction.handicapResult}”，不再先锁死让球结果。`,
+    direction: `方向分布为 ${resultPct}；${scoreDirection}。让球边际分布为 ${handicapMarginalText}（前两项差 ${(prediction.handicapDecision.gap * 100).toFixed(1)} 个百分点，判断为“${prediction.handicapDecision.level}”），独立主选“让球${prediction.handicapResult}”。${scoreHandicapText}。`,
     score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。在“${prediction.result}”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 ${prediction.score}。`,
     draw: drawReason,
     context: `${handicapOnlyText}${externalMarketText}${movementText}。${officialForm.summary}。${headToHead.summary}，交锋权重为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
-    halfFull: `半场单独使用较低进球阶段和联赛半场平局率校准，再限定全场方向必须为“${prediction.result}”。候选为 ${halfFullCandidates}，其中包含“半场平”的真实权重，最终主选 ${prediction.halfFull}。`
+    halfFull: `半全场在全部九种组合中独立比较模拟概率与联赛历史频率，不再先限定全场方向。候选为 ${halfFullCandidates}，最终主选 ${prediction.halfFull}。`
   };
   const marketText = marketSignals.official ? `官方胜平负去水概率 ${marketSignals.official.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}` : "官方胜平负未开售，降低市场信号权重";
   const eloText = `滚动 Elo ${Math.round(state.teamRatings?.[`id:${match.homeId}`] ?? 1500)} : ${Math.round(state.teamRatings?.[`id:${match.awayId}`] ?? 1500)}`;
@@ -679,7 +690,7 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.4.1",
+  version: "2.5.0",
   name: "Soft Joint Score + Official Preview Market-Elo Path",
   simulations: 20_000,
   metrics: METRIC_KEYS

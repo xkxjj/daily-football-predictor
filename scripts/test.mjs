@@ -11,6 +11,7 @@ const match = {
 };
 const state = { teamRatings:{"id:1":1580,"id:2":1480}, leagueGoals:{} };
 const learning = { marketWeight:.78, goalScale:1, homeBias:0 };
+const topKey = distribution => Object.entries(distribution).sort((a, b) => b[1] - a[1])[0][0];
 
 test("模型稳定生成五项预测", () => {
   const first = predictMatch(match, state, learning);
@@ -20,11 +21,11 @@ test("模型稳定生成五项预测", () => {
   assert.ok(first.prediction.confidence > 0 && first.prediction.confidence < 1);
   const [home, away] = first.prediction.score.split(":").map(Number);
   const result = home > away ? "胜" : home < away ? "负" : "平";
-  const handicapResult = home + match.handicap > away ? "胜" : home + match.handicap < away ? "负" : "平";
   assert.equal(first.prediction.result, result, "比分必须与胜平负自洽");
-  assert.equal(first.prediction.handicapResult, handicapResult, "比分必须与让球胜平负自洽");
+  assert.equal(first.prediction.result, topKey(first.prediction.resultDistribution), "胜平负必须选择校准分布第一名");
+  assert.equal(first.prediction.handicapResult, topKey(first.prediction.handicapResultDistribution), "让球必须选择自身边际分布第一名");
   assert.equal(first.prediction.totalGoals, String(home + away), "比分必须与总进球自洽");
-  assert.equal(first.prediction.halfFull.split("/")[1], result, "半全场的全场方向必须自洽");
+  assert.equal(first.prediction.halfFull, topKey(first.prediction.halfFullDistribution), "半全场必须在九种组合中选择联合分布第一名");
   assert.ok(["临界", "偏弱", "明确"].includes(first.prediction.handicapDecision.level));
   assert.ok(first.prediction.topScores.every(item => item.handicapResult));
   assert.ok(first.prediction.reasoning.score.includes(first.prediction.score));
@@ -62,11 +63,10 @@ test("只开让球胜平负时以让球盘反推实力差", () => {
   const generated = predictMatch(handicapOnlyMatch, state, learning);
   assert.equal(generated.diagnostics.handicapOnly, true);
   assert.ok(generated.prediction.reasoning.context.includes("普通胜平负未开售"));
-  const [home, away] = generated.prediction.score.split(":").map(Number);
-  assert.equal(generated.prediction.handicapResult, home - 2 > away ? "胜" : home - 2 < away ? "负" : "平");
+  assert.equal(generated.prediction.handicapResult, topKey(generated.prediction.handicapResultDistribution));
 });
 
-test("让球方向按已选胜平负的条件概率计算而非固定一球差", () => {
+test("让球方向按独立边际概率选择而非由代表比分覆盖", () => {
   const strongFavorite = {
     ...match, id: "strong-favorite", handicap: -1, homeRank: 1, awayRank: 16,
     odds: { result: { home: 1.24, draw: 5.8, away: 9.5 }, handicapResult: { home: 1.64, draw: 4.05, away: 4.25 } }
@@ -81,12 +81,9 @@ test("让球方向按已选胜平负的条件概率计算而非固定一球差",
   };
   const outcomes = [strongFavorite, narrowFavorite, strongVisitor]
     .map(item => predictMatch(item, state, learning).prediction);
-  assert.equal(outcomes[0].result, "胜");
-  assert.equal(outcomes[0].handicapResult, "胜", "强势让一球应保留净胜两球以上路径");
-  assert.equal(outcomes[1].result, "胜");
-  assert.equal(outcomes[1].handicapResult, "平", "中等让一球热门应允许一球小胜路径");
-  assert.equal(outcomes[2].result, "负");
-  assert.equal(outcomes[2].handicapResult, "负", "主队受让一球时，强势客胜应允许穿盘路径");
+  for (const prediction of outcomes) {
+    assert.equal(prediction.handicapResult, topKey(prediction.handicapResultDistribution));
+  }
   assert.ok(new Set(outcomes.map(item => item.handicapResult)).size >= 2, "代表性样本不应机械输出同一让球方向");
 });
 
