@@ -41,10 +41,10 @@ try {
     throw "The updater checkout contains uncommitted changes; refusing to overwrite them."
   }
 
-  Invoke-Checked git -c credential.interactive=never pull --rebase origin main
-  Invoke-Checked npm.cmd test
-  Invoke-Checked npm.cmd run update
-  Invoke-Checked npm.cmd test
+  Invoke-Checked -Command git -Arguments @("-c", "credential.interactive=never", "pull", "--rebase", "origin", "main")
+  Invoke-Checked -Command npm.cmd -Arguments @("test")
+  Invoke-Checked -Command npm.cmd -Arguments @("run", "update")
+  Invoke-Checked -Command npm.cmd -Arguments @("test")
 
   & git diff --quiet -- data
   $diffExitCode = $LASTEXITCODE
@@ -56,9 +56,9 @@ try {
     throw "Unable to inspect generated data changes."
   }
 
-  Invoke-Checked git add -- data
-  Invoke-Checked git commit -m "Update daily football predictions"
-  Invoke-Checked git -c credential.interactive=never push origin HEAD:main
+  Invoke-Checked -Command git -Arguments @("add", "--", "data")
+  Invoke-Checked -Command git -Arguments @("commit", "-m", "Update daily football predictions")
+  Invoke-Checked -Command git -Arguments @("-c", "credential.interactive=never", "push", "origin", "HEAD:main")
   Write-Host "Football predictions updated and pushed successfully."
 }
 finally {
