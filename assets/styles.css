@@ -82,6 +82,18 @@ summary::after { content:"＋"; float:right; color:var(--lime); }
 details[open] summary::after { content:"－"; }
 .factor-content { padding:3px 18px 18px; display:grid; grid-template-columns:1fr 1fr; gap:8px 30px; color:#aab2a7; font-size:12px; line-height:1.7; }
 .factor-content b { color:var(--ink); }
+.tactical-analysis { grid-column:1 / -1; border:1px solid rgba(200,247,95,.16); border-radius:12px; padding:14px; background:rgba(200,247,95,.035); }
+.tactical-heading { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.tactical-heading span { color:var(--muted); font-size:11px; flex:1; }
+.tactical-heading a { color:var(--acid); text-decoration:none; font-size:11px; }
+.tactical-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.tactical-grid article { border:1px solid var(--line); border-radius:10px; padding:10px; background:rgba(8,11,9,.38); }
+.tactical-grid article > div { display:flex; justify-content:space-between; gap:8px; }
+.tactical-grid strong { color:var(--ink); font-size:12px; }
+.tactical-grid small { color:var(--acid); }
+.tactical-grid p { margin:6px 0; color:#c0c7bd; }
+.tactical-grid span,.tactical-grid em { display:block; color:var(--muted); font-size:10px; font-style:normal; }
+.tactical-grid em { color:#a88f7a; margin-top:3px; }
 .empty-state { padding:55px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:16px; }
 .accuracy-strip { display:grid; grid-template-columns:repeat(6,1fr); border:1px solid var(--line); background:var(--panel); border-radius:14px; overflow:hidden; }
 .accuracy-item { padding:20px 16px; border-right:1px solid var(--line); }
@@ -150,6 +162,7 @@ footer p { margin:0; }
   .team { font-size:17px; }
   .prediction-grid strong { font-size:16px; }
   .factor-content { grid-template-columns:1fr; }
+  .tactical-grid { grid-template-columns:1fr; }
   .reason-panel { grid-template-columns:1fr; gap:8px; }
   .accuracy-strip { grid-template-columns:1fr 1fr; }
   .accuracy-item:nth-child(2n) { border-right:0; }

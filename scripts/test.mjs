@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { actualFromResult, calibrate, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 import { mergeContexts } from "./lib/context-feed.mjs";
+import { matchDongqiudiEntry, updateTacticalKnowledge } from "./lib/dongqiudi.mjs";
 import { buildOfficialContext } from "./lib/sporttery.mjs";
 
 const match = {
@@ -38,6 +39,55 @@ test("模型稳定生成五项预测", () => {
   assert.ok(Math.abs(sum(first.prediction.handicapResultDistribution) - 1) < 1e-10);
   assert.ok(Math.abs(sum(first.prediction.halfFullDistribution) - 1) < 1e-10);
   assert.ok(first.prediction.reasoning.score.includes(first.prediction.score));
+  assert.equal(first.prediction.tacticalAnalysis.dimensions.length, 6);
+  assert.ok(first.prediction.tacticalAnalysis.dimensions.every(item => item.summary && item.missing.length));
+});
+
+test("懂球帝竞彩场次按日期和球队别名可靠匹配", () => {
+  const entry = matchDongqiudiEntry({
+    home: "浦项制铁", away: "全北现代", kickoff: "2026-07-25T18:30:00+08:00"
+  }, [
+    { match_id: 1, home_name: "浦项铁人", guest_name: "全北现代汽车", match_time: "07/25 18:30" },
+    { match_id: 2, home_name: "浦项铁人", guest_name: "全北现代汽车", match_time: "09/05 18:30" }
+  ]);
+  assert.equal(entry.match_id, 1);
+});
+
+test("完赛赛况会积累逐队战术知识且不会把危险进攻冒充 xG", () => {
+  const tacticalState = {};
+  updateTacticalKnowledge(tacticalState, [{
+    recordId: "dqd-1", score: "1:1", home: "哈马比", away: "安德莱赫特", capturedAt: "2026-07-24T04:00:00Z",
+    formations: { home: "4-3-3", away: "4-2-3-1" },
+    statistics: {
+      "控球率": { home: 56, away: 44 }, "射门": { home: 12, away: 6 }, "射正": { home: 6, away: 4 },
+      "危险进攻": { home: 70, away: 33 }, "角球": { home: 5, away: 2 }, "黄牌": { home: 2, away: 3 }, "红牌": { home: 0, away: 1 }
+    },
+    events: { home: [{ minute: 89, code: "G" }], away: [{ minute: 64, code: "SI" }] }
+  }]);
+  assert.equal(tacticalState.tacticalTeams["哈马比"].samples, 1);
+  assert.equal(tacticalState.tacticalTeams["哈马比"].formations["4-3-3"], 1);
+  assert.equal(tacticalState.tacticalTeams["安德莱赫特"].totals.redCards, 1);
+  assert.equal(tacticalState.tacticalTeams["哈马比"].totals.goalsAfter75, 1);
+  assert.equal(tacticalState.tacticalGlobal.samples, 2);
+});
+
+test("密集赛程以受限幅度进入 xG 并在六维解释中留下证据", () => {
+  const tacticalMatch = {
+    ...match,
+    id: "tactical-rest",
+    kickoff: "2026-07-25T18:30:00+08:00",
+    dongqiudiContext: {
+      available: true, source: "懂球帝公开比赛页", sourceUrl: "https://pc.dongqiudi.com/match/1",
+      weather: "天晴", temperature: "30℃", field: "测试球场", homeTeamName: "主队", awayTeamName: "客队",
+      formations: { home: { formation: "4-3-3", source: "recent-match" }, away: { formation: "4-2-3-1", source: "recent-match" } },
+      recentMatches: { home: { kickoff: "2026-07-23T10:30:00Z" }, away: { kickoff: "2026-07-20T10:30:00Z" } }
+    }
+  };
+  const generated = predictMatch(tacticalMatch, state, learning);
+  assert.ok(generated.diagnostics.tactical.homeGoalsDelta < 0);
+  assert.ok(generated.diagnostics.tactical.applied.some(item => item.includes("主队仅休整")));
+  assert.equal(generated.prediction.tacticalAnalysis.dimensions.length, 6);
+  assert.ok(generated.prediction.tacticalAnalysis.dimensions[1].missing[0].includes("PPDA"));
 });
 
 test("平局强信号会被明确选入而不是忽略", () => {

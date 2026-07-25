@@ -107,7 +107,12 @@ function renderMatches(matches) {
     const totalCandidates = (match.prediction.topTotalGoals || [])
       .map(x => `${x.pick}球 ${percent(x.probability)}`).join(" / ");
     const totalCoverage = totalCandidates ? `<div><b>总进球候选</b> · ${totalCandidates}</div>` : "";
-    node.querySelector(".factor-content").innerHTML = `${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div>${scoreCoverage}${totalCoverage}<div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
+    const tactical = match.prediction.tacticalAnalysis;
+    const tacticalHtml = tactical?.dimensions?.length ? `<section class="tactical-analysis">
+      <div class="tactical-heading"><b>六维战术分析</b><span>${escapeHtml(tactical.dataPolicy)}</span>${tactical.sourceUrl ? `<a href="${escapeHtml(tactical.sourceUrl)}" target="_blank" rel="noopener noreferrer">查看来源</a>` : ""}</div>
+      <div class="tactical-grid">${tactical.dimensions.map(item => `<article><div><strong>${escapeHtml(item.title)}</strong><small>证据置信 ${percent(item.confidence)}</small></div><p>${escapeHtml(item.summary)}</p><span>依据：${escapeHtml((item.evidence || []).join("；"))}</span><em>缺口：${escapeHtml((item.missing || []).join("；"))}</em></article>`).join("")}</div>
+    </section>` : "";
+    node.querySelector(".factor-content").innerHTML = `${tacticalHtml}${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div>${scoreCoverage}${totalCoverage}<div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
     list.appendChild(node);
   });
 }
@@ -144,6 +149,7 @@ function renderLearning(learning) {
   const bias = Number(learning.homeBias || 0);
   el("homeBias").textContent = `${bias >= 0 ? "+" : ""}${bias.toFixed(3)}`;
   el("scorePriorMultiplier").textContent = `${Number(learning.scorePriorMultiplier || 1).toFixed(3)}×`;
+  el("tacticalSamples").textContent = `${Number(learning.tacticalSamples || 0)} 队场`;
   el("learningSummary").textContent = learning.summary || "样本积累中；小样本阶段保持保守参数。";
 }
 

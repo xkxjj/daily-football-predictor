@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchOfficialContext, fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
 import { fetchContextFeed, mergeContexts } from "./lib/context-feed.mjs";
+import { fetchDongqiudiContext, fetchDongqiudiIndex, fetchDongqiudiObservation, updateTacticalKnowledge } from "./lib/dongqiudi.mjs";
 import { calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -56,7 +57,7 @@ const now = new Date();
 const today = dateInShanghai(now);
 const windowEnd = addDays(today, 1);
 
-const [historyFile, state, localAdjustments, contextFeed] = await Promise.all([
+const [historyFile, state, localAdjustments, contextFeed, dongqiudiIndex] = await Promise.all([
   readJson(paths.history, { version: 1, records: [] }),
   readJson(paths.state, { version: 1, teamRatings: {}, leagueGoals: {}, processedResults: [] }),
   readJson(paths.adjustments, { version: 2, matches: {} }),
@@ -64,7 +65,9 @@ const [historyFile, state, localAdjustments, contextFeed] = await Promise.all([
     .catch(error => {
       console.warn(`联网情报源暂不可用，继续使用本地与官方数据：${error.message}`);
       return { configured: true, source: null, updatedAt: null, matches: {}, error: error.message };
-    })
+    }),
+  fetchDongqiudiIndex().then(entries => ({ ok: true, entries, error: null }))
+    .catch(error => ({ ok: false, entries: [], error: error.message }))
 ]);
 const adjustments = mergeContexts(contextFeed, localAdjustments);
 
@@ -105,7 +108,17 @@ const resultMap = new Map(results.map(result => [result.id, result]));
 let records = historyFile.records || [];
 records = records.map(record => record.status !== "settled" && resultMap.has(record.id) ? scoreRecord(record, resultMap.get(record.id)) : record);
 updateRatings(state, results);
+const tacticalCandidates = records
+  .filter(record => record.status === "settled" && record.dongqiudiContext?.matchId && !state.processedTacticalResults?.includes(record.id))
+  .slice(-20);
+const tacticalObservations = (await Promise.all(tacticalCandidates.map(record => fetchDongqiudiObservation(record).catch(error => {
+  console.warn(`懂球帝赛后战术数据 ${record.id} 暂不可用：${error.message}`);
+  return null;
+})))).filter(Boolean);
+updateTacticalKnowledge(state, tacticalObservations);
 const learning = calibrate(records);
+learning.tacticalSamples = state.tacticalGlobal?.samples || 0;
+learning.summary += ` 懂球帝完赛战术统计已积累 ${learning.tacticalSamples} 个球队场次。`;
 const recordIndex = new Map(records.map((record, index) => [record.id, index]));
 
 const scheduledFutureMatches = schedule
@@ -117,12 +130,18 @@ const scheduledFutureMatches = schedule
 // 单场“赛事前瞻”补充近况胜率、跨年份交锋、射手贡献和伤停；单场失败不阻断主赛程。
 const futureMatches = [];
 const detailSync = { requested: scheduledFutureMatches.length, available: 0, errors: [] };
+const dongqiudiSync = { indexAvailable: dongqiudiIndex.ok, indexMatches: dongqiudiIndex.entries.length, matched: 0, errors: dongqiudiIndex.error ? [dongqiudiIndex.error] : [] };
 for (const match of scheduledFutureMatches) {
   try {
-    const officialContext = await fetchOfficialContext(match.id);
+    const [officialContext, dongqiudiContext] = await Promise.all([
+      fetchOfficialContext(match.id),
+      fetchDongqiudiContext(match, dongqiudiIndex.entries)
+    ]);
     if (officialContext.available) detailSync.available += 1;
     if (officialContext.errors.length) detailSync.errors.push({ id: match.id, errors: officialContext.errors });
-    futureMatches.push({ ...match, officialContext });
+    if (dongqiudiContext.available) dongqiudiSync.matched += 1;
+    if (dongqiudiContext.errors.length) dongqiudiSync.errors.push({ id: match.id, errors: dongqiudiContext.errors });
+    futureMatches.push({ ...match, officialContext, dongqiudiContext });
   } catch (error) {
     detailSync.errors.push({ id: match.id, errors: [error.message] });
     futureMatches.push(match);
@@ -132,7 +151,9 @@ for (const match of scheduledFutureMatches) {
 const dashboardMatches = [];
 for (const match of futureMatches) {
   let record = recordIndex.has(match.id) ? records[recordIndex.get(match.id)] : null;
-  const needsRevision = record?.status === "pending" && record.modelVersion !== modelInfo.version;
+  const contextChanged = match.dongqiudiContext?.available
+    && match.dongqiudiContext.signature !== record?.dongqiudiContext?.signature;
+  const needsRevision = record?.status === "pending" && (record.modelVersion !== modelInfo.version || contextChanged);
   if (!record || needsRevision) {
     const generated = predictMatch(match, state, learning, activeAdjustment(adjustments, match, now));
     const revisions = needsRevision ? [...(record.revisions || []), {
@@ -180,7 +201,8 @@ const dashboard = {
       error: contextFeed.error || null
     },
     resultSync,
-    detailSync
+    detailSync,
+    dongqiudiSync
   },
   model: modelInfo,
   matches: dashboardMatches,

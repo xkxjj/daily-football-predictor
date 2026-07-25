@@ -1,3 +1,5 @@
+import { buildTacticalAnalysis, tacticalAdjustment } from "./dongqiudi.mjs";
+
 const OUTCOMES = ["胜", "平", "负"];
 const METRIC_KEYS = ["result", "handicapResult", "score", "totalGoals", "halfFull"];
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -524,11 +526,15 @@ export function predictMatch(match, state, learning, adjustment = null) {
   const situational = situationalContext(combinedAdjustment);
   lambdaHome = clamp(lambdaHome + situational.homeGoalsDelta, 0.1, 5);
   lambdaAway = clamp(lambdaAway + situational.awayGoalsDelta, 0.1, 5);
+  const tactical = tacticalAdjustment(match, state);
+  lambdaHome = clamp(lambdaHome + tactical.homeGoalsDelta, 0.1, 5);
+  lambdaAway = clamp(lambdaAway + tactical.awayGoalsDelta, 0.1, 5);
   const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
   const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
   // 随机流只绑定比赛，不绑定模型版本；相同输入不会仅因发布补丁而漂移。
   const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:stable-score-path`, context, directionTarget, handicapMarket, learning.scorePriorMultiplier ?? 1);
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
+  prediction.tacticalAnalysis = buildTacticalAnalysis(match, state, prediction, tactical);
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
   const drawGap = Math.max(prediction.resultDistribution.胜, prediction.resultDistribution.负) - prediction.resultDistribution.平;
   const marginalResult = Object.entries(prediction.resultDistribution).sort((a, b) => b[1] - a[1])[0][0];
@@ -567,6 +573,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
     score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。比分在全部赛果方向内使用经验贝叶斯校准：模拟分布与同联赛 ${prediction.scoreCalibration.historicalSamples} 场同方向历史比分按 ${(prediction.scoreCalibration.historicalWeight * 100).toFixed(0)}% 权重融合，权重再由完赛比分对数损失持续修正。候选为 ${scoreCandidatesText}；双选覆盖 ${(prediction.scorePortfolio.coverageTwo * 100).toFixed(1)}%，三选覆盖 ${(prediction.scorePortfolio.coverageThree * 100).toFixed(1)}%。总进球独立边际候选为 ${totalCandidatesText}，主选 ${prediction.totalGoals} 球，不再由代表比分机械推导。`,
     draw: drawReason,
     context: `${handicapOnlyText}${externalMarketText}${movementText}。${officialForm.summary}。${headToHead.summary}，交锋权重为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
+    tactical: prediction.tacticalAnalysis.dimensions.map(item => `${item.title}：${item.summary}`).join("；"),
     halfFull: `半全场在全部九种组合中独立比较模拟概率与联赛历史频率，不再先限定全场方向。候选为 ${halfFullCandidates}，最终主选 ${prediction.halfFull}。`
   };
   const marketText = marketSignals.official ? `官方胜平负去水概率 ${marketSignals.official.map(x => `${(x * 100).toFixed(0)}%`).join(" / ")}` : "官方胜平负未开售，降低市场信号权重";
@@ -586,12 +593,13 @@ export function predictMatch(match, state, learning, adjustment = null) {
       statPrior,
       headToHead,
       officialForm,
-      situational
+      situational,
+      tactical
     },
     factors: {
-      objective: [marketText, handicapOnlyText, externalMarketText + movementText, eloText, rankText, officialForm.summary, headToHead.summary, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`],
-      subjective: adjustment?.reason || situational.applied.length
-        ? [adjustment?.reason, ...situational.applied, `主/客总 xG 修正 ${situational.homeGoalsDelta.toFixed(2)} / ${situational.awayGoalsDelta.toFixed(2)}`].filter(Boolean)
+      objective: [marketText, handicapOnlyText, externalMarketText + movementText, eloText, rankText, officialForm.summary, headToHead.summary, `联赛平局率 ${(context.drawRate * 100).toFixed(1)}%，模型期望进球 ${lambdaHome.toFixed(2)} : ${lambdaAway.toFixed(2)}`, match.dongqiudiContext?.available ? `懂球帝：${match.dongqiudiContext.weather || "天气未提供"} ${match.dongqiudiContext.temperature || ""}，阵型 ${match.dongqiudiContext.formations?.home?.formation || "未知"} vs ${match.dongqiudiContext.formations?.away?.formation || "未知"}` : "懂球帝当前竞彩列表未匹配，本场不补造战术字段"],
+      subjective: adjustment?.reason || situational.applied.length || tactical.applied.length
+        ? [adjustment?.reason, ...situational.applied, ...tactical.applied, `主/客总 xG 修正 ${(situational.homeGoalsDelta + tactical.homeGoalsDelta).toFixed(2)} / ${(situational.awayGoalsDelta + tactical.awayGoalsDelta).toFixed(2)}`].filter(Boolean)
         : ["暂无经核验的教练、球员或其他人工赛前修正，保持客观基线"]
     }
   };
@@ -757,8 +765,8 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.6.0",
-  name: "Soft Joint Score + Official Preview Market-Elo Path",
+  version: "2.7.0",
+  name: "Auditable Tactical Context + Calibrated Score Path",
   simulations: 20_000,
   metrics: METRIC_KEYS
 };
