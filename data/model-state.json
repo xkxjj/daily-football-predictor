@@ -12945,7 +12945,7 @@
     "2040611",
     "2040610"
   ],
-  "updatedAt": "2026-07-25T02:58:06.855Z",
+  "updatedAt": "2026-07-25T04:33:17.799Z",
   "teamForm": {
     "id:618": {
       "gf": [
@@ -142374,5 +142374,30 @@
         }
       ]
     }
-  }
+  },
+  "tacticalTeams": {},
+  "tacticalGlobal": {
+    "name": "global",
+    "samples": 0,
+    "formations": {},
+    "totals": {
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "possession": 0,
+      "shots": 0,
+      "shotsAgainst": 0,
+      "shotsOnTarget": 0,
+      "shotsOnTargetAgainst": 0,
+      "dangerousAttacks": 0,
+      "dangerousAttacksAgainst": 0,
+      "corners": 0,
+      "cornersAgainst": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "goalsAfter75": 0,
+      "substitutions60to75": 0
+    }
+  },
+  "processedTacticalResults": [],
+  "tacticalSchemaVersion": 1
 }
