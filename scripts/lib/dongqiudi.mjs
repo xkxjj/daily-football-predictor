@@ -4,10 +4,17 @@ const BASE_URL = "https://pc.dongqiudi.com";
 function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
 export function normalizeTeamName(value) {
-  return String(value || "")
+  const compact = String(value || "")
     .toLowerCase()
     .replace(/足球俱乐部|俱乐部|football club|fc|汽车|韩亚|制铁|铁人|现代|sk|1995/g, "")
+    .replace(/^ac/, "")
     .replace(/[\s·・.\-_]/g, "");
+  const aliases = {
+    "佐加顿斯": "尤尔加登",
+    "玛丽港": "马里汉姆",
+    "库奥皮奥": "古比斯"
+  };
+  return aliases[compact] || compact;
 }
 
 function monthDay(iso) {
@@ -147,7 +154,7 @@ export function buildDongqiudiContext(match, entry, detail, lineup, overview, er
 
 export async function fetchDongqiudiContext(match, entries) {
   const entry = matchDongqiudiEntry(match, entries);
-  if (!entry) return { available: false, errors: ["竞彩列表未匹配到同一主客队"] };
+  if (!entry) return { available: false, status: "not-matched", errors: [] };
   const matchId = String(entry.match_id);
   const requests = [
     [`${BASE_URL}/magicball/v1/match/app/detail?id=${matchId}&app=dqd&lang=zh-cn`, "detail"],

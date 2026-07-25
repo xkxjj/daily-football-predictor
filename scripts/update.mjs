@@ -130,7 +130,7 @@ const scheduledFutureMatches = schedule
 // 单场“赛事前瞻”补充近况胜率、跨年份交锋、射手贡献和伤停；单场失败不阻断主赛程。
 const futureMatches = [];
 const detailSync = { requested: scheduledFutureMatches.length, available: 0, errors: [] };
-const dongqiudiSync = { indexAvailable: dongqiudiIndex.ok, indexMatches: dongqiudiIndex.entries.length, matched: 0, errors: dongqiudiIndex.error ? [dongqiudiIndex.error] : [] };
+const dongqiudiSync = { indexAvailable: dongqiudiIndex.ok, indexMatches: dongqiudiIndex.entries.length, matched: 0, unmatched: 0, errors: dongqiudiIndex.error ? [dongqiudiIndex.error] : [] };
 for (const match of scheduledFutureMatches) {
   try {
     const [officialContext, dongqiudiContext] = await Promise.all([
@@ -140,6 +140,7 @@ for (const match of scheduledFutureMatches) {
     if (officialContext.available) detailSync.available += 1;
     if (officialContext.errors.length) detailSync.errors.push({ id: match.id, errors: officialContext.errors });
     if (dongqiudiContext.available) dongqiudiSync.matched += 1;
+    else dongqiudiSync.unmatched += 1;
     if (dongqiudiContext.errors.length) dongqiudiSync.errors.push({ id: match.id, errors: dongqiudiContext.errors });
     futureMatches.push({ ...match, officialContext, dongqiudiContext });
   } catch (error) {

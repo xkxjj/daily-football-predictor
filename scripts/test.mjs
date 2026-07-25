@@ -51,6 +51,12 @@ test("懂球帝竞彩场次按日期和球队别名可靠匹配", () => {
     { match_id: 2, home_name: "浦项铁人", guest_name: "全北现代汽车", match_time: "09/05 18:30" }
   ]);
   assert.equal(entry.match_id, 1);
+  assert.equal(matchDongqiudiEntry({ home: "代格福什", away: "佐加顿斯", kickoff: "2026-07-25T21:00:00+08:00" }, [
+    { match_id: 3, home_name: "代格福什", guest_name: "尤尔加登", match_time: "07/25 21:00" }
+  ]).match_id, 3);
+  assert.equal(matchDongqiudiEntry({ home: "玛丽港", away: "AC奥卢", kickoff: "2026-07-25T21:30:00+08:00" }, [
+    { match_id: 4, home_name: "马里汉姆", guest_name: "奥卢", match_time: "07/25 21:30" }
+  ]).match_id, 4);
 });
 
 test("完赛赛况会积累逐队战术知识且不会把危险进攻冒充 xG", () => {
