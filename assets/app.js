@@ -100,7 +100,14 @@ function renderMatches(matches) {
     const objective = match.factors.objective.map(x => `<div><b>客观</b> · ${escapeHtml(x)}</div>`).join("");
     const subjective = match.factors.subjective.map(x => `<div><b>赛前情境</b> · ${escapeHtml(x)}</div>`).join("");
     const alternatives = match.prediction.topScores.map(x => `${x.score} ${percent(x.probability)}（让球${x.handicapResult}）`).join(" / ");
-    node.querySelector(".factor-content").innerHTML = `${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div><div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
+    const portfolio = match.prediction.scorePortfolio;
+    const scoreCoverage = portfolio
+      ? `<div><b>比分组合覆盖</b> · 双选 ${percent(portfolio.coverageTwo)} / 三选 ${percent(portfolio.coverageThree)}（3 场分别为 8 / 27 组）</div>`
+      : "";
+    const totalCandidates = (match.prediction.topTotalGoals || [])
+      .map(x => `${x.pick}球 ${percent(x.probability)}`).join(" / ");
+    const totalCoverage = totalCandidates ? `<div><b>总进球候选</b> · ${totalCandidates}</div>` : "";
+    node.querySelector(".factor-content").innerHTML = `${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div>${scoreCoverage}${totalCoverage}<div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
     list.appendChild(node);
   });
 }
@@ -136,6 +143,7 @@ function renderLearning(learning) {
   el("goalScale").textContent = `${Number(learning.goalScale || 1).toFixed(3)}×`;
   const bias = Number(learning.homeBias || 0);
   el("homeBias").textContent = `${bias >= 0 ? "+" : ""}${bias.toFixed(3)}`;
+  el("scorePriorMultiplier").textContent = `${Number(learning.scorePriorMultiplier || 1).toFixed(3)}×`;
   el("learningSummary").textContent = learning.summary || "样本积累中；小样本阶段保持保守参数。";
 }
 

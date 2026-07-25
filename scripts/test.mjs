@@ -12,6 +12,7 @@ const match = {
 const state = { teamRatings:{"id:1":1580,"id:2":1480}, leagueGoals:{} };
 const learning = { marketWeight:.78, goalScale:1, homeBias:0 };
 const topKey = distribution => Object.entries(distribution).sort((a, b) => b[1] - a[1])[0][0];
+const sum = distribution => Object.values(distribution).reduce((total, value) => total + value, 0);
 
 test("模型稳定生成五项预测", () => {
   const first = predictMatch(match, state, learning);
@@ -19,15 +20,23 @@ test("模型稳定生成五项预测", () => {
   for (const key of ["result","handicapResult","score","totalGoals","halfFull"]) assert.equal(first.prediction[key], second.prediction[key]);
   assert.equal(first.prediction.simulations, 20_000);
   assert.ok(first.prediction.confidence > 0 && first.prediction.confidence < 1);
-  const [home, away] = first.prediction.score.split(":").map(Number);
-  const result = home > away ? "胜" : home < away ? "负" : "平";
-  assert.equal(first.prediction.result, result, "比分必须与胜平负自洽");
   assert.equal(first.prediction.result, topKey(first.prediction.resultDistribution), "胜平负必须选择校准分布第一名");
   assert.equal(first.prediction.handicapResult, topKey(first.prediction.handicapResultDistribution), "让球必须选择自身边际分布第一名");
-  assert.equal(first.prediction.totalGoals, String(home + away), "比分必须与总进球自洽");
+  assert.equal(first.prediction.totalGoals, topKey(first.prediction.totalGoalsDistribution), "总进球必须选择自身校准分布第一名");
   assert.equal(first.prediction.halfFull, topKey(first.prediction.halfFullDistribution), "半全场必须在九种组合中选择联合分布第一名");
   assert.ok(["临界", "偏弱", "明确"].includes(first.prediction.handicapDecision.level));
   assert.ok(first.prediction.topScores.every(item => item.handicapResult));
+  assert.equal(first.prediction.score, first.prediction.topScores[0].score);
+  assert.equal(first.prediction.score, topKey(first.prediction.scoreDistribution));
+  assert.ok(first.prediction.topScores.every((item, index, items) => index === 0 || items[index - 1].probability >= item.probability));
+  assert.ok(first.prediction.scorePortfolio.coverageTwo <= first.prediction.scorePortfolio.coverageThree);
+  assert.ok(Math.abs(sum(first.prediction.totalGoalsDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.scoreDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.scoreSimulationDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.scoreHistoricalDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.resultDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.handicapResultDistribution) - 1) < 1e-10);
+  assert.ok(Math.abs(sum(first.prediction.halfFullDistribution) - 1) < 1e-10);
   assert.ok(first.prediction.reasoning.score.includes(first.prediction.score));
 });
 
@@ -48,9 +57,44 @@ test("开放型比赛不会退化成固定小比分模板", () => {
     leagueGoals:{"999":{homeGoals:60,awayGoals:55,draws:5,count:30,scoreCounts:{"3:2":4,"2:2":3,"2:1":2},halfOutcomes:{"胜":11,"平":10,"负":9}}}
   };
   const predicted = predictMatch(openMatch, openState, learning).prediction;
-  const total = predicted.score.split(":").map(Number).reduce((a, b) => a + b, 0);
-  assert.ok(total >= 4, `开放型比赛应保留大比分路径，实际得到 ${predicted.score}`);
-  assert.equal(predicted.totalGoals, String(total));
+  assert.ok(predicted.topTotalGoals.some(item => Number(item.pick) >= 4),
+    `开放型比赛的总进球候选应保留大球路径，实际得到 ${predicted.topTotalGoals.map(item => item.pick).join("、")}`);
+  assert.equal(predicted.totalGoals, topKey(predicted.totalGoalsDistribution));
+});
+
+test("同联赛历史比分先验可以在样本充分时改变比分排序", () => {
+  const baseline = predictMatch({ ...match, id: "score-prior-baseline" }, state, learning).prediction;
+  const priorState = {
+    ...state,
+    leagueGoals: {
+      "999": {
+        homeGoals: 900, awayGoals: 300, draws: 40, count: 400,
+        scoreCounts: { "3:0": 320, "1:0": 20, "2:0": 20, "2:1": 20, "1:1": 20 },
+        halfOutcomes: { "胜": 160, "平": 180, "负": 60 }
+      }
+    }
+  };
+  const calibrated = predictMatch({ ...match, id: "score-prior-baseline" }, priorState, learning).prediction;
+  assert.notEqual(baseline.score, "3:0", "基准模型不应天然固定输出测试先验比分");
+  assert.equal(calibrated.score, "3:0");
+  assert.ok(calibrated.scoreCalibration.historicalWeight > 0.3);
+  assert.ok(calibrated.topScores[0].historicalProbability > calibrated.topScores[1].historicalProbability);
+});
+
+test("完赛比分对数损失会持续调节历史先验权重", () => {
+  const rows = Array.from({ length: 60 }, (_, index) => ({
+    status: "settled",
+    actual: { score: "2:1", result: "胜", homeGoals: 2, awayGoals: 1 },
+    prediction: {
+      scoreSimulationDistribution: { "2:1": 0.08, "1:0": 0.12 },
+      scoreHistoricalDistribution: { "2:1": 0.20, "1:0": 0.05 },
+      scoreCalibration: { baseHistoricalWeight: 0.30 }
+    },
+    diagnostics: {}
+  }));
+  const learned = calibrate(rows);
+  assert.ok(learned.scorePriorMultiplier > 1);
+  assert.equal(learned.scoreCalibrationSamples, 60);
 });
 
 test("只开让球胜平负时以让球盘反推实力差", () => {
@@ -184,5 +228,5 @@ test("验真只比较赛前锁定值", () => {
 });
 
 test("无样本时校准参数保持保守", () => {
-  assert.deepEqual(calibrate([]), { marketWeight:.78, goalScale:1, homeBias:0, sampleSize:0, summary:"尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" });
+  assert.deepEqual(calibrate([]), { marketWeight:.78, goalScale:1, homeBias:0, scorePriorMultiplier:1, scoreCalibrationSamples:0, sampleSize:0, summary:"尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" });
 });

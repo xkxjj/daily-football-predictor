@@ -292,42 +292,50 @@ function scoreOutcome(score) {
   return outcome(home, away);
 }
 
-function chooseCoherentScore(scores, resultPick, handicap, lambdaHome, lambdaAway, context, simulations, handicapSoftPrior) {
-  const empiricalTotal = Object.values(context.scoreCounts).reduce((a, b) => a + b, 0) || 1;
-  const candidates = [...scores.entries()].filter(([score]) => {
-    const [home, away] = score.split(":").map(Number);
-    return scoreOutcome(score) === resultPick;
-  });
-  const ranked = candidates.map(([score, count]) => {
-    const [home, away] = score.split(":").map(Number);
-    const handicapKey = outcome(home + handicap, away);
-    const handicapSupport = handicapSoftPrior?.[handicapKey] || 1 / 3;
-    const empiricalRate = (context.scoreCounts[score] || 0) / empiricalTotal;
-    const distance = (home - lambdaHome) ** 2 + (away - lambdaAway) ** 2;
-    const totalDistance = Math.abs(home + away - (lambdaHome + lambdaAway));
-    // 让球盘只作为软证据，不能把比分候选硬裁成“必须净胜两球”或“必须一球小胜”。
-    const utility = Math.log(Math.max(count / simulations, 1e-8))
-      + 0.65 * Math.log(Math.max(handicapSupport, 1e-8))
-      - 0.15 * distance
-      - 0.07 * totalDistance
-      + 0.45 * Math.sqrt(empiricalRate);
-    return { score, count, handicapKey, handicapSupport, utility };
-  }).sort((a, b) => b.utility - a.utility);
-  // 高节奏比赛用接近期望进球的代表路径，避免即使 xG 超过 4 球仍机械输出 1:0/1:1。
-  if (lambdaHome + lambdaAway >= 3.6) {
-    let home = Math.round(lambdaHome);
-    let away = Math.round(lambdaAway);
-    if (resultPick === "胜" && home <= away) home = away + 1;
-    if (resultPick === "负" && away <= home) away = home + 1;
-    if (resultPick === "平") home = away = Math.max(1, Math.round((lambdaHome + lambdaAway) / 2));
-    const highTempo = ranked.find(candidate => candidate.score === `${home}:${away}` && candidate.count / simulations >= 0.01);
-    if (highTempo) return { ...highTempo, ranked };
+function chooseCalibratedScore(scores, handicap, context, simulations, resultDistribution, scorePriorMultiplier = 1) {
+  const ranked = [];
+  for (const resultKey of OUTCOMES) {
+    const simulatedRows = [...scores.entries()].filter(([score]) => scoreOutcome(score) === resultKey);
+    const historicalRows = Object.entries(context.scoreCounts).filter(([score]) => scoreOutcome(score) === resultKey);
+    const candidates = new Set([...simulatedRows.map(([score]) => score), ...historicalRows.map(([score]) => score)]);
+    const simulatedOutcomeTotal = simulatedRows.reduce((sum, [, count]) => sum + count, 0) || 1;
+    const historicalSamples = historicalRows.reduce((sum, [, count]) => sum + count, 0);
+    const baseHistoricalWeight = historicalSamples ? Math.min(0.40, historicalSamples / (historicalSamples + 120)) : 0;
+    const historicalWeight = Math.min(0.40, baseHistoricalWeight * scorePriorMultiplier);
+    for (const score of candidates) {
+      const count = scores.get(score) || 0;
+      const [home, away] = score.split(":").map(Number);
+      const simulatedConditional = count / simulatedOutcomeTotal;
+      const historicalConditional = historicalSamples
+        ? (context.scoreCounts[score] || 0) / historicalSamples
+        : simulatedConditional;
+      const simulationProbability = resultDistribution[resultKey] * simulatedConditional;
+      const historicalProbability = resultDistribution[resultKey] * historicalConditional;
+      ranked.push({
+        score,
+        count,
+        handicapKey: outcome(home + handicap, away),
+        probability: (1 - historicalWeight) * simulationProbability + historicalWeight * historicalProbability,
+        simulationProbability,
+        historicalProbability,
+        historicalWeight,
+        baseHistoricalWeight,
+        historicalSamples
+      });
+    }
   }
-  const selected = ranked[0] || [...scores.entries()].map(([score, count]) => ({ score, count, utility: 0 })).sort((a, b) => b.count - a.count)[0];
-  return { ...selected, ranked };
+  ranked.sort((a, b) => b.probability - a.probability);
+  const selected = ranked[0];
+  return {
+    ...selected,
+    ranked,
+    scoreDistribution: Object.fromEntries(ranked.map(item => [item.score, item.probability])),
+    scoreSimulationDistribution: Object.fromEntries(ranked.map(item => [item.score, item.simulationProbability])),
+    scoreHistoricalDistribution: Object.fromEntries(ranked.map(item => [item.score, item.historicalProbability]))
+  };
 }
 
-function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTarget, handicapDirectionTarget, simulations = 20_000) {
+function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTarget, handicapDirectionTarget, scorePriorMultiplier = 1, simulations = 20_000) {
   const random = mulberry32(hashSeed(seed));
   const result = new Map(OUTCOMES.map(key => [key, 0]));
   const handicapResult = new Map(OUTCOMES.map(key => [key, 0]));
@@ -390,12 +398,25 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
   const handicapMarginalCandidates = Object.entries(handicapMarginal).sort((a, b) => b[1] - a[1]);
   const handicapPick = handicapMarginalCandidates[0][0];
   const handicapProbability = handicapMarginalCandidates[0][1];
-  const handicapSoftPrior = Object.fromEntries(handicapCandidates.map(item => [item.handicapKey, item.adjusted]));
-  const chosenScore = chooseCoherentScore(scores, resultPick, handicap, lambdaHome, lambdaAway, context, simulations, handicapSoftPrior);
+  const chosenScore = chooseCalibratedScore(scores, handicap, context, simulations, resultBlend, scorePriorMultiplier);
   const [scoreHome, scoreAway] = chosenScore.score.split(":").map(Number);
   const scoreHandicapResult = outcome(scoreHome + handicap, scoreAway);
-  const totalPick = scoreHome + scoreAway >= 7 ? "7+" : String(scoreHome + scoreAway);
-  const totalCount = totals.get(totalPick);
+  const empiricalTotalCounts = new Map(Array.from({ length: 8 }, (_, i) => [i === 7 ? "7+" : String(i), 0]));
+  for (const [score, count] of Object.entries(context.scoreCounts)) {
+    const goals = score.split(":").map(Number).reduce((sum, value) => sum + value, 0);
+    const key = goals >= 7 ? "7+" : String(goals);
+    empiricalTotalCounts.set(key, empiricalTotalCounts.get(key) + count);
+  }
+  const empiricalTotalSample = [...empiricalTotalCounts.values()].reduce((sum, count) => sum + count, 0);
+  const totalHistoricalWeight = empiricalTotalSample ? Math.min(0.35, empiricalTotalSample / (empiricalTotalSample + 300)) : 0;
+  const totalGoalDistribution = Object.fromEntries([...totals.entries()].map(([key, count]) => {
+    const simulated = count / simulations;
+    const historical = empiricalTotalSample ? empiricalTotalCounts.get(key) / empiricalTotalSample : simulated;
+    return [key, (1 - totalHistoricalWeight) * simulated + totalHistoricalWeight * historical];
+  }));
+  const totalCandidates = Object.entries(totalGoalDistribution).sort((a, b) => b[1] - a[1]);
+  const totalPick = totalCandidates[0][0];
+  const totalProbability = totalCandidates[0][1];
   const halfCandidates = OUTCOMES.flatMap(halfKey => OUTCOMES.map(fullKey => {
     const key = `${halfKey}/${fullKey}`;
     const count = halfFull.get(key) || 0;
@@ -416,8 +437,9 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
   const halfFullPick = halfCandidates[0].key;
   const halfFullProbability = halfCandidates[0].adjusted;
   const topHalfFull = halfCandidates.slice(0, 3);
-  const coherentRankedScores = chosenScore.ranked || [];
-  const topScores = [chosenScore, ...coherentRankedScores.filter(item => item.score !== chosenScore.score)].slice(0, 3);
+  const topScores = chosenScore.ranked.slice(0, 3);
+  const scoreCoverage = topScores.reduce((sum, item) => sum + item.probability, 0);
+  const scoreCoverageTwo = topScores.slice(0, 2).reduce((sum, item) => sum + item.probability, 0);
   const handicapGap = handicapMarginalCandidates.length > 1 ? handicapMarginalCandidates[0][1] - handicapMarginalCandidates[1][1] : 1;
   return {
     result: resultPick,
@@ -429,8 +451,8 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     probabilities: {
       result: resultProbability,
       handicapResult: handicapProbability,
-      score: chosenScore.count / simulations,
-      totalGoals: totalCount / simulations,
+      score: chosenScore.probability,
+      totalGoals: totalProbability,
       halfFull: halfFullProbability
     },
     resultDistribution: resultBlend,
@@ -445,11 +467,35 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
       gap: handicapGap,
       level: handicapGap < 0.05 ? "临界" : handicapGap < 0.10 ? "偏弱" : "明确"
     },
+    scoreCalibration: {
+      method: "league-empirical-bayes",
+      historicalWeight: chosenScore.historicalWeight,
+      baseHistoricalWeight: chosenScore.baseHistoricalWeight,
+      priorMultiplier: scorePriorMultiplier,
+      historicalSamples: chosenScore.historicalSamples
+    },
+    scorePortfolio: {
+      primary: chosenScore.score,
+      coverageTwo: scoreCoverageTwo,
+      coverageThree: scoreCoverage,
+      combinationsForThreeMatches: { twoEach: 8, threeEach: 27 }
+    },
+    totalGoalsDistribution: totalGoalDistribution,
+    topTotalGoals: totalCandidates.slice(0, 3).map(([pick, probability]) => ({ pick, probability })),
+    scoreDistribution: chosenScore.scoreDistribution,
+    scoreSimulationDistribution: chosenScore.scoreSimulationDistribution,
+    scoreHistoricalDistribution: chosenScore.scoreHistoricalDistribution,
     jointOutcomeDistribution: Object.fromEntries(jointCandidates.map(item => [`${item.resultKey}/${item.handicapKey}`, item.pairProbability])),
     halfFullDistribution: Object.fromEntries(halfCandidates.map(item => [item.key, item.adjusted])),
     halfFullSimulationDistribution: Object.fromEntries([...halfFull].map(([k, v]) => [k, v / simulations])),
     topHalfFull: topHalfFull.map(item => ({ pick: item.key, probability: item.adjusted })),
-    topScores: topScores.map(item => ({ score: item.score, probability: item.count / simulations, handicapResult: item.handicapKey || outcome(Number(item.score.split(":")[0]) + handicap, Number(item.score.split(":")[1])) })),
+    topScores: topScores.map(item => ({
+      score: item.score,
+      probability: item.probability,
+      simulationProbability: item.simulationProbability,
+      historicalProbability: item.historicalProbability,
+      handicapResult: item.handicapKey || outcome(Number(item.score.split(":")[0]) + handicap, Number(item.score.split(":")[1]))
+    })),
     simulations
   };
 }
@@ -481,7 +527,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
   const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
   const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
   // 随机流只绑定比赛，不绑定模型版本；相同输入不会仅因发布补丁而漂移。
-  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:stable-score-path`, context, directionTarget, handicapMarket);
+  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:stable-score-path`, context, directionTarget, handicapMarket, learning.scorePriorMultiplier ?? 1);
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
   const drawGap = Math.max(prediction.resultDistribution.胜, prediction.resultDistribution.负) - prediction.resultDistribution.平;
@@ -493,6 +539,8 @@ export function predictMatch(match, state, learning, adjustment = null) {
     ? `平局并非兜底项：市场、Elo 与该联赛历史平局率共同校准后，模型主动选择平。`
     : `平局概率为 ${(prediction.resultDistribution.平 * 100).toFixed(1)}%，与最高方向相差 ${(drawGap * 100).toFixed(1)} 个百分点，已纳入但未列为主选。`;
   const halfFullCandidates = prediction.topHalfFull.map(item => `${item.pick} ${(item.probability * 100).toFixed(1)}%`).join("、");
+  const scoreCandidatesText = prediction.topScores.map(item => `${item.score} ${(item.probability * 100).toFixed(1)}%`).join("、");
+  const totalCandidatesText = prediction.topTotalGoals.map(item => `${item.pick}球 ${(item.probability * 100).toFixed(1)}%`).join("、");
   const handicapMarginalText = Object.entries(prediction.handicapResultDistribution)
     .sort((a, b) => b[1] - a[1])
     .map(([key, value]) => `${key}${(value * 100).toFixed(1)}%`)
@@ -516,7 +564,7 @@ export function predictMatch(match, state, learning, adjustment = null) {
       : "本场官方让球盘尚未开售。";
   prediction.reasoning = {
     direction: `方向分布为 ${resultPct}；${scoreDirection}。让球边际分布为 ${handicapMarginalText}（前两项差 ${(prediction.handicapDecision.gap * 100).toFixed(1)} 个百分点，判断为“${prediction.handicapDecision.level}”），独立主选“让球${prediction.handicapResult}”。${scoreHandicapText}。`,
-    score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。在“${prediction.result}”方向内，对小比分与开放型大比分长尾一并模拟，最终选择自洽代表比分 ${prediction.score}。`,
+    score: `该联赛近 ${context.count} 场平均 ${context.totalAverage.toFixed(2)} 球；双方近期攻防推得进球基线 ${statPrior.home.toFixed(2)}:${statPrior.away.toFixed(2)}，结合官方让球 ${match.handicap > 0 ? "+" : ""}${match.handicap} 后得到 xG ${lambdaHome.toFixed(2)}:${lambdaAway.toFixed(2)}。比分在全部赛果方向内使用经验贝叶斯校准：模拟分布与同联赛 ${prediction.scoreCalibration.historicalSamples} 场同方向历史比分按 ${(prediction.scoreCalibration.historicalWeight * 100).toFixed(0)}% 权重融合，权重再由完赛比分对数损失持续修正。候选为 ${scoreCandidatesText}；双选覆盖 ${(prediction.scorePortfolio.coverageTwo * 100).toFixed(1)}%，三选覆盖 ${(prediction.scorePortfolio.coverageThree * 100).toFixed(1)}%。总进球独立边际候选为 ${totalCandidatesText}，主选 ${prediction.totalGoals} 球，不再由代表比分机械推导。`,
     draw: drawReason,
     context: `${handicapOnlyText}${externalMarketText}${movementText}。${officialForm.summary}。${headToHead.summary}，交锋权重为 ${(headToHead.weight * 100).toFixed(1)}%。${newsText}。`,
     halfFull: `半全场在全部九种组合中独立比较模拟概率与联赛历史频率，不再先限定全场方向。候选为 ${halfFullCandidates}，最终主选 ${prediction.halfFull}。`
@@ -641,7 +689,7 @@ export function updateRatings(state, results) {
 
 export function calibrate(records) {
   const settled = records.filter(row => row.status === "settled" && row.actual).slice(-300);
-  if (!settled.length) return { marketWeight: 0.78, goalScale: 1, homeBias: 0, sampleSize: 0, summary: "尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" };
+  if (!settled.length) return { marketWeight: 0.78, goalScale: 1, homeBias: 0, scorePriorMultiplier: 1, scoreCalibrationSamples: 0, sampleSize: 0, summary: "尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" };
   const goalRows = settled.filter(row => row.prediction.expectedGoals);
   const predictedGoals = goalRows.reduce((sum, row) => sum + row.prediction.expectedGoals.home + row.prediction.expectedGoals.away, 0);
   const actualGoals = goalRows.reduce((sum, row) => sum + row.actual.homeGoals + row.actual.awayGoals, 0);
@@ -664,9 +712,28 @@ export function calibrate(records) {
     const probShrink = Math.min(1, probRows.length / 60);
     marketWeight = clamp(0.76 + probShrink * (eloBrier - marketBrier) * 0.55, 0.65, 0.90);
   }
+  const scoreRows = settled.filter(row => row.prediction.scoreSimulationDistribution
+    && row.prediction.scoreHistoricalDistribution
+    && Number.isFinite(row.prediction.scoreCalibration?.baseHistoricalWeight));
+  let scorePriorMultiplier = 1;
+  if (scoreRows.length) {
+    const candidates = Array.from({ length: 13 }, (_, index) => index * 0.125);
+    const losses = candidates.map(multiplier => {
+      const loss = scoreRows.reduce((total, row) => {
+        const actualScore = row.actual.score;
+        const simulated = row.prediction.scoreSimulationDistribution[actualScore] || 0;
+        const historical = row.prediction.scoreHistoricalDistribution[actualScore] || 0;
+        const weight = Math.min(0.40, row.prediction.scoreCalibration.baseHistoricalWeight * multiplier);
+        return total - Math.log(Math.max(1e-8, (1 - weight) * simulated + weight * historical));
+      }, 0) / scoreRows.length;
+      return { multiplier, loss };
+    }).sort((a, b) => a.loss - b.loss);
+    const scoreShrink = Math.min(1, scoreRows.length / 60);
+    scorePriorMultiplier = clamp(1 + scoreShrink * (losses[0].multiplier - 1), 0.5, 1.35);
+  }
   return {
-    marketWeight, goalScale, homeBias, sampleSize: settled.length,
-    summary: `基于最近 ${settled.length} 场赛前锁定样本：市场/Elo 权重按 Brier 表现调整，总进球与主场偏差按残差收缩校准。小样本自动向初始值回归。`
+    marketWeight, goalScale, homeBias, scorePriorMultiplier, scoreCalibrationSamples: scoreRows.length, sampleSize: settled.length,
+    summary: `基于最近 ${settled.length} 场赛前锁定样本：市场/Elo 权重按 Brier 表现调整，总进球与主场偏差按残差收缩校准；比分历史先验按真实比分对数损失调权（有效 ${scoreRows.length} 场）。小样本自动向初始值回归。`
   };
 }
 
@@ -690,7 +757,7 @@ export function verificationSummary(records) {
 }
 
 export const modelInfo = {
-  version: "2.5.0",
+  version: "2.6.0",
   name: "Soft Joint Score + Official Preview Market-Elo Path",
   simulations: 20_000,
   metrics: METRIC_KEYS
