@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { fetchOfficialContext, fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
 import { fetchContextFeed, mergeContexts } from "./lib/context-feed.mjs";
 import { fetchDongqiudiContext, fetchDongqiudiIndex, fetchDongqiudiObservation, updateTacticalKnowledge } from "./lib/dongqiudi.mjs";
-import { calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
+import { applySlateCalibration, calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = resolve(root, "data");
@@ -150,6 +150,7 @@ for (const match of scheduledFutureMatches) {
 }
 
 const dashboardMatches = [];
+const slateCandidates = [];
 for (const match of futureMatches) {
   let record = recordIndex.has(match.id) ? records[recordIndex.get(match.id)] : null;
   const contextChanged = match.dongqiudiContext?.available
@@ -182,10 +183,15 @@ for (const match of futureMatches) {
       recordIndex.set(match.id, records.length);
       records.push(nextRecord);
     }
+    slateCandidates.push(nextRecord);
     record = nextRecord;
   }
   dashboardMatches.push(publicRecord(record));
 }
+
+// 逐场 MAP 会让所有 24%—30% 的平局永远排第二，形成“全是胜负、比分同质化”的众数塌缩。
+// 只对本轮新生成/因模型升级而重算的赛前记录做全日联合分配，随后锁定，避免每次刷新漂移。
+const slateCalibration = applySlateCalibration(slateCandidates);
 
 records = records.slice(-5000);
 const verification = verificationSummary(records);
@@ -206,6 +212,7 @@ const dashboard = {
     dongqiudiSync
   },
   model: modelInfo,
+  slateCalibration,
   matches: dashboardMatches,
   verification,
   learning

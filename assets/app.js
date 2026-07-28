@@ -36,6 +36,7 @@ function render() {
   renderDateTabs(matches);
   renderMatches(matches);
   renderAccuracy(verification);
+  renderDistributionAudit(verification.distributionAudit || {});
   renderHistory(verification.records || []);
   renderLearning(learning);
 }
@@ -78,22 +79,33 @@ function renderMatches(matches) {
     node.querySelector(".league").textContent = match.league;
     node.querySelector(".match-number").textContent = match.matchNumber;
     node.querySelector("time").textContent = `${match.kickoffDate} ${timeLabel(match.kickoff)}`;
-    node.querySelector(".confidence").textContent = `主选置信 ${percent(match.prediction.confidence)}`;
+    const resultTop = match.prediction.singleMatchTop?.result;
+    node.querySelector(".confidence").textContent = resultTop
+      ? `单场主选 ${resultTop.pick} ${percent(resultTop.probability)} · 另列全日组合选`
+      : `主选置信 ${percent(match.prediction.confidence)}`;
     node.querySelector(".home").textContent = match.home;
     node.querySelector(".away").textContent = match.away;
     node.querySelector(".expected-goals").textContent = `xG ${match.prediction.expectedGoals.home.toFixed(2)} : ${match.prediction.expectedGoals.away.toFixed(2)}`;
     Object.entries(METRIC_LABELS).forEach(([key]) => {
       node.querySelector(`[data-pred="${key}"]`).textContent = match.prediction[key];
       const probability = percent(match.prediction.probabilities[key]);
-      node.querySelector(`[data-prob="${key}"]`).textContent = key === "handicapResult" && match.prediction.handicapDecision
-        ? `${probability} · ${match.prediction.handicapDecision.level}`
-        : probability;
+      const slateDecision = match.prediction.slateDecision?.[key];
+      const slateNote = slateDecision
+        ? slateDecision.selected === match.prediction[key]
+          ? " · 全日组合同主选"
+          : ` · 全日组合 ${slateDecision.selected} ${percent(slateDecision.selectedProbability)}`
+        : "";
+      const strength = key === "handicapResult" && match.prediction.handicapDecision
+        ? ` · ${match.prediction.handicapDecision.level}`
+        : "";
+      node.querySelector(`[data-prob="${key}"]`).textContent = `${probability}${strength}${slateNote}`;
     });
     const reasoning = match.prediction.reasoning || {};
     node.querySelector(".reason-copy").innerHTML = [
       reasoning.direction && `<p><b>方向：</b>${escapeHtml(reasoning.direction)}</p>`,
       reasoning.score && `<p><b>比分：</b>${escapeHtml(reasoning.score)}</p>`,
       reasoning.draw && `<p><b>平局：</b>${escapeHtml(reasoning.draw)}</p>`,
+      reasoning.slate && `<p><b>全日概率分配：</b>${escapeHtml(reasoning.slate)}</p>`,
       reasoning.context && `<p><b>近期 / 场外 / 人员 / 交锋：</b>${escapeHtml(reasoning.context)}</p>`,
       reasoning.halfFull && `<p><b>半场：</b>${escapeHtml(reasoning.halfFull)}</p>`
     ].filter(Boolean).join("");
@@ -112,7 +124,10 @@ function renderMatches(matches) {
       <div class="tactical-heading"><b>六维战术分析</b><span>${escapeHtml(tactical.dataPolicy)}</span>${tactical.sourceUrl ? `<a href="${escapeHtml(tactical.sourceUrl)}" target="_blank" rel="noopener noreferrer">查看来源</a>` : ""}</div>
       <div class="tactical-grid">${tactical.dimensions.map(item => `<article><div><strong>${escapeHtml(item.title)}</strong><small>证据置信 ${percent(item.confidence)}</small></div><p>${escapeHtml(item.summary)}</p><span>依据：${escapeHtml((item.evidence || []).join("；"))}</span><em>缺口：${escapeHtml((item.missing || []).join("；"))}</em></article>`).join("")}</div>
     </section>` : "";
-    node.querySelector(".factor-content").innerHTML = `${tacticalHtml}${objective}${subjective}<div><b>比分候选</b> · ${alternatives}</div>${scoreCoverage}${totalCoverage}<div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
+    const slatePicks = match.prediction.slatePick
+      ? `<div><b>全日组合代表</b> · 胜平负 ${match.prediction.slatePick.result} / 让球 ${match.prediction.slatePick.handicapResult} / 比分 ${match.prediction.slatePick.score} / 进球 ${match.prediction.slatePick.totalGoals} / 半全场 ${match.prediction.slatePick.halfFull}</div>`
+      : "";
+    node.querySelector(".factor-content").innerHTML = `${tacticalHtml}${objective}${subjective}${slatePicks}<div><b>比分候选</b> · ${alternatives}</div>${scoreCoverage}${totalCoverage}<div><b>官方让球</b> · ${match.handicap > 0 ? "+" : ""}${match.handicap}</div>`;
     list.appendChild(node);
   });
 }
@@ -125,13 +140,45 @@ function renderAccuracy(verification) {
   el("accuracyStrip").innerHTML = cells.map(item => `<div class="accuracy-item"><span>${item.label}</span><strong>${percent(item.value)}</strong><div class="meter"><i style="width:${Number.isFinite(item.value) ? item.value * 100 : 0}%"></i></div><span>${item.note}</span></div>`).join("");
 }
 
+function renderDistributionAudit(audit) {
+  const container = el("distributionAudit");
+  if (!container) return;
+  const specifications = [
+    ["result", "胜平负", 3],
+    ["halfFull", "半全场路径", 9],
+    ["score", "比分", 8],
+    ["totalGoals", "总进球", 8]
+  ];
+  const cards = specifications.map(([field, label, limit]) => {
+    const item = audit[field];
+    if (!item?.samples) return "";
+    const keys = [...new Set([
+      ...Object.keys(item.actualCounts || {}),
+      ...Object.keys(item.selectedCounts || {}),
+      ...Object.keys(item.expectedCounts || {})
+    ])].sort((a, b) => (item.actualCounts?.[b] || 0) - (item.actualCounts?.[a] || 0)
+      || (item.expectedCounts?.[b] || 0) - (item.expectedCounts?.[a] || 0));
+    const rows = keys.slice(0, limit).map(key => `<tr>
+      <th>${escapeHtml(key)}</th>
+      <td>${item.actualCounts?.[key] || 0}</td>
+      <td>${item.selectedCounts?.[key] || 0}</td>
+      <td>${Number(item.expectedCounts?.[key] || 0).toFixed(1)}</td>
+    </tr>`).join("");
+    return `<article><h3>${label}</h3><p>${item.samples} 场：真实结果、旧版单项主选与完整概率期望的对照。</p><table><thead><tr><th>类别</th><th>真实</th><th>主选</th><th>概率期望</th></tr></thead><tbody>${rows}</tbody></table></article>`;
+  }).filter(Boolean);
+  container.innerHTML = cards.length
+    ? `<div class="audit-heading"><strong>历史分布审计</strong><span>“概率期望”是每场完整分布相加，不等于机械取第一名；2.8 起用全日联合分配抑制众数塌缩。</span></div><div class="audit-grid">${cards.join("")}</div>`
+    : "";
+}
+
 function renderHistory(records) {
   const settled = records.filter(row => row.status === "settled");
   const rows = settled.filter(row => historyFilter === "all" || (historyFilter === "hit" ? row.hitCount === 5 : row.hitCount < 5));
   el("historyCount").textContent = `${rows.length} 条已验真`;
   el("historyBody").innerHTML = rows.length ? rows.map(row => {
     const p = row.prediction, a = row.actual;
-    const predLines = [`胜平负 ${p.result}`,`让球 ${p.handicapResult}`,`比分 ${p.score}`,`进球 ${p.totalGoals}`,`半全场 ${p.halfFull}`];
+    const predLine = (label, field) => `${label} ${p[field]}${p.slatePick?.[field] && p.slatePick[field] !== p[field] ? `（组合 ${p.slatePick[field]}）` : ""}`;
+    const predLines = [predLine("胜平负", "result"),predLine("让球", "handicapResult"),predLine("比分", "score"),predLine("进球", "totalGoals"),predLine("半全场", "halfFull")];
     const actualLines = [`胜平负 ${a.result}`,`让球 ${a.handicapResult}`,`比分 ${a.score}`,`进球 ${a.totalGoals}`,`半全场 ${a.halfFull}`];
     return `<tr data-perfect="${row.hitCount === 5}">
       <td class="date-cell">${row.kickoffDate}<br>${row.matchNumber}</td>

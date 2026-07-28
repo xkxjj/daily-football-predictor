@@ -102,6 +102,20 @@ details[open] summary::after { content:"－"; }
 .accuracy-item strong { display:block; font:500 25px var(--mono); margin:10px 0 8px; }
 .meter { height:2px; background:#2d352f; }
 .meter i { display:block; height:100%; background:var(--lime); }
+.distribution-audit { margin-top:14px; }
+.audit-heading { display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding:14px 2px; }
+.audit-heading strong { color:var(--lime); font-size:13px; }
+.audit-heading span { color:var(--muted); font-size:10px; line-height:1.6; text-align:right; }
+.audit-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.audit-grid article { border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:17px; }
+.audit-grid h3 { margin:0; font-size:14px; }
+.audit-grid p { margin:7px 0 12px; color:var(--muted); font-size:10px; line-height:1.6; }
+.audit-grid table { width:100%; border-collapse:collapse; font:400 10px var(--mono); }
+.audit-grid th,.audit-grid td { padding:7px 5px; border-top:1px solid var(--line); text-align:right; }
+.audit-grid th:first-child { text-align:left; }
+.audit-grid thead th { color:var(--muted); font-weight:400; }
+.audit-grid tbody th { color:var(--ink); font-weight:500; }
+.audit-grid td:last-child { color:var(--lime); }
 .history-toolbar { display:flex; justify-content:space-between; align-items:center; margin:26px 0 12px; color:var(--muted); font:400 11px var(--mono); }
 .segmented { display:flex; gap:4px; }
 .segmented button { border:0; border-radius:7px; padding:8px 12px; background:transparent; color:var(--muted); cursor:pointer; font-size:11px; }
@@ -146,6 +160,7 @@ footer p { margin:0; }
   .accuracy-strip { grid-template-columns:repeat(3,1fr); }
   .accuracy-item:nth-child(3) { border-right:0; }
   .accuracy-item:nth-child(-n+3) { border-bottom:1px solid var(--line); }
+  .audit-grid { grid-template-columns:1fr; }
   .learning-grid { grid-template-columns:1fr; }
 }
 @media (max-width: 600px) {
@@ -167,6 +182,8 @@ footer p { margin:0; }
   .accuracy-strip { grid-template-columns:1fr 1fr; }
   .accuracy-item:nth-child(2n) { border-right:0; }
   .accuracy-item:nth-child(-n+4) { border-bottom:1px solid var(--line); }
+  .audit-heading { display:block; }
+  .audit-heading span { display:block; text-align:left; margin-top:6px; }
   footer { display:block; line-height:1.7; }
   footer p+p { margin-top:8px; }
 }

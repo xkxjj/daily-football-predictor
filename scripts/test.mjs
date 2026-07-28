@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actualFromResult, calibrate, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
+import { actualFromResult, applySlateCalibration, calibrate, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 import { mergeContexts } from "./lib/context-feed.mjs";
 import { matchDongqiudiEntry, updateTacticalKnowledge } from "./lib/dongqiudi.mjs";
 import { buildOfficialContext } from "./lib/sporttery.mjs";
@@ -283,6 +283,61 @@ test("验真只比较赛前锁定值", () => {
   assert.equal(summary.metrics.score.accuracy, 1);
 });
 
+test("全日概率分配不会退化为逐场同一众数", () => {
+  const distributions = {
+    resultDistribution: { "胜": 0.45, "平": 0.30, "负": 0.25 },
+    handicapResultDistribution: { "胜": 0.35, "平": 0.30, "负": 0.35 },
+    scoreDistribution: { "1:1": 0.30, "2:1": 0.20, "1:2": 0.20, "2:0": 0.15, "0:2": 0.10, "3:1": 0.05 },
+    totalGoalsDistribution: { "0": 0.05, "1": 0.15, "2": 0.30, "3": 0.25, "4": 0.15, "5": 0.10 },
+    halfFullDistribution: { "胜/胜": 0.20, "平/胜": 0.15, "胜/平": 0.10, "平/平": 0.10, "负/平": 0.10, "平/负": 0.10, "负/负": 0.15, "胜/负": 0.05, "负/胜": 0.05 }
+  };
+  const rows = Array.from({ length: 10 }, (_, index) => ({
+    id: `slate-${index}`,
+    kickoffDate: "2026-07-28",
+    prediction: {
+      ...structuredClone(distributions),
+      result: "胜", handicapResult: "胜", score: "1:1", totalGoals: "2", halfFull: "胜/胜",
+      confidence: 0.45,
+      probabilities: { result: 0.45, handicapResult: 0.35, score: 0.30, totalGoals: 0.30, halfFull: 0.20 },
+      handicapDecision: { selected: "胜", marginalTop: "胜" },
+      scorePortfolio: { primary: "1:1" },
+      reasoning: {}
+    }
+  }));
+  const summary = applySlateCalibration(rows)["2026-07-28"];
+  for (const field of ["result", "handicapResult", "score", "totalGoals", "halfFull"]) {
+    const selectedCounts = rows.reduce((counts, row) => {
+      const selected = row.prediction.slatePick[field];
+      counts[selected] = (counts[selected] || 0) + 1;
+      return counts;
+    }, {});
+    assert.deepEqual(selectedCounts, Object.fromEntries(Object.entries(summary[field].quotas).filter(([, count]) => count > 0)));
+  }
+  assert.equal(rows.filter(row => row.prediction.slatePick.result === "平").length, 3);
+  assert.ok(new Set(rows.map(row => row.prediction.slatePick.score)).size >= 5);
+  assert.ok(rows.some(row => ["平/胜", "胜/平", "平/负", "负/平"].includes(row.prediction.slatePick.halfFull)));
+  assert.ok(rows.every(row => row.prediction.singleMatchTop.result.pick === "胜"));
+  assert.ok(rows.every(row => row.prediction.result === "胜"), "全日组合选不能覆盖单场最高概率主选");
+});
+
+test("真实频率以收缩权重校准完整分布", () => {
+  const rows = Array.from({ length: 20 }, (_, index) => ({
+    status: "settled",
+    actual: { result: index < 10 ? "平" : index < 15 ? "胜" : "负", homeGoals: 1, awayGoals: 1, score: "1:1", totalGoals: "2", halfFull: "平/平", handicapResult: "平" },
+    prediction: { resultDistribution: { "胜": 0.45, "平": 0.25, "负": 0.30 } }
+  }));
+  const learned = calibrate(rows);
+  assert.equal(learned.categoricalCalibration.result.samples, 20);
+  assert.ok(learned.categoricalCalibration.result.factors["平"] > 1);
+  assert.ok(learned.categoricalCalibration.result.factors["胜"] < 1);
+});
+
 test("无样本时校准参数保持保守", () => {
-  assert.deepEqual(calibrate([]), { marketWeight:.78, goalScale:1, homeBias:0, scorePriorMultiplier:1, scoreCalibrationSamples:0, sampleSize:0, summary:"尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" });
+  const learned = calibrate([]);
+  assert.equal(learned.marketWeight, 0.78);
+  assert.equal(learned.goalScale, 1);
+  assert.equal(learned.homeBias, 0);
+  assert.equal(learned.scorePriorMultiplier, 1);
+  assert.equal(learned.sampleSize, 0);
+  assert.equal(learned.categoricalCalibration.result.samples, 0);
 });

@@ -4,6 +4,19 @@ const OUTCOMES = ["胜", "平", "负"];
 const METRIC_KEYS = ["result", "handicapResult", "score", "totalGoals", "halfFull"];
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+function normalizeDistributionObject(distribution) {
+  const entries = Object.entries(distribution || {}).filter(([, value]) => Number.isFinite(value) && value >= 0);
+  const total = entries.reduce((sum, [, value]) => sum + value, 0);
+  return total > 0 ? Object.fromEntries(entries.map(([key, value]) => [key, value / total])) : {};
+}
+
+function applyCategoricalCalibration(distribution, calibration) {
+  const normalized = normalizeDistributionObject(distribution);
+  const factors = calibration?.factors || {};
+  const adjusted = Object.fromEntries(Object.entries(normalized).map(([key, value]) => [key, value * (factors[key] || 1)]));
+  return normalizeDistributionObject(adjusted);
+}
+
 function normalizeOdds(odds) {
   if (!odds?.home || !odds?.draw || !odds?.away) return null;
   const raw = [1 / odds.home, 1 / odds.draw, 1 / odds.away];
@@ -294,7 +307,7 @@ function scoreOutcome(score) {
   return outcome(home, away);
 }
 
-function chooseCalibratedScore(scores, handicap, context, simulations, resultDistribution, scorePriorMultiplier = 1) {
+function chooseCalibratedScore(scores, handicap, context, simulations, resultDistribution, scorePriorMultiplier = 1, categoricalCalibration = null) {
   const ranked = [];
   for (const resultKey of OUTCOMES) {
     const simulatedRows = [...scores.entries()].filter(([score]) => scoreOutcome(score) === resultKey);
@@ -326,6 +339,14 @@ function chooseCalibratedScore(scores, handicap, context, simulations, resultDis
       });
     }
   }
+  const calibrated = applyCategoricalCalibration(
+    Object.fromEntries(ranked.map(item => [item.score, item.probability])),
+    categoricalCalibration
+  );
+  for (const item of ranked) {
+    item.calibrationFactor = categoricalCalibration?.factors?.[item.score] || 1;
+    item.probability = calibrated[item.score] || 0;
+  }
   ranked.sort((a, b) => b.probability - a.probability);
   const selected = ranked[0];
   return {
@@ -337,7 +358,7 @@ function chooseCalibratedScore(scores, handicap, context, simulations, resultDis
   };
 }
 
-function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTarget, handicapDirectionTarget, scorePriorMultiplier = 1, simulations = 20_000) {
+function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTarget, handicapDirectionTarget, scorePriorMultiplier = 1, categoricalCalibration = {}, simulations = 20_000) {
   const random = mulberry32(hashSeed(seed));
   const result = new Map(OUTCOMES.map(key => [key, 0]));
   const handicapResult = new Map(OUTCOMES.map(key => [key, 0]));
@@ -365,7 +386,10 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     totals.set(totalKey, totals.get(totalKey) + 1);
     halfFull.set(halfFullKey, (halfFull.get(halfFullKey) || 0) + 1);
   }
-  const resultBlend = Object.fromEntries(OUTCOMES.map((key, index) => [key, 0.68 * result.get(key) / simulations + 0.32 * directionTarget[index]]));
+  const resultBlend = applyCategoricalCalibration(
+    Object.fromEntries(OUTCOMES.map((key, index) => [key, 0.68 * result.get(key) / simulations + 0.32 * directionTarget[index]])),
+    categoricalCalibration.result
+  );
   // 先按普通胜平负的边际概率确定主方向。不能直接在联合格子里取最大值：
   // 同一个让球方向可能被拆到多个普通赛果格子，联合 MAP 会天然偏向没有被拆分的格子。
   const resultPick = [...OUTCOMES].sort((a, b) => resultBlend[b] - resultBlend[a])[0];
@@ -392,15 +416,15 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     return { ...item, simulated, market, adjusted: 0.55 * simulated + 0.45 * market };
   }).sort((a, b) => b.adjusted - a.adjusted);
   const resultProbability = resultBlend[resultPick];
-  const handicapMarginal = Object.fromEntries(OUTCOMES.map((key, index) => {
+  const handicapMarginal = applyCategoricalCalibration(Object.fromEntries(OUTCOMES.map((key, index) => {
     const simulated = handicapResult.get(key) / simulations;
     const market = handicapDirectionTarget?.[index] ?? simulated;
     return [key, 0.68 * simulated + 0.32 * market];
-  }));
+  })), categoricalCalibration.handicapResult);
   const handicapMarginalCandidates = Object.entries(handicapMarginal).sort((a, b) => b[1] - a[1]);
   const handicapPick = handicapMarginalCandidates[0][0];
   const handicapProbability = handicapMarginalCandidates[0][1];
-  const chosenScore = chooseCalibratedScore(scores, handicap, context, simulations, resultBlend, scorePriorMultiplier);
+  const chosenScore = chooseCalibratedScore(scores, handicap, context, simulations, resultBlend, scorePriorMultiplier, categoricalCalibration.score);
   const [scoreHome, scoreAway] = chosenScore.score.split(":").map(Number);
   const scoreHandicapResult = outcome(scoreHome + handicap, scoreAway);
   const empiricalTotalCounts = new Map(Array.from({ length: 8 }, (_, i) => [i === 7 ? "7+" : String(i), 0]));
@@ -411,15 +435,15 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
   }
   const empiricalTotalSample = [...empiricalTotalCounts.values()].reduce((sum, count) => sum + count, 0);
   const totalHistoricalWeight = empiricalTotalSample ? Math.min(0.35, empiricalTotalSample / (empiricalTotalSample + 300)) : 0;
-  const totalGoalDistribution = Object.fromEntries([...totals.entries()].map(([key, count]) => {
+  const totalGoalDistribution = applyCategoricalCalibration(Object.fromEntries([...totals.entries()].map(([key, count]) => {
     const simulated = count / simulations;
     const historical = empiricalTotalSample ? empiricalTotalCounts.get(key) / empiricalTotalSample : simulated;
     return [key, (1 - totalHistoricalWeight) * simulated + totalHistoricalWeight * historical];
-  }));
+  })), categoricalCalibration.totalGoals);
   const totalCandidates = Object.entries(totalGoalDistribution).sort((a, b) => b[1] - a[1]);
   const totalPick = totalCandidates[0][0];
   const totalProbability = totalCandidates[0][1];
-  const halfCandidates = OUTCOMES.flatMap(halfKey => OUTCOMES.map(fullKey => {
+  const halfRows = OUTCOMES.flatMap(halfKey => OUTCOMES.map(fullKey => {
     const key = `${halfKey}/${fullKey}`;
     const count = halfFull.get(key) || 0;
     const simulatedFullTotal = result.get(fullKey) || 1;
@@ -434,7 +458,13 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
     const historicalWeight = historicalFullTotal ? Math.min(0.38, 0.18 + historicalFullTotal / 500) : 0.18;
     const calibratedConditional = (1 - historicalWeight) * simulatedConditional + historicalWeight * historicalConditional;
     return { key, count, adjusted: resultBlend[fullKey] * calibratedConditional };
-  }))
+  }));
+  const calibratedHalfFull = applyCategoricalCalibration(
+    Object.fromEntries(halfRows.map(item => [item.key, item.adjusted])),
+    categoricalCalibration.halfFull
+  );
+  const halfCandidates = halfRows
+    .map(item => ({ ...item, adjusted: calibratedHalfFull[item.key] || 0 }))
     .sort((a, b) => b.adjusted - a.adjusted);
   const halfFullPick = halfCandidates[0].key;
   const halfFullProbability = halfCandidates[0].adjusted;
@@ -502,6 +532,147 @@ function monteCarlo(lambdaHome, lambdaAway, handicap, seed, context, directionTa
   };
 }
 
+function largestRemainderQuotas(distributions) {
+  const expectedCounts = {};
+  for (const distribution of distributions) {
+    for (const [key, probability] of Object.entries(distribution)) {
+      expectedCounts[key] = (expectedCounts[key] || 0) + probability;
+    }
+  }
+  const quotas = Object.fromEntries(Object.entries(expectedCounts).map(([key, expected]) => [key, Math.floor(expected)]));
+  let remaining = distributions.length - Object.values(quotas).reduce((sum, value) => sum + value, 0);
+  const remainders = Object.entries(expectedCounts)
+    .map(([key, expected]) => ({ key, expected, remainder: expected - Math.floor(expected) }))
+    .sort((a, b) => b.remainder - a.remainder || b.expected - a.expected || a.key.localeCompare(b.key, "zh-CN"));
+  for (let index = 0; index < remaining; index += 1) quotas[remainders[index % remainders.length].key] += 1;
+  return { expectedCounts, quotas };
+}
+
+// Hungarian assignment: expand each probability quota into a slot, then find the
+// minimum aggregate -log(probability). This retains the day's probability mass
+// without randomly forcing a rare outcome onto an unsuitable match.
+function minimumCostAssignment(costs) {
+  const size = costs.length;
+  const u = Array(size + 1).fill(0);
+  const v = Array(size + 1).fill(0);
+  const p = Array(size + 1).fill(0);
+  const way = Array(size + 1).fill(0);
+  for (let row = 1; row <= size; row += 1) {
+    p[0] = row;
+    let column0 = 0;
+    const minimum = Array(size + 1).fill(Infinity);
+    const used = Array(size + 1).fill(false);
+    do {
+      used[column0] = true;
+      const row0 = p[column0];
+      let delta = Infinity;
+      let column1 = 0;
+      for (let column = 1; column <= size; column += 1) if (!used[column]) {
+        const current = costs[row0 - 1][column - 1] - u[row0] - v[column];
+        if (current < minimum[column]) {
+          minimum[column] = current;
+          way[column] = column0;
+        }
+        if (minimum[column] < delta) {
+          delta = minimum[column];
+          column1 = column;
+        }
+      }
+      for (let column = 0; column <= size; column += 1) {
+        if (used[column]) {
+          u[p[column]] += delta;
+          v[column] -= delta;
+        } else minimum[column] -= delta;
+      }
+      column0 = column1;
+    } while (p[column0] !== 0);
+    do {
+      const column1 = way[column0];
+      p[column0] = p[column1];
+      column0 = column1;
+    } while (column0 !== 0);
+  }
+  const assignment = Array(size).fill(-1);
+  for (let column = 1; column <= size; column += 1) assignment[p[column] - 1] = column - 1;
+  return assignment;
+}
+
+function allocateSlateDimension(records, field, distributionField) {
+  const eligible = records.filter(record => Object.keys(record.prediction?.[distributionField] || {}).length);
+  if (!eligible.length) return { matches: 0, expectedCounts: {}, quotas: {} };
+  const distributions = eligible.map(record => normalizeDistributionObject(record.prediction[distributionField]));
+  const { expectedCounts, quotas } = largestRemainderQuotas(distributions);
+  const slots = Object.entries(quotas).flatMap(([key, count]) => Array.from({ length: count }, () => key));
+  const costs = eligible.map((record, row) => slots.map((key, column) => {
+    const probability = distributions[row][key] || 1e-12;
+    const tieBreaker = (hashSeed(`${record.id}|${field}|${key}|${column}`) % 10_000) / 1e12;
+    return -Math.log(probability) + tieBreaker;
+  }));
+  const assignment = minimumCostAssignment(costs);
+  eligible.forEach((record, row) => {
+    const prediction = record.prediction;
+    const distribution = distributions[row];
+    const ranked = Object.entries(distribution).sort((a, b) => b[1] - a[1]);
+    const marginalTop = ranked[0][0];
+    const marginalProbability = ranked[0][1];
+    const selected = slots[assignment[row]];
+    const selectedProbability = distribution[selected] || 0;
+    prediction.singleMatchTop ||= {};
+    prediction.singleMatchTop[field] = { pick: marginalTop, probability: marginalProbability };
+    prediction.slatePick ||= {};
+    prediction.slatePick[field] = selected;
+    prediction.slateDecision ||= {};
+    prediction.slateDecision[field] = {
+      method: "daily-probability-matched-assignment",
+      marginalTop,
+      marginalProbability,
+      selected,
+      selectedProbability,
+      opportunityCost: Math.max(0, marginalProbability - selectedProbability)
+    };
+    if (field === "score" && prediction.scorePortfolio) prediction.scorePortfolio.slateRepresentative = selected;
+    if (field === "handicapResult" && prediction.handicapDecision) {
+      prediction.handicapDecision.marginalTop = marginalTop;
+      prediction.handicapDecision.slateSelected = selected;
+    }
+  });
+  return { matches: eligible.length, expectedCounts, quotas };
+}
+
+export function applySlateCalibration(records) {
+  const dimensions = [
+    ["result", "resultDistribution"],
+    ["handicapResult", "handicapResultDistribution"],
+    ["score", "scoreDistribution"],
+    ["totalGoals", "totalGoalsDistribution"],
+    ["halfFull", "halfFullDistribution"]
+  ];
+  const groups = new Map();
+  for (const record of records) {
+    const date = record.kickoffDate || record.businessDate || "unknown";
+    if (!groups.has(date)) groups.set(date, []);
+    groups.get(date).push(record);
+  }
+  const summary = {};
+  for (const [date, rows] of groups) {
+    summary[date] = Object.fromEntries(dimensions.map(([field, distributionField]) => [
+      field,
+      allocateSlateDimension(rows, field, distributionField)
+    ]));
+    for (const record of rows) {
+      const decisions = record.prediction?.slateDecision || {};
+      const changed = Object.entries(decisions)
+        .filter(([, decision]) => decision.selected !== decision.marginalTop)
+        .map(([field, decision]) => `${field}:${decision.marginalTop}→${decision.selected}`);
+      record.prediction.reasoning ||= {};
+      record.prediction.reasoning.slate = changed.length
+        ? `全日联合概率分配为避免逐场众数塌缩，在保持各玩法总概率数量的前提下，本场组合代表为 ${changed.join("、")}；它用于组合覆盖，不覆盖单场最高概率主选。`
+        : "本场全日概率代表选与单场最高概率项一致。";
+    }
+  }
+  return summary;
+}
+
 export function predictMatch(match, state, learning, adjustment = null) {
   const combinedAdjustment = mergeOfficialNews(adjustment, match.officialContext);
   const marketSignals = marketContext(match, combinedAdjustment);
@@ -532,7 +703,17 @@ export function predictMatch(match, state, learning, adjustment = null) {
   const fittedDirection = distribution(lambdaHome, lambdaAway, match.handicap).result;
   const directionTarget = handicapOnly ? blendProbabilities(target, fittedDirection, 0.68) : target;
   // 随机流只绑定比赛，不绑定模型版本；相同输入不会仅因发布补丁而漂移。
-  const prediction = monteCarlo(lambdaHome, lambdaAway, match.handicap, `${match.id}:stable-score-path`, context, directionTarget, handicapMarket, learning.scorePriorMultiplier ?? 1);
+  const prediction = monteCarlo(
+    lambdaHome,
+    lambdaAway,
+    match.handicap,
+    `${match.id}:stable-score-path`,
+    context,
+    directionTarget,
+    handicapMarket,
+    learning.scorePriorMultiplier ?? 1,
+    learning.categoricalCalibration || {}
+  );
   prediction.expectedGoals = { home: lambdaHome, away: lambdaAway };
   prediction.tacticalAnalysis = buildTacticalAnalysis(match, state, prediction, tactical);
   const resultPct = OUTCOMES.map(key => `${key}${(prediction.resultDistribution[key] * 100).toFixed(0)}%`).join(" / ");
@@ -695,9 +876,57 @@ export function updateRatings(state, results) {
   return state;
 }
 
+function learnCategoricalCalibration(rows, actualField, distributionField, priorStrength, limit) {
+  const eligible = rows.filter(row => row.actual?.[actualField] && row.prediction?.[distributionField]);
+  const predictedCounts = {};
+  const actualCounts = {};
+  for (const row of eligible) {
+    const distribution = normalizeDistributionObject(row.prediction[distributionField]);
+    for (const [key, probability] of Object.entries(distribution)) {
+      predictedCounts[key] = (predictedCounts[key] || 0) + probability;
+    }
+    const actual = row.actual[actualField];
+    actualCounts[actual] = (actualCounts[actual] || 0) + 1;
+  }
+  const labels = new Set([...Object.keys(predictedCounts), ...Object.keys(actualCounts)]);
+  const factors = {};
+  const expectedRates = {};
+  const observedRates = {};
+  for (const label of labels) {
+    const expectedRate = eligible.length ? (predictedCounts[label] || 0) / eligible.length : 0;
+    const observedRate = eligible.length ? (actualCounts[label] || 0) / eligible.length : 0;
+    const shrunkenRate = eligible.length
+      ? ((actualCounts[label] || 0) + priorStrength * expectedRate) / (eligible.length + priorStrength)
+      : expectedRate;
+    expectedRates[label] = expectedRate;
+    observedRates[label] = observedRate;
+    factors[label] = expectedRate > 1e-8 ? clamp(shrunkenRate / expectedRate, 1 - limit, 1 + limit) : 1;
+  }
+  return { samples: eligible.length, factors, expectedRates, observedRates };
+}
+
+function learnAllCategoricalCalibration(settled) {
+  return {
+    result: learnCategoricalCalibration(settled, "result", "resultDistribution", 80, 0.18),
+    handicapResult: learnCategoricalCalibration(settled, "handicapResult", "handicapResultDistribution", 90, 0.18),
+    score: learnCategoricalCalibration(settled, "score", "scoreDistribution", 140, 0.15),
+    totalGoals: learnCategoricalCalibration(settled, "totalGoals", "totalGoalsDistribution", 110, 0.18),
+    halfFull: learnCategoricalCalibration(settled, "halfFull", "halfFullDistribution", 120, 0.18)
+  };
+}
+
 export function calibrate(records) {
   const settled = records.filter(row => row.status === "settled" && row.actual).slice(-300);
-  if (!settled.length) return { marketWeight: 0.78, goalScale: 1, homeBias: 0, scorePriorMultiplier: 1, scoreCalibrationSamples: 0, sampleSize: 0, summary: "尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。" };
+  if (!settled.length) return {
+    marketWeight: 0.78,
+    goalScale: 1,
+    homeBias: 0,
+    scorePriorMultiplier: 1,
+    scoreCalibrationSamples: 0,
+    categoricalCalibration: learnAllCategoricalCalibration([]),
+    sampleSize: 0,
+    summary: "尚无赛前锁定样本，使用保守初始参数；首批完赛后自动校准。"
+  };
   const goalRows = settled.filter(row => row.prediction.expectedGoals);
   const predictedGoals = goalRows.reduce((sum, row) => sum + row.prediction.expectedGoals.home + row.prediction.expectedGoals.away, 0);
   const actualGoals = goalRows.reduce((sum, row) => sum + row.actual.homeGoals + row.actual.awayGoals, 0);
@@ -739,9 +968,12 @@ export function calibrate(records) {
     const scoreShrink = Math.min(1, scoreRows.length / 60);
     scorePriorMultiplier = clamp(1 + scoreShrink * (losses[0].multiplier - 1), 0.5, 1.35);
   }
+  const categoricalCalibration = learnAllCategoricalCalibration(settled);
   return {
-    marketWeight, goalScale, homeBias, scorePriorMultiplier, scoreCalibrationSamples: scoreRows.length, sampleSize: settled.length,
-    summary: `基于最近 ${settled.length} 场赛前锁定样本：市场/Elo 权重按 Brier 表现调整，总进球与主场偏差按残差收缩校准；比分历史先验按真实比分对数损失调权（有效 ${scoreRows.length} 场）。小样本自动向初始值回归。`
+    marketWeight, goalScale, homeBias, scorePriorMultiplier, scoreCalibrationSamples: scoreRows.length,
+    categoricalCalibration,
+    sampleSize: settled.length,
+    summary: `基于最近 ${settled.length} 场赛前锁定样本：市场/Elo 权重按 Brier 表现调整，总进球与主场偏差按残差收缩校准；比分历史先验按真实比分对数损失调权（有效 ${scoreRows.length} 场）；胜平负、让球、比分、总进球和半全场的完整概率分布再按真实频率做受限校准。小样本自动向初始值回归。`
   };
 }
 
@@ -754,19 +986,47 @@ export function verificationSummary(records) {
   }
   const strictHits = settled.filter(row => row.hitCount === 5).length;
   const available = Object.values(metrics).map(x => x.accuracy).filter(Number.isFinite);
+  const distributionFields = {
+    result: "resultDistribution",
+    handicapResult: "handicapResultDistribution",
+    score: "scoreDistribution",
+    totalGoals: "totalGoalsDistribution",
+    halfFull: "halfFullDistribution"
+  };
+  const distributionAudit = Object.fromEntries(Object.entries(distributionFields).map(([field, distributionField]) => {
+    const actualCounts = {};
+    const selectedCounts = {};
+    const expectedCounts = {};
+    let probabilitySamples = 0;
+    for (const row of settled) {
+      const actual = row.actual?.[field];
+      const selected = row.prediction?.[field];
+      if (actual) actualCounts[actual] = (actualCounts[actual] || 0) + 1;
+      if (selected) selectedCounts[selected] = (selectedCounts[selected] || 0) + 1;
+      if (row.prediction?.[distributionField]) {
+        const distribution = normalizeDistributionObject(row.prediction[distributionField]);
+        for (const [key, probability] of Object.entries(distribution)) {
+          expectedCounts[key] = (expectedCounts[key] || 0) + probability;
+        }
+        probabilitySamples += 1;
+      }
+    }
+    return [field, { samples: settled.length, probabilitySamples, actualCounts, selectedCounts, expectedCounts }];
+  }));
   return {
     settledCount: settled.length,
     strictHits,
     strictAccuracy: settled.length ? strictHits / settled.length : null,
     macroAccuracy: available.length ? available.reduce((a, b) => a + b, 0) / available.length : null,
     metrics,
+    distributionAudit,
     records: [...settled].sort((a, b) => b.kickoff.localeCompare(a.kickoff)).slice(0, 120)
   };
 }
 
 export const modelInfo = {
-  version: "2.7.0",
-  name: "Auditable Tactical Context + Calibrated Score Path",
+  version: "2.8.0",
+  name: "Distribution-Matched Slate + Auditable Tactical Context",
   simulations: 20_000,
   metrics: METRIC_KEYS
 };
