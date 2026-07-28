@@ -28,7 +28,7 @@ async function loadData() {
 }
 
 function render() {
-  const { window, generatedAt, model, matches = [], verification = {}, learning = {} } = dashboard;
+  const { window, generatedAt, model, matches = [], verification = {}, resultArchive = {}, learning = {} } = dashboard;
   el("windowLabel").textContent = `${window.start} — ${window.end}（北京时间）`;
   el("updatedLabel").textContent = `更新 ${updatedLabel(generatedAt)}`;
   el("modelVersion").textContent = model.version;
@@ -38,6 +38,7 @@ function render() {
   renderAccuracy(verification);
   renderDistributionAudit(verification.distributionAudit || {});
   renderHistory(verification.records || []);
+  renderResultArchive(resultArchive);
   renderLearning(learning);
 }
 
@@ -188,6 +189,22 @@ function renderHistory(records) {
       <td><div class="hit-grid">${Object.keys(METRIC_LABELS).map(key=>`<span class="hit-badge ${row.hits[key] ? "yes" : "no"}" title="${METRIC_LABELS[key]}">${row.hits[key] ? "✓" : "×"}</span>`).join("")}</div><span class="hit-score">${row.hitCount}/5 命中</span></td>
     </tr>`;
   }).join("") : `<tr><td colspan="5" class="empty-state">当前筛选没有已验真记录。</td></tr>`;
+}
+
+function renderResultArchive(archive = {}) {
+  const rows = archive.records || [];
+  el("resultOnlyCount").textContent = `${rows.length} 条仅赛果`;
+  el("resultOnlyBody").innerHTML = rows.length ? rows.map(row => {
+    const a = row.actual;
+    const actualLines = [`胜平负 ${a.result}`, `让球 ${a.handicapResult}`, `比分 ${a.score}`, `进球 ${a.totalGoals}`, `半全场 ${a.halfFull}`];
+    return `<tr>
+      <td class="date-cell">${row.kickoffDate}<br>${escapeHtml(row.matchNumber)}</td>
+      <td class="game-cell"><strong>${escapeHtml(row.home)} vs ${escapeHtml(row.away)}</strong><span>${escapeHtml(row.league)} · 让球 ${row.handicap > 0 ? "+" : ""}${row.handicap}</span></td>
+      <td><div class="outcome-lines"><span class="result-only-note">未生成赛前预测</span><span>${escapeHtml(row.note)}</span></div></td>
+      <td><div class="outcome-lines">${actualLines.map(x => `<span>${escapeHtml(x)}</span>`).join("")}</div></td>
+      <td><span class="result-only-badge">不计入命中率</span></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="5" class="empty-state">当前没有需要补录展示的官方赛果。</td></tr>`;
 }
 
 function renderLearning(learning) {

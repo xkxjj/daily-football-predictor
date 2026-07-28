@@ -128,6 +128,11 @@ details[open] summary::after { content:"－"; }
 .history-table .date-cell { color:var(--muted); font:400 10px var(--mono); line-height:1.7; }
 .history-table .game-cell strong { display:block; font-size:13px; }
 .history-table .game-cell span { color:var(--muted); font-size:10px; }
+.result-only-toolbar { margin-top:32px; }
+.result-only-toolbar > div { display:flex; flex-direction:column; gap:4px; }
+.result-only-toolbar strong { color:var(--ink); font:600 13px var(--sans); }
+.result-only-toolbar small { color:var(--muted); font-size:11px; }
+.result-only-note, .result-only-badge { color:#8a5b16; font-weight:600; }
 .outcome-lines { display:grid; gap:5px; color:#aab2a7; }
 .outcome-lines b { color:var(--ink); font-weight:500; }
 .hit-grid { display:flex; gap:4px; flex-wrap:wrap; max-width:170px; }

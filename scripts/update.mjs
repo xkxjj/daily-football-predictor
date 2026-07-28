@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { fetchOfficialContext, fetchSchedule, fetchResults, sourceInfo } from "./lib/sporttery.mjs";
 import { fetchContextFeed, mergeContexts } from "./lib/context-feed.mjs";
 import { fetchDongqiudiContext, fetchDongqiudiIndex, fetchDongqiudiObservation, updateTacticalKnowledge } from "./lib/dongqiudi.mjs";
-import { applySlateCalibration, calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
+import { actualFromResult, applySlateCalibration, calibrate, modelInfo, predictMatch, scoreRecord, updateRatings, verificationSummary } from "./lib/model.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = resolve(root, "data");
@@ -107,6 +107,29 @@ const resultMap = new Map(results.map(result => [result.id, result]));
 
 let records = historyFile.records || [];
 records = records.map(record => record.status !== "settled" && resultMap.has(record.id) ? scoreRecord(record, resultMap.get(record.id)) : record);
+const recordedIds = new Set(records.map(record => record.id));
+const resultArchive = {
+  coverage: { start: historyStart, end: today },
+  policy: "仅展示自动更新中断期间未生成赛前记录的官方赛果；不补造预测，也不计入命中率。",
+  records: results
+    .filter(result => !recordedIds.has(result.id))
+    .map(result => ({
+      id: result.id,
+      matchNumber: result.matchNumber,
+      kickoffDate: result.matchDate,
+      businessDate: result.matchDate,
+      league: result.league,
+      leagueFull: result.leagueFull,
+      home: result.home,
+      away: result.away,
+      handicap: result.handicap,
+      actual: actualFromResult(result, result.handicap),
+      status: "result-only",
+      note: "自动更新中断，未生成赛前预测"
+    }))
+    .sort((a, b) => b.kickoffDate.localeCompare(a.kickoffDate) || b.matchNumber.localeCompare(a.matchNumber, "zh-CN"))
+    .slice(0, 45)
+};
 updateRatings(state, results);
 const tacticalCandidates = records
   .filter(record => record.status === "settled" && record.dongqiudiContext?.matchId && !state.processedTacticalResults?.includes(record.id))
@@ -215,6 +238,7 @@ const dashboard = {
   slateCalibration,
   matches: dashboardMatches,
   verification,
+  resultArchive,
   learning
 };
 
