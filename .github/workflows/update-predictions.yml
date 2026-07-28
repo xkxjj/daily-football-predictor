@@ -35,7 +35,20 @@ jobs:
         run: npm test
 
       - name: Sync schedule, results and match context
-        run: npm run update
+        shell: bash
+        run: |
+          set +e
+          npm run update 2>&1 | tee update.log
+          update_status=${PIPESTATUS[0]}
+          if [ "$update_status" -ne 0 ]; then
+            {
+              echo "## Update command output"
+              echo '```text'
+              tail -n 80 update.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$update_status"
 
       - name: Test generated data
         run: npm test
