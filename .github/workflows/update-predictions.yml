@@ -47,6 +47,7 @@ jobs:
               tail -n 80 update.log
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
+            node -e "const fs=require('fs'); const s=fs.readFileSync('update.log','utf8').slice(-4000).replace(/%/g,'%25').replace(/\\r/g,'%0D').replace(/\\n/g,'%0A'); console.log('::error title=Update command failed::'+s)"
           fi
           exit "$update_status"
 
