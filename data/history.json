@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-29T10:13:10.754Z",
+  "updatedAt": "2026-07-30T01:55:00.612Z",
   "records": [
     {
       "id": "2040584",
@@ -53382,7 +53382,7 @@
       "kickoff": "2026-07-29T23:00:00+08:00",
       "kickoffDate": "2026-07-29",
       "businessDate": "2026-07-29",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -54086,7 +54086,26 @@
           "updatedAt": "2026-07-27T19:20:38"
         }
       },
-      "revisions": []
+      "revisions": [],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "1:0",
+        "totalGoals": "1",
+        "halfFull": "胜/胜",
+        "halfScore": "1:0",
+        "homeGoals": 1,
+        "awayGoals": 0
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": true
+      },
+      "hitCount": 2,
+      "settledAt": "2026-07-30T01:55:04.287Z"
     },
     {
       "id": "2040646",
@@ -54106,7 +54125,7 @@
       "kickoff": "2026-07-30T01:00:00+08:00",
       "kickoffDate": "2026-07-30",
       "businessDate": "2026-07-29",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -54885,7 +54904,26 @@
           "updatedAt": "2026-07-28T20:37:18"
         }
       },
-      "revisions": []
+      "revisions": [],
+      "actual": {
+        "result": "负",
+        "handicapResult": "负",
+        "score": "0:3",
+        "totalGoals": "3",
+        "halfFull": "负/负",
+        "halfScore": "0:1",
+        "homeGoals": 0,
+        "awayGoals": 3
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": true,
+        "halfFull": false
+      },
+      "hitCount": 2,
+      "settledAt": "2026-07-30T01:55:04.287Z"
     },
     {
       "id": "2040647",
@@ -54905,7 +54943,7 @@
       "kickoff": "2026-07-30T06:30:00+08:00",
       "kickoffDate": "2026-07-30",
       "businessDate": "2026-07-29",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": -1,
       "odds": {
@@ -55648,7 +55686,26 @@
           "updatedAt": "2026-07-29T09:26:20"
         }
       },
-      "revisions": []
+      "revisions": [],
+      "actual": {
+        "result": "胜",
+        "handicapResult": "平",
+        "score": "2:1",
+        "totalGoals": "3",
+        "halfFull": "平/胜",
+        "halfScore": "1:1",
+        "homeGoals": 2,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": true,
+        "handicapResult": false,
+        "score": false,
+        "totalGoals": false,
+        "halfFull": false
+      },
+      "hitCount": 1,
+      "settledAt": "2026-07-30T01:55:04.287Z"
     },
     {
       "id": "2040648",
@@ -55668,7 +55725,7 @@
       "kickoff": "2026-07-30T06:30:00+08:00",
       "kickoffDate": "2026-07-30",
       "businessDate": "2026-07-29",
-      "status": "pending",
+      "status": "settled",
       "remark": "",
       "handicap": 1,
       "odds": {
@@ -61980,7 +62037,26 @@
             }
           }
         }
-      ]
+      ],
+      "actual": {
+        "result": "平",
+        "handicapResult": "胜",
+        "score": "1:1",
+        "totalGoals": "2",
+        "halfFull": "胜/平",
+        "halfScore": "1:0",
+        "homeGoals": 1,
+        "awayGoals": 1
+      },
+      "hits": {
+        "result": false,
+        "handicapResult": true,
+        "score": false,
+        "totalGoals": true,
+        "halfFull": false
+      },
+      "hitCount": 2,
+      "settledAt": "2026-07-30T01:55:04.287Z"
     },
     {
       "id": "2040649",
